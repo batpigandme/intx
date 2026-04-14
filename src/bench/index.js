@@ -3,6 +3,9 @@ export default function bench(fn, name = "Anonymous") {
   t0 = performance.now();
   fn(); // WARMUP
   fn(); // WARMUP
+  fn(); // WARMUP
+  fn(); // WARMUP
+  fn(); // WARMUP
   t1 = performance.now();
   d0 = t1 - t0;
 
@@ -11,5 +14,5 @@ export default function bench(fn, name = "Anonymous") {
   t1 = performance.now();
   d1 = t1 - t0;
 
-  console.log(`${name}:: Duration: ${d1.toFixed(3)}, Warm-up: ${d0.toFixed(3)}, Result: ${r}`);
+  console.log(`${name}:: Duration: ${d1.toFixed(3)}, Warm-up x5: ${d0.toFixed(3)}, Result: ${r}`);
 }

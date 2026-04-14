@@ -3,9 +3,9 @@
 import { LOW_16 } from "./constants.js";
 
 // 64-bit result of multiplying two 32-bit uint
-export default function umul32dw(a, b) {
-  a >>>= 0;
-  b >>>= 0;
+export default function umul32dw(a, b, out) {
+	a >>>= 0;
+	b >>>= 0;
 
 	const ah = a >>> 16;
 	const al = a & LOW_16;
@@ -27,5 +27,6 @@ export default function umul32dw(a, b) {
 	const lo = (lll | lhl << 16) >>> 0;
 	const hi = (ah * bh + hlh + lhh) >>> 0;
 
-	return [hi, lo];
+	out[0] = hi;
+	out[1] = lo;
 }
