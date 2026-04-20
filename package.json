@@ -1,0 +1,23 @@
+{
+  "name": "intx",
+  "version": "0.0.0",
+  "description": "TODO",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/impawstarlight/intx.git"
+  },
+  "author": {
+    "name": "Abdul Kaium",
+    "url": "https://github.com/impawstarlight"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/impawstarlight/intx/issues"
+  },
+  "homepage": "https://github.com/impawstarlight/intx#readme"
+}
