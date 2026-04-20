@@ -22,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/impawstarlight/intx/issues"
   },
-  "homepage": "https://github.com/impawstarlight/intx#readme"
+  "homepage": "https://github.com/impawstarlight/intx#readme",
+  "devDependencies": {
+    "@stdlib/number-uint32-base-muldw": "^0.1.1"
+  }
 }
