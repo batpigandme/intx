@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/impawstarlight/intx#readme",
   "devDependencies": {
+    "@stdlib/number-int32-base-mul": "^0.0.1",
     "@stdlib/number-uint32-base-muldw": "^0.1.1"
   }
 }

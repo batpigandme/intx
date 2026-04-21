@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@stdlib/number-int32-base-mul':
+        specifier: ^0.0.1
+        version: 0.0.1
       '@stdlib/number-uint32-base-muldw':
         specifier: ^0.1.1
         version: 0.1.1
@@ -101,6 +104,11 @@ packages:
 
   '@stdlib/math-base-assert-is-nan@0.2.3':
     resolution: {integrity: sha512-mj1p+JUSfbsiBI3+hwRV7bS0qgI2nWdzrFtBJUSLk+17MJSdA4aboUsXM12wIV1kg5JNfEAn+5eh4NF/sMvaoQ==}
+    engines: {node: '>=0.10.0', npm: '>2.7.0'}
+    os: [aix, darwin, freebsd, linux, macos, openbsd, sunos, win32, windows]
+
+  '@stdlib/number-int32-base-mul@0.0.1':
+    resolution: {integrity: sha512-b0DlaM4nujbf60OLQP4B8bnjmeYgDLWxFqU+Un92jY7WGP3HyjYlu+jAiytvBXxAyiFaKL+SKy6fyvlAGVln8Q==}
     engines: {node: '>=0.10.0', npm: '>2.7.0'}
     os: [aix, darwin, freebsd, linux, macos, openbsd, sunos, win32, windows]
 
@@ -345,6 +353,8 @@ snapshots:
       '@stdlib/utils-library-manifest': 0.2.4
     transitivePeerDependencies:
       - supports-color
+
+  '@stdlib/number-int32-base-mul@0.0.1': {}
 
   '@stdlib/number-uint32-base-muldw@0.1.1':
     dependencies:
