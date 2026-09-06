@@ -3,7 +3,8 @@
 import f from '#src/umul32dw/strided/split16x2imulc.js';
 
 // Typed buffer for storing output from umul32dw kernels
-const res = new Uint32Array(2);
+// const res = new Uint32Array(2);
+const res = [0, 0];
 
 // Collect type information on next call
 % PrepareFunctionForOptimization(f)
