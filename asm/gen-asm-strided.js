@@ -1,22 +1,22 @@
-"use strict";
+'use strict';
 
-import f from '#src/umul32dw/strided/split16x2imulc.js';
+const f = require('../src/u32/wmul/candidates/limb16-pipeline-imul-all');
 
-// Typed buffer for storing output from umul32dw kernels
-// const res = new Uint32Array(2);
-const res = [0, 0];
+const res = new Uint32Array(2);
 
 // Collect type information on next call
-% PrepareFunctionForOptimization(f)
+%PrepareFunctionForOptimization(f);
 
 // Call function once to fill type information
-f(0xffffffff, 0xffffffff, res, 1, 0);
+f(0xffffffff, 0xffffffff, res);
 
 // Call function again to go from uninitialized -> pre-monomorphic -> monomorphic
-f(0xdeadbeef, 0x8badf00d, res, 1, 0);
+f(0xdeadbeef, 0x8badf00d, res);
 
 // Force TurboFan compilation on next call
-% OptimizeFunctionOnNextCall(f);
-f(0xac1dba5e, 0x5a171337, res, 1, 0);
+%OptimizeFunctionOnNextCall(f);
+f(0xac1dba5e, 0x5a171337, res);
 
-console.log(res);
+console.log(
+  `Optimized result: [0x${res[0].toString(16)}, 0x${res[1].toString(16)}]`,
+);

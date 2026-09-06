@@ -1,0 +1,1280 @@
+node v24.19.0
+V8 v13.6.233.17-node.51
+
+--- Raw source ---
+(a, b, out, stride, offset ) {
+	var w1;
+	var w2;
+	var ha;
+	var hb;
+	var la;
+	var lb;
+	var t;
+	var k;
+
+	a >>>= 0; // asm type annotation
+	b >>>= 0; // asm type annotation
+
+	ha = ( a >>> 16 ) >>> 0;
+	la = ( a & LOW_WORD_MASK ) >>> 0;
+
+	hb = ( b >>> 16 ) >>> 0;
+	lb = ( b & LOW_WORD_MASK ) >>> 0;
+
+	t = ( la*lb ) >>> 0;
+	k = ( t >>> 16 ) >>> 0;
+
+	t = ( ( ha*lb ) + k ) >>> 0;
+	w2 = ( t & LOW_WORD_MASK ) >>> 0;
+	w1 = ( t >>> 16 ) >>> 0;
+
+	t = ( ( la*hb ) + w2 ) >>> 0;
+	k = ( t >>> 16 ) >>> 0;
+
+	out[ offset ] = ( ( ha*hb ) + w1 + k ) >>> 0; // compute the higher 32 bits and cast to an unsigned 32-bit integer
+	out[ offset + stride ] = umul( a, b ) >>> 0; // compute the lower 32 bits and cast to an unsigned 32-bit integer
+
+	return out;
+}
+
+
+--- Optimized code ---
+optimization_id = 6
+source_position = 1492
+kind = TURBOFAN_JS
+name = umuldw
+compiler = turbofan
+address = 0x67716b84b71
+
+Instructions (size = 1200)
+0x7f2b18044780     0  55                   push rbp
+0x7f2b18044781     1  4889e5               REX.W movq rbp,rsp
+0x7f2b18044784     4  56                   push rsi
+0x7f2b18044785     5  57                   push rdi
+0x7f2b18044786     6  50                   push rax
+0x7f2b18044787     7  4883ec38             REX.W subq rsp,0x38
+0x7f2b1804478b     b  488975d0             REX.W movq [rbp-0x30],rsi
+0x7f2b1804478f     f  493b65a0             REX.W cmpq rsp,[r13-0x60] (external value (StackGuard::address_of_jslimit()))
+0x7f2b18044793    13  0f8695020000         jna 0x7f2b18044a2e  <+0x2ae>
+0x7f2b18044799    19  488b4d18             REX.W movq rcx,[rbp+0x18]
+0x7f2b1804479d    1d  48c1f920             REX.W sarq rcx, 32
+0x7f2b180447a1    21  8bc9                 movl rcx,rcx
+0x7f2b180447a3    23  4c8b4518             REX.W movq r8,[rbp+0x18]
+0x7f2b180447a7    27  41f6c001             testb r8,0x1
+0x7f2b180447ab    2b  0f85ab020000         jnz 0x7f2b18044a5c  <+0x2dc>
+0x7f2b180447b1    31  48894de0             REX.W movq [rbp-0x20],rcx
+0x7f2b180447b5    35  488b4d20             REX.W movq rcx,[rbp+0x20]
+0x7f2b180447b9    39  48c1f920             REX.W sarq rcx, 32
+0x7f2b180447bd    3d  8bc9                 movl rcx,rcx
+0x7f2b180447bf    3f  4c8b4d20             REX.W movq r9,[rbp+0x20]
+0x7f2b180447c3    43  41f6c101             testb r9,0x1
+0x7f2b180447c7    47  0f85bc020000         jnz 0x7f2b18044a89  <+0x309>
+0x7f2b180447cd    4d  440fb7d9             movzxwl r11,rcx
+0x7f2b180447d1    51  448b65e0             movl r12,[rbp-0x20]
+0x7f2b180447d5    55  450fb7fc             movzxwl r15,r12
+0x7f2b180447d9    59  488b4528             REX.W movq rax,[rbp+0x28]
+0x7f2b180447dd    5d  0f1f00               nop
+0x7f2b180447e0    60  a801                 test al,0x1
+0x7f2b180447e2    62  0f840c040000         jz 0x7f2b18044bf4  <+0x474>
+0x7f2b180447e8    68  458bf7               movl r14,r15
+0x7f2b180447eb    6b  450faff3             imull r14,r11
+0x7f2b180447ef    6f  4489e3               movl rbx,r12
+0x7f2b180447f2    72  c1eb10               shrl rbx, 16
+0x7f2b180447f5    75  48bae124c0c9b5270000 REX.W movq rdx,0x27b5c9c024e1    ;; object: 0x27b5c9c024e1 <Map[104](UINT32ELEMENTS)>
+0x7f2b180447ff    7f  90                   nop
+0x7f2b18044800    80  483950ff             REX.W cmpq [rax-0x1],rdx
+0x7f2b18044804    84  0f85ee030000         jnz 0x7f2b18044bf8  <+0x478>
+0x7f2b1804480a    8a  41c1ee10             shrl r14, 16
+0x7f2b1804480e    8e  440fafdb             imull r11,rbx
+0x7f2b18044812    92  488b703f             REX.W movq rsi,[rax+0x3f]
+0x7f2b18044816    96  4503de               addl r11,r14
+0x7f2b18044819    99  448bf1               movl r14,rcx
+0x7f2b1804481c    9c  41c1ee10             shrl r14, 16
+0x7f2b18044820    a0  488b784f             REX.W movq rdi,[rax+0x4f]
+0x7f2b18044824    a4  410fb7d3             movzxwl rdx,r11
+0x7f2b18044828    a8  450faffe             imull r15,r14
+0x7f2b1804482c    ac  4c8b6047             REX.W movq r12,[rax+0x47]
+0x7f2b18044830    b0  4403fa               addl r15,rdx
+0x7f2b18044833    b3  41c1eb10             shrl r11, 16
+0x7f2b18044837    b7  440faff3             imull r14,rbx
+0x7f2b1804483b    bb  488b5d38             REX.W movq rbx,[rbp+0x38]
+0x7f2b1804483f    bf  33d2                 xorl rdx,rdx
+0x7f2b18044841    c1  f6c301               testb rbx,0x1
+0x7f2b18044844    c4  0f94c2               setzl dl
+0x7f2b18044847    c7  48894dd8             REX.W movq [rbp-0x28],rcx
+0x7f2b1804484b    cb  85d2                 testl rdx,rdx
+0x7f2b1804484d    cd  0f8463020000         jz 0x7f2b18044ab6  <+0x336>
+0x7f2b18044853    d3  48c1fb20             REX.W sarq rbx, 32
+0x7f2b18044857    d7  8bdb                 movl rbx,rbx
+0x7f2b18044859    d9  4863db               REX.W movsxlq rbx,rbx
+0x7f2b1804485c    dc  41c1ef10             shrl r15, 16
+0x7f2b18044860    e0  4503de               addl r11,r14
+0x7f2b18044863    e3  483bde               REX.W cmpq rbx,rsi
+0x7f2b18044866    e6  0f8390030000         jnc 0x7f2b18044bfc  <+0x47c>
+0x7f2b1804486c    ec  478d041f             leal r8,[r15+r11*1]
+0x7f2b18044870    f0  4d8d0c3c             REX.W leaq r9,[r12+rdi*1]
+0x7f2b18044874    f4  45890499             movl [r9+rbx*4],r8
+0x7f2b18044878    f8  0f1f840000000000     nop
+0x7f2b18044880   100  85d2                 testl rdx,rdx
+0x7f2b18044882   102  0f8478030000         jz 0x7f2b18044c00  <+0x480>
+0x7f2b18044888   108  488b5d38             REX.W movq rbx,[rbp+0x38]
+0x7f2b1804488c   10c  48c1fb20             REX.W sarq rbx, 32
+0x7f2b18044890   110  448bc3               movl r8,rbx
+0x7f2b18044893   113  4c8b4d30             REX.W movq r9,[rbp+0x30]
+0x7f2b18044897   117  660f1f840000000000   nop
+0x7f2b180448a0   120  41f6c101             testb r9,0x1
+0x7f2b180448a4   124  0f855a030000         jnz 0x7f2b18044c04  <+0x484>
+0x7f2b180448aa   12a  4d8bd9               REX.W movq r11,r9
+0x7f2b180448ad   12d  49c1fb20             REX.W sarq r11, 32
+0x7f2b180448b1   131  458bdb               movl r11,r11
+0x7f2b180448b4   134  4503d8               addl r11,r8
+0x7f2b180448b7   137  0f804b030000         jo 0x7f2b18044c08  <+0x488>
+0x7f2b180448bd   13d  48bf9906c3eb5c1a0000 REX.W movq rdi,0x1a5cebc30699    ;; object: 0x1a5cebc30699 <JSFunction mul (sfi = 0x3ab89eb33c71)>
+0x7f2b180448c7   147  488b7727             REX.W movq rsi,[rdi+0x27]
+0x7f2b180448cb   14b  4c8bc1               REX.W movq r8,rcx
+0x7f2b180448ce   14e  49c1e020             REX.W shlq r8, 32
+0x7f2b180448d2   152  4c895db0             REX.W movq [rbp-0x50],r11
+0x7f2b180448d6   156  660f1f840000000000   nop
+0x7f2b180448df   15f  90                   nop
+0x7f2b180448e0   160  81f9ffffff7f         cmpl rcx,0x7fffffff
+0x7f2b180448e6   166  0f863b000000         jna 0x7f2b18044927  <+0x1a7>
+0x7f2b180448ec   16c  448bd1               movl r10,rcx
+0x7f2b180448ef   16f  c4c1832ac2           vcvtqsi2sd xmm0,xmm15,r10
+0x7f2b180448f4   174  4d8b4550             REX.W movq r8,[r13+0x50] (external value (Heap::NewSpaceAllocationTopAddress()))
+0x7f2b180448f8   178  4d8d6010             REX.W leaq r12,[r8+0x10]
+0x7f2b180448fc   17c  0f1f4000             nop
+0x7f2b18044900   180  4d396558             REX.W cmpq [r13+0x58] (external value (Heap::NewSpaceAllocationLimitAddress())),r12
+0x7f2b18044904   184  0f86ee010000         jna 0x7f2b18044af8  <+0x378>
+0x7f2b1804490a   18a  4d8d6010             REX.W leaq r12,[r8+0x10]
+0x7f2b1804490e   18e  4d896550             REX.W movq [r13+0x50] (external value (Heap::NewSpaceAllocationTopAddress())),r12
+0x7f2b18044912   192  4983c001             REX.W addq r8,0x1
+0x7f2b18044916   196  4d8ba5c8020000       REX.W movq r12,[r13+0x2c8] (root (heap_number_map))
+0x7f2b1804491d   19d  4d8960ff             REX.W movq [r8-0x1],r12
+0x7f2b18044921   1a1  c4c17b114007         vmovsd [r8+0x7],xmm0
+0x7f2b18044927   1a7  4c8b65e0             REX.W movq r12,[rbp-0x20]
+0x7f2b1804492b   1ab  49c1e420             REX.W shlq r12, 32
+0x7f2b1804492f   1af  817de0ffffff7f       cmpl [rbp-0x20],0x7fffffff
+0x7f2b18044936   1b6  0f863c000000         jna 0x7f2b18044978  <+0x1f8>
+0x7f2b1804493c   1bc  448b55e0             movl r10,[rbp-0x20]
+0x7f2b18044940   1c0  c4c1832ac2           vcvtqsi2sd xmm0,xmm15,r10
+0x7f2b18044945   1c5  4d8b6550             REX.W movq r12,[r13+0x50] (external value (Heap::NewSpaceAllocationTopAddress()))
+0x7f2b18044949   1c9  4d8d7c2410           REX.W leaq r15,[r12+0x10]
+0x7f2b1804494e   1ce  4d397d58             REX.W cmpq [r13+0x58] (external value (Heap::NewSpaceAllocationLimitAddress())),r15
+0x7f2b18044952   1d2  0f86de010000         jna 0x7f2b18044b36  <+0x3b6>
+0x7f2b18044958   1d8  4d8d7c2410           REX.W leaq r15,[r12+0x10]
+0x7f2b1804495d   1dd  4d897d50             REX.W movq [r13+0x50] (external value (Heap::NewSpaceAllocationTopAddress())),r15
+0x7f2b18044961   1e1  4983c401             REX.W addq r12,0x1
+0x7f2b18044965   1e5  4d8bbdc8020000       REX.W movq r15,[r13+0x2c8] (root (heap_number_map))
+0x7f2b1804496c   1ec  4d897c24ff           REX.W movq [r12-0x1],r15
+0x7f2b18044971   1f1  c4c17b11442407       vmovsd [r12+0x7],xmm0
+0x7f2b18044978   1f8  4150                 push r8
+0x7f2b1804497a   1fa  4154                 push r12
+0x7f2b1804497c   1fc  498b9520020000       REX.W movq rdx,[r13+0x220] (root (undefined_value))
+0x7f2b18044983   203  52                   push rdx
+0x7f2b18044984   204  b803000000           movl rax,0x3
+0x7f2b18044989   209  4c8bc0               REX.W movq r8,rax
+0x7f2b1804498c   20c  448b7f17             movl r15,[rdi+0x17]
+0x7f2b18044990   210  49ba000000402b7f0000 REX.W movq r10,0x7f2b40000000
+0x7f2b1804499a   21a  498bdf               REX.W movq rbx,r15
+0x7f2b1804499d   21d  c1eb08               shrl rbx, 8
+0x7f2b180449a0   220  c1e304               shll rbx, 4
+0x7f2b180449a3   223  498b0c1a             REX.W movq rcx,[r10+rbx*1]
+0x7f2b180449a7   227  410fb75c1a08         movzxwl rbx,[r10+rbx*1+0x8]
+0x7f2b180449ad   22d  83fb03               cmpl rbx,0x3
+0x7f2b180449b0   230  7e01                 jle 0x7f2b180449b3  <+0x233>
+0x7f2b180449b2   232  cc                   int3l
+0x7f2b180449b3   233  ffd1                 call rcx
+0x7f2b180449b5   235  488bc8               REX.W movq rcx,rax
+0x7f2b180449b8   238  48c1f920             REX.W sarq rcx, 32
+0x7f2b180449bc   23c  8bc9                 movl rcx,rcx
+0x7f2b180449be   23e  6690                 nop
+0x7f2b180449c0   240  a801                 test al,0x1
+0x7f2b180449c2   242  0f85b4010000         jnz 0x7f2b18044b7c  <+0x3fc>
+0x7f2b180449c8   248  4c8b4528             REX.W movq r8,[rbp+0x28]
+0x7f2b180449cc   24c  49b9e124c0c9b5270000 REX.W movq r9,0x27b5c9c024e1    ;; object: 0x27b5c9c024e1 <Map[104](UINT32ELEMENTS)>
+0x7f2b180449d6   256  660f1f840000000000   nop
+0x7f2b180449df   25f  90                   nop
+0x7f2b180449e0   260  4d3948ff             REX.W cmpq [r8-0x1],r9
+0x7f2b180449e4   264  0f8522020000         jnz 0x7f2b18044c0c  <+0x48c>
+0x7f2b180449ea   26a  4d8b484f             REX.W movq r9,[r8+0x4f]
+0x7f2b180449ee   26e  4d8b5847             REX.W movq r11,[r8+0x47]
+0x7f2b180449f2   272  4c6365b0             REX.W movsxlq r12,[rbp-0x50]
+0x7f2b180449f6   276  660f1f840000000000   nop
+0x7f2b180449ff   27f  90                   nop
+0x7f2b18044a00   280  4d39603f             REX.W cmpq [r8+0x3f],r12
+0x7f2b18044a04   284  0f8606020000         jna 0x7f2b18044c10  <+0x490>
+0x7f2b18044a0a   28a  4d03cb               REX.W addq r9,r11
+0x7f2b18044a0d   28d  43890ca1             movl [r9+r12*4],rcx
+0x7f2b18044a11   291  498bc0               REX.W movq rax,r8
+0x7f2b18044a14   294  488b4de8             REX.W movq rcx,[rbp-0x18]
+0x7f2b18044a18   298  488be5               REX.W movq rsp,rbp
+0x7f2b18044a1b   29b  5d                   pop rbp
+0x7f2b18044a1c   29c  4883f906             REX.W cmpq rcx,0x6
+0x7f2b18044a20   2a0  7f03                 jg 0x7f2b18044a25  <+0x2a5>
+0x7f2b18044a22   2a2  c23000               ret 0x30
+0x7f2b18044a25   2a5  415a                 pop r10
+0x7f2b18044a27   2a7  488d24cc             REX.W leaq rsp,[rsp+rcx*8]
+0x7f2b18044a2b   2ab  4152                 push r10
+0x7f2b18044a2d   2ad  c3                   retl
+0x7f2b18044a2e   2ae  48b90000000050000000 REX.W movq rcx,0x5000000000
+0x7f2b18044a38   2b8  51                   push rcx
+0x7f2b18044a39   2b9  48bb80a53a0100000000 REX.W movq rbx,0x13aa580
+0x7f2b18044a43   2c3  b801000000           movl rax,0x1
+0x7f2b18044a48   2c8  48be0901c0c9b5270000 REX.W movq rsi,0x27b5c9c00109    ;; object: 0x27b5c9c00109 <NativeContext[302]>
+0x7f2b18044a52   2d2  e8291fe31f           call 0x7f2b37e76980  (CEntry_Return1_ArgvOnStack_NoBuiltinExit)    ;; near builtin entry
+0x7f2b18044a57   2d7  e93dfdffff           jmp 0x7f2b18044799  <+0x19>
+0x7f2b18044a5c   2dc  498b48ff             REX.W movq rcx,[r8-0x1]
+0x7f2b18044a60   2e0  49398dc8020000       REX.W cmpq [r13+0x2c8] (root (heap_number_map)),rcx
+0x7f2b18044a67   2e7  0f85a7010000         jnz 0x7f2b18044c14  <+0x494>
+0x7f2b18044a6d   2ed  c4c17b104007         vmovsd xmm0,[r8+0x7]
+0x7f2b18044a73   2f3  c4e1fb2cc8           vcvttsd2siq rcx,xmm0
+0x7f2b18044a78   2f8  4883f901             REX.W cmpq rcx,0x1
+0x7f2b18044a7c   2fc  0f8057010000         jo 0x7f2b18044bd9  <+0x459>
+0x7f2b18044a82   302  8bc9                 movl rcx,rcx
+0x7f2b18044a84   304  e928fdffff           jmp 0x7f2b180447b1  <+0x31>
+0x7f2b18044a89   309  498b49ff             REX.W movq rcx,[r9-0x1]
+0x7f2b18044a8d   30d  49398dc8020000       REX.W cmpq [r13+0x2c8] (root (heap_number_map)),rcx
+0x7f2b18044a94   314  0f857e010000         jnz 0x7f2b18044c18  <+0x498>
+0x7f2b18044a9a   31a  c4c17b104107         vmovsd xmm0,[r9+0x7]
+0x7f2b18044aa0   320  c4e1fb2cc8           vcvttsd2siq rcx,xmm0
+0x7f2b18044aa5   325  4883f901             REX.W cmpq rcx,0x1
+0x7f2b18044aa9   329  0f8010010000         jo 0x7f2b18044bbf  <+0x43f>
+0x7f2b18044aaf   32f  8bc9                 movl rcx,rcx
+0x7f2b18044ab1   331  e917fdffff           jmp 0x7f2b180447cd  <+0x4d>
+0x7f2b18044ab6   336  488b43ff             REX.W movq rax,[rbx-0x1]
+0x7f2b18044aba   33a  660f1f440000         nop
+0x7f2b18044ac0   340  493985c8020000       REX.W cmpq [r13+0x2c8] (root (heap_number_map)),rax
+0x7f2b18044ac7   347  0f854f010000         jnz 0x7f2b18044c1c  <+0x49c>
+0x7f2b18044acd   34d  c5fb104307           vmovsd xmm0,[rbx+0x7]
+0x7f2b18044ad2   352  c4e1fb2cc0           vcvttsd2siq rax,xmm0
+0x7f2b18044ad7   357  c4e1832ac8           vcvtqsi2sd xmm1,xmm15,rax
+0x7f2b18044adc   35c  c5f92ec1             vucomisd xmm0,xmm1
+0x7f2b18044ae0   360  0f8a3a010000         jpe 0x7f2b18044c20  <+0x4a0>
+0x7f2b18044ae6   366  0f8534010000         jnz 0x7f2b18044c20  <+0x4a0>
+0x7f2b18044aec   36c  488bd8               REX.W movq rbx,rax
+0x7f2b18044aef   36f  488b4528             REX.W movq rax,[rbp+0x28]
+0x7f2b18044af3   373  e964fdffff           jmp 0x7f2b1804485c  <+0xdc>
+0x7f2b18044af8   378  ba10000000           movl rdx,0x10
+0x7f2b18044afd   37d  488975c0             REX.W movq [rbp-0x40],rsi
+0x7f2b18044b01   381  c5fb1145c8           vmovsd [rbp-0x38],xmm0
+0x7f2b18044b06   386  e875aad81f           call 0x7f2b37dcf580  (AllocateInYoungGeneration)    ;; near builtin entry
+0x7f2b18044b0b   38b  4c8d40ff             REX.W leaq r8,[rax-0x1]
+0x7f2b18044b0f   38f  4c8b5db0             REX.W movq r11,[rbp-0x50]
+0x7f2b18044b13   393  488b4528             REX.W movq rax,[rbp+0x28]
+0x7f2b18044b17   397  8b4dd8               movl rcx,[rbp-0x28]
+0x7f2b18044b1a   39a  4c8b4d30             REX.W movq r9,[rbp+0x30]
+0x7f2b18044b1e   39e  48bf9906c3eb5c1a0000 REX.W movq rdi,0x1a5cebc30699    ;; object: 0x1a5cebc30699 <JSFunction mul (sfi = 0x3ab89eb33c71)>
+0x7f2b18044b28   3a8  488b75c0             REX.W movq rsi,[rbp-0x40]
+0x7f2b18044b2c   3ac  c5fb1045c8           vmovsd xmm0,[rbp-0x38]
+0x7f2b18044b31   3b1  e9d4fdffff           jmp 0x7f2b1804490a  <+0x18a>
+0x7f2b18044b36   3b6  ba10000000           movl rdx,0x10
+0x7f2b18044b3b   3bb  4c8945c8             REX.W movq [rbp-0x38],r8
+0x7f2b18044b3f   3bf  488975c0             REX.W movq [rbp-0x40],rsi
+0x7f2b18044b43   3c3  c5fb1145b8           vmovsd [rbp-0x48],xmm0
+0x7f2b18044b48   3c8  e833aad81f           call 0x7f2b37dcf580  (AllocateInYoungGeneration)    ;; near builtin entry
+0x7f2b18044b4d   3cd  4c8d60ff             REX.W leaq r12,[rax-0x1]
+0x7f2b18044b51   3d1  4c8b5db0             REX.W movq r11,[rbp-0x50]
+0x7f2b18044b55   3d5  488b4528             REX.W movq rax,[rbp+0x28]
+0x7f2b18044b59   3d9  8b4dd8               movl rcx,[rbp-0x28]
+0x7f2b18044b5c   3dc  4c8b4d30             REX.W movq r9,[rbp+0x30]
+0x7f2b18044b60   3e0  48bf9906c3eb5c1a0000 REX.W movq rdi,0x1a5cebc30699    ;; object: 0x1a5cebc30699 <JSFunction mul (sfi = 0x3ab89eb33c71)>
+0x7f2b18044b6a   3ea  4c8b45c8             REX.W movq r8,[rbp-0x38]
+0x7f2b18044b6e   3ee  488b75c0             REX.W movq rsi,[rbp-0x40]
+0x7f2b18044b72   3f2  c5fb1045b8           vmovsd xmm0,[rbp-0x48]
+0x7f2b18044b77   3f7  e9dcfdffff           jmp 0x7f2b18044958  <+0x1d8>
+0x7f2b18044b7c   3fc  488b48ff             REX.W movq rcx,[rax-0x1]
+0x7f2b18044b80   400  49398dc8020000       REX.W cmpq [r13+0x2c8] (root (heap_number_map)),rcx
+0x7f2b18044b87   407  0f8597000000         jnz 0x7f2b18044c24  <+0x4a4>
+0x7f2b18044b8d   40d  c5fb104007           vmovsd xmm0,[rax+0x7]
+0x7f2b18044b92   412  c4e1fb2cc8           vcvttsd2siq rcx,xmm0
+0x7f2b18044b97   417  4883f901             REX.W cmpq rcx,0x1
+0x7f2b18044b9b   41b  0f8007000000         jo 0x7f2b18044ba8  <+0x428>
+0x7f2b18044ba1   421  8bc9                 movl rcx,rcx
+0x7f2b18044ba3   423  e920feffff           jmp 0x7f2b180449c8  <+0x248>
+0x7f2b18044ba8   428  4883ec08             REX.W subq rsp,0x8
+0x7f2b18044bac   42c  c5fb110424           vmovsd [rsp],xmm0
+0x7f2b18044bb1   431  e8ca36e31f           call 0x7f2b37e78280  (DoubleToI)    ;; near builtin entry
+0x7f2b18044bb6   436  8b0c24               movl rcx,[rsp]
+0x7f2b18044bb9   439  4883c408             REX.W addq rsp,0x8
+0x7f2b18044bbd   43d  ebe2                 jmp 0x7f2b18044ba1  <+0x421>
+0x7f2b18044bbf   43f  4883ec08             REX.W subq rsp,0x8
+0x7f2b18044bc3   443  c5fb110424           vmovsd [rsp],xmm0
+0x7f2b18044bc8   448  e8b336e31f           call 0x7f2b37e78280  (DoubleToI)    ;; near builtin entry
+0x7f2b18044bcd   44d  8b0c24               movl rcx,[rsp]
+0x7f2b18044bd0   450  4883c408             REX.W addq rsp,0x8
+0x7f2b18044bd4   454  e9d6feffff           jmp 0x7f2b18044aaf  <+0x32f>
+0x7f2b18044bd9   459  4883ec08             REX.W subq rsp,0x8
+0x7f2b18044bdd   45d  c5fb110424           vmovsd [rsp],xmm0
+0x7f2b18044be2   462  e89936e31f           call 0x7f2b37e78280  (DoubleToI)    ;; near builtin entry
+0x7f2b18044be7   467  8b0c24               movl rcx,[rsp]
+0x7f2b18044bea   46a  4883c408             REX.W addq rsp,0x8
+0x7f2b18044bee   46e  e98ffeffff           jmp 0x7f2b18044a82  <+0x302>
+0x7f2b18044bf3   473  90                   nop
+0x7f2b18044bf4   474  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '7cf'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'Smi'
+                                                             ;; debug: deopt index 0
+0x7f2b18044bf8   478  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '7cf'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'wrong map'
+                                                             ;; debug: deopt index 1
+0x7f2b18044bfc   47c  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '7cf'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'out of bounds'
+                                                             ;; debug: deopt index 2
+0x7f2b18044c00   480  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '841'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a Smi'
+                                                             ;; debug: deopt index 3
+0x7f2b18044c04   484  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '841'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a Smi'
+                                                             ;; debug: deopt index 4
+0x7f2b18044c08   488  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '841'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'overflow'
+                                                             ;; debug: deopt index 5
+0x7f2b18044c0c   48c  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '84c'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'wrong map'
+                                                             ;; debug: deopt index 6
+0x7f2b18044c10   490  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '84c'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'out of bounds'
+                                                             ;; debug: deopt index 7
+0x7f2b18044c14   494  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '63b'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a heap number'
+                                                             ;; debug: deopt index 8
+0x7f2b18044c18   498  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '65d'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a heap number'
+                                                             ;; debug: deopt index 9
+0x7f2b18044c1c   49c  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '7cf'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a heap number'
+                                                             ;; debug: deopt index a
+0x7f2b18044c20   4a0  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '7cf'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'lost precision or NaN'
+                                                             ;; debug: deopt index b
+0x7f2b18044c24   4a4  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '85b'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a heap number'
+                                                             ;; debug: deopt index c
+0x7f2b18044c28   4a8  41ff55e0             call [r13-0x20]    ;; debug: deopt position, script offset '84e'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index d
+0x7f2b18044c2c   4ac  41ff55e0             call [r13-0x20]    ;; debug: deopt position, script offset '5d4'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index e
+
+Source positions:
+ pc offset  position
+         b      1492
+        19      1595
+        31      1629
+        4d      1761
+        51      1699
+        59      1999
+        68      1796
+        6f      1673
+        75      1999
+        8a      1818
+        8e      1846
+        92      1999
+        96      1852
+        99      1735
+        a0      1999
+        a4      1875
+        a8      1938
+        ac      1999
+        b0      1944
+        b3      1910
+        b7      2007
+        bb      1999
+        dc      1967
+        e0      2013
+        e3      1999
+        ec      2018
+        f0      1999
+        f8      2113
+       13d      2126
+       235      2139
+       248      2124
+       291      2227
+       2ae      1492
+       2dc      1595
+       309      1629
+       336      1999
+       378      2126
+       3fc      2139
+
+Inlined functions (count = 0)
+
+Deoptimization Input Data (deopt points = 15)
+ index  bytecode-offset    pc
+     0                2    NA 
+     1                2    NA 
+     2                2    NA 
+     3              147    NA 
+     4              147    NA 
+     5              147    NA 
+     6              159    NA 
+     7              159    NA 
+     8                2    NA 
+     9                2    NA 
+    10                2    NA 
+    11                2    NA 
+    12              159    NA 
+    13              154   235 
+    14               -1   2d7 
+
+Safepoints (stack slots = 12, entries = 4, byte size = 36)
+0x7f2b180449b5    235  slots (sp->fp): 000010000000  deopt     13 trampoline:    4a8
+0x7f2b18044a57    2d7  slots (sp->fp): 000010000000  deopt     14 trampoline:    4ac
+0x7f2b18044b0b    38b  slots (sp->fp): 001010000000
+0x7f2b18044b4d    3cd  slots (sp->fp): 001110000000
+
+RelocInfo (size = 345)
+0x7f2b180447f7  full embedded object  (0x27b5c9c024e1 <Map[104](UINT32ELEMENTS)>)
+0x7f2b180448bf  full embedded object  (0x1a5cebc30699 <JSFunction mul (sfi = 0x3ab89eb33c71)>)
+0x7f2b180449ce  full embedded object  (0x27b5c9c024e1 <Map[104](UINT32ELEMENTS)>)
+0x7f2b18044a4a  full embedded object  (0x27b5c9c00109 <NativeContext[302]>)
+0x7f2b18044a53  near builtin entry
+0x7f2b18044b07  near builtin entry
+0x7f2b18044b20  full embedded object  (0x1a5cebc30699 <JSFunction mul (sfi = 0x3ab89eb33c71)>)
+0x7f2b18044b49  near builtin entry
+0x7f2b18044b62  full embedded object  (0x1a5cebc30699 <JSFunction mul (sfi = 0x3ab89eb33c71)>)
+0x7f2b18044bb2  near builtin entry
+0x7f2b18044bc9  near builtin entry
+0x7f2b18044be3  near builtin entry
+0x7f2b18044bf4  deopt script offset  (1999)
+0x7f2b18044bf4  deopt inlining id  (-1)
+0x7f2b18044bf4  deopt reason  (Smi)
+0x7f2b18044bf4  deopt index
+0x7f2b18044bf8  deopt script offset  (1999)
+0x7f2b18044bf8  deopt inlining id  (-1)
+0x7f2b18044bf8  deopt reason  (wrong map)
+0x7f2b18044bf8  deopt index
+0x7f2b18044bfc  deopt script offset  (1999)
+0x7f2b18044bfc  deopt inlining id  (-1)
+0x7f2b18044bfc  deopt reason  (out of bounds)
+0x7f2b18044bfc  deopt index
+0x7f2b18044c00  deopt script offset  (2113)
+0x7f2b18044c00  deopt inlining id  (-1)
+0x7f2b18044c00  deopt reason  (not a Smi)
+0x7f2b18044c00  deopt index
+0x7f2b18044c04  deopt script offset  (2113)
+0x7f2b18044c04  deopt inlining id  (-1)
+0x7f2b18044c04  deopt reason  (not a Smi)
+0x7f2b18044c04  deopt index
+0x7f2b18044c08  deopt script offset  (2113)
+0x7f2b18044c08  deopt inlining id  (-1)
+0x7f2b18044c08  deopt reason  (overflow)
+0x7f2b18044c08  deopt index
+0x7f2b18044c0c  deopt script offset  (2124)
+0x7f2b18044c0c  deopt inlining id  (-1)
+0x7f2b18044c0c  deopt reason  (wrong map)
+0x7f2b18044c0c  deopt index
+0x7f2b18044c10  deopt script offset  (2124)
+0x7f2b18044c10  deopt inlining id  (-1)
+0x7f2b18044c10  deopt reason  (out of bounds)
+0x7f2b18044c10  deopt index
+0x7f2b18044c14  deopt script offset  (1595)
+0x7f2b18044c14  deopt inlining id  (-1)
+0x7f2b18044c14  deopt reason  (not a heap number)
+0x7f2b18044c14  deopt index
+0x7f2b18044c18  deopt script offset  (1629)
+0x7f2b18044c18  deopt inlining id  (-1)
+0x7f2b18044c18  deopt reason  (not a heap number)
+0x7f2b18044c18  deopt index
+0x7f2b18044c1c  deopt script offset  (1999)
+0x7f2b18044c1c  deopt inlining id  (-1)
+0x7f2b18044c1c  deopt reason  (not a heap number)
+0x7f2b18044c1c  deopt index
+0x7f2b18044c20  deopt script offset  (1999)
+0x7f2b18044c20  deopt inlining id  (-1)
+0x7f2b18044c20  deopt reason  (lost precision or NaN)
+0x7f2b18044c20  deopt index
+0x7f2b18044c24  deopt script offset  (2139)
+0x7f2b18044c24  deopt inlining id  (-1)
+0x7f2b18044c24  deopt reason  (not a heap number)
+0x7f2b18044c24  deopt index
+0x7f2b18044c28  deopt script offset  (2126)
+0x7f2b18044c28  deopt inlining id  (-1)
+0x7f2b18044c28  deopt reason  ((unknown))
+0x7f2b18044c28  deopt index
+0x7f2b18044c2c  deopt script offset  (1492)
+0x7f2b18044c2c  deopt inlining id  (-1)
+0x7f2b18044c2c  deopt reason  ((unknown))
+0x7f2b18044c2c  deopt index
+
+--- End code ---
+--- Raw source ---
+(path, allowAboveRoot, separator, isPathSeparator) {
+  let res = '';
+  let lastSegmentLength = 0;
+  let lastSlash = -1;
+  let dots = 0;
+  let code = 0;
+  for (let i = 0; i <= path.length; ++i) {
+    if (i < path.length)
+      code = StringPrototypeCharCodeAt(path, i);
+    else if (isPathSeparator(code))
+      break;
+    else
+      code = CHAR_FORWARD_SLASH;
+
+    if (isPathSeparator(code)) {
+      if (lastSlash === i - 1 || dots === 1) {
+        // NOOP
+      } else if (dots === 2) {
+        if (res.length < 2 || lastSegmentLength !== 2 ||
+            StringPrototypeCharCodeAt(res, res.length - 1) !== CHAR_DOT ||
+            StringPrototypeCharCodeAt(res, res.length - 2) !== CHAR_DOT) {
+          if (res.length > 2) {
+            const lastSlashIndex = res.length - lastSegmentLength - 1;
+            if (lastSlashIndex === -1) {
+              res = '';
+              lastSegmentLength = 0;
+            } else {
+              res = StringPrototypeSlice(res, 0, lastSlashIndex);
+              lastSegmentLength =
+                res.length - 1 - StringPrototypeLastIndexOf(res, separator);
+            }
+            lastSlash = i;
+            dots = 0;
+            continue;
+          } else if (res.length !== 0) {
+            res = '';
+            lastSegmentLength = 0;
+            lastSlash = i;
+            dots = 0;
+            continue;
+          }
+        }
+        if (allowAboveRoot) {
+          res += res.length > 0 ? `${separator}..` : '..';
+          lastSegmentLength = 2;
+        }
+      } else {
+        if (res.length > 0)
+          res += `${separator}${StringPrototypeSlice(path, lastSlash + 1, i)}`;
+        else
+          res = StringPrototypeSlice(path, lastSlash + 1, i);
+        lastSegmentLength = i - lastSlash - 1;
+      }
+      lastSlash = i;
+      dots = 0;
+    } else if (code === CHAR_DOT && dots !== -1) {
+      ++dots;
+    } else {
+      dots = -1;
+    }
+  }
+  return res;
+}
+
+
+--- Optimized code ---
+optimization_id = 3
+source_position = 2957
+kind = TURBOFAN_JS
+name = normalizeString
+compiler = turbofan
+address = 0x67716b85199
+
+Instructions (size = 2160)
+0x7f2b18044c80     0  55                   push rbp
+0x7f2b18044c81     1  4889e5               REX.W movq rbp,rsp
+0x7f2b18044c84     4  56                   push rsi
+0x7f2b18044c85     5  57                   push rdi
+0x7f2b18044c86     6  50                   push rax
+0x7f2b18044c87     7  4883ec48             REX.W subq rsp,0x48
+0x7f2b18044c8b     b  488975e0             REX.W movq [rbp-0x20],rsi
+0x7f2b18044c8f     f  493b65a0             REX.W cmpq rsp,[r13-0x60] (external value (StackGuard::address_of_jslimit()))
+0x7f2b18044c93    13  0f8651060000         jna 0x7f2b180452ea  <+0x66a>
+0x7f2b18044c99    19  33c0                 xorl rax,rax
+0x7f2b18044c9b    1b  baffffffff           movl rdx,0xffffffff
+0x7f2b18044ca0    20  498bbd48020000       REX.W movq rdi,[r13+0x248] (root (empty_string))
+0x7f2b18044ca7    27  4c8b6518             REX.W movq r12,[rbp+0x18]
+0x7f2b18044cab    2b  4c8bc8               REX.W movq r9,rax
+0x7f2b18044cae    2e  4c8bd8               REX.W movq r11,rax
+0x7f2b18044cb1    31  488945d0             REX.W movq [rbp-0x30],rax
+0x7f2b18044cb5    35  488945c0             REX.W movq [rbp-0x40],rax
+0x7f2b18044cb9    39  488955a8             REX.W movq [rbp-0x58],rdx
+0x7f2b18044cbd    3d  48897dd8             REX.W movq [rbp-0x28],rdi
+0x7f2b18044cc1    41  e94d000000           jmp 0x7f2b18044d13  <+0x93>
+0x7f2b18044cc6    46  660f1f840000000000   nop
+0x7f2b18044ccf    4f  660f1f840000000000   nop
+0x7f2b18044cd8    58  660f1f840000000000   nop
+0x7f2b18044ce1    61  660f1f840000000000   nop
+0x7f2b18044cea    6a  660f1f840000000000   nop
+0x7f2b18044cf3    73  660f1f840000000000   nop
+0x7f2b18044cfc    7c  0f1f4000             nop
+0x7f2b18044d00    80  4c8945d8             REX.W movq [rbp-0x28],r8
+0x7f2b18044d04    84  448bcf               movl r9,rdi
+0x7f2b18044d07    87  4c897da8             REX.W movq [rbp-0x58],r15
+0x7f2b18044d0b    8b  488955d0             REX.W movq [rbp-0x30],rdx
+0x7f2b18044d0f    8f  48894dc0             REX.W movq [rbp-0x40],rcx
+0x7f2b18044d13    93  660f1f840000000000   nop
+0x7f2b18044d1c    9c  0f1f4000             nop
+0x7f2b18044d20    a0  41f6c401             testb r12,0x1
+0x7f2b18044d24    a4  0f84d0060000         jz 0x7f2b180453fa  <+0x77a>
+0x7f2b18044d2a    aa  4d8b7424ff           REX.W movq r14,[r12-0x1]
+0x7f2b18044d2f    af  450fb7760b           movzxwl r14,[r14+0xb]
+0x7f2b18044d34    b4  660f1f840000000000   nop
+0x7f2b18044d3d    bd  0f1f00               nop
+0x7f2b18044d40    c0  4181fe80000000       cmpl r14,0x80
+0x7f2b18044d47    c7  0f83b1060000         jnc 0x7f2b180453fe  <+0x77e>
+0x7f2b18044d4d    cd  458b74240b           movl r14,[r12+0xb]
+0x7f2b18044d52    d2  8b4dc0               movl rcx,[rbp-0x40]
+0x7f2b18044d55    d5  413bce               cmpl rcx,r14
+0x7f2b18044d58    d8  0f875d050000         ja 0x7f2b180452bb  <+0x63b>
+0x7f2b18044d5e    de  48be7165a487f5330000 REX.W movq rsi,0x33f587a46571    ;; object: 0x33f587a46571 <JSFunction isPosixPathSeparator (sfi = 0x14bd626d2d91)>
+0x7f2b18044d68    e8  483b7530             REX.W cmpq rsi,[rbp+0x30]
+0x7f2b18044d6c    ec  400f94c6             setzl sil
+0x7f2b18044d70    f0  400fb6f6             movzxbl rsi,rsi
+0x7f2b18044d74    f4  413bce               cmpl rcx,r14
+0x7f2b18044d77    f7  0f8224000000         jc 0x7f2b18044da1  <+0x121>
+0x7f2b18044d7d    fd  0f1f00               nop
+0x7f2b18044d80   100  85f6                 testl rsi,rsi
+0x7f2b18044d82   102  0f847a060000         jz 0x7f2b18045402  <+0x782>
+0x7f2b18044d88   108  4183fb2f             cmpl r11,0x2f
+0x7f2b18044d8c   10c  0f8447050000         jz 0x7f2b180452d9  <+0x659>
+0x7f2b18044d92   112  41bb2f000000         movl r11,0x2f
+0x7f2b18044d98   118  4c895dc8             REX.W movq [rbp-0x38],r11
+0x7f2b18044d9c   11c  e972020000           jmp 0x7f2b18045013  <+0x393>
+0x7f2b18044da1   121  4c8bc1               REX.W movq r8,rcx
+0x7f2b18044da4   124  4d89e3               REX.W movq r11,r12
+0x7f2b18044da7   127  660f1f840000000000   nop
+0x7f2b18044db0   130  660f1f840000000000   nop
+0x7f2b18044db9   139  0f1f8000000000       nop
+0x7f2b18044dc0   140  4d8b63ff             REX.W movq r12,[r11-0x1]
+0x7f2b18044dc4   144  450fb764240b         movzxwl r12,[r12+0xb]
+0x7f2b18044dca   14a  4d89e7               REX.W movq r15,r12
+0x7f2b18044dcd   14d  4183e707             andl r15,0x7
+0x7f2b18044dd1   151  4183ff06             cmpl r15,0x6
+0x7f2b18044dd5   155  0f8304050000         jnc 0x7f2b180452df  <+0x65f>
+0x7f2b18044ddb   15b  4c8d15de060000       REX.W leaq r10,[rip+0x6de]
+0x7f2b18044de2   162  43ff24fa             jmp [r10+r15*8]
+0x7f2b18044de6   166  660f1f840000000000   nop
+0x7f2b18044def   16f  90                   nop
+0x7f2b18044df0   170  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044df4   174  e93c000000           jmp 0x7f2b18044e35  <+0x1b5>
+0x7f2b18044df9   179  0f1f8000000000       nop
+0x7f2b18044e00   180  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044e04   184  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044e08   188  49c1fc20             REX.W sarq r12, 32
+0x7f2b18044e0c   18c  4589e4               movl r12,r12
+0x7f2b18044e0f   18f  4d63e4               REX.W movsxlq r12,r12
+0x7f2b18044e12   192  4d01e0               REX.W addq r8,r12
+0x7f2b18044e15   195  e91b000000           jmp 0x7f2b18044e35  <+0x1b5>
+0x7f2b18044e1a   19a  660f1f440000         nop
+0x7f2b18044e20   1a0  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044e24   1a4  4d39a548020000       REX.W cmpq [r13+0x248] (root (empty_string)),r12
+0x7f2b18044e2b   1ab  0f85e7040000         jnz 0x7f2b18045318  <+0x698>
+0x7f2b18044e31   1b1  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044e35   1b5  4d8b63ff             REX.W movq r12,[r11-0x1]
+0x7f2b18044e39   1b9  450fb764240b         movzxwl r12,[r12+0xb]
+0x7f2b18044e3f   1bf  4d89e7               REX.W movq r15,r12
+0x7f2b18044e42   1c2  4183e707             andl r15,0x7
+0x7f2b18044e46   1c6  4183ff06             cmpl r15,0x6
+0x7f2b18044e4a   1ca  0f838f040000         jnc 0x7f2b180452df  <+0x65f>
+0x7f2b18044e50   1d0  4c8d1539060000       REX.W leaq r10,[rip+0x639]
+0x7f2b18044e57   1d7  43ff24fa             jmp [r10+r15*8]
+0x7f2b18044e5b   1db  0f1f440000           nop
+0x7f2b18044e60   1e0  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044e64   1e4  e948000000           jmp 0x7f2b18044eb1  <+0x231>
+0x7f2b18044e69   1e9  0f1f8000000000       nop
+0x7f2b18044e70   1f0  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044e74   1f4  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044e78   1f8  49c1fc20             REX.W sarq r12, 32
+0x7f2b18044e7c   1fc  4589e4               movl r12,r12
+0x7f2b18044e7f   1ff  4d63e4               REX.W movsxlq r12,r12
+0x7f2b18044e82   202  4d01e0               REX.W addq r8,r12
+0x7f2b18044e85   205  e927000000           jmp 0x7f2b18044eb1  <+0x231>
+0x7f2b18044e8a   20a  660f1f440000         nop
+0x7f2b18044e90   210  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044e94   214  660f1f840000000000   nop
+0x7f2b18044e9d   21d  0f1f00               nop
+0x7f2b18044ea0   220  4d39a548020000       REX.W cmpq [r13+0x248] (root (empty_string)),r12
+0x7f2b18044ea7   227  0f856b040000         jnz 0x7f2b18045318  <+0x698>
+0x7f2b18044ead   22d  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044eb1   231  4d8b63ff             REX.W movq r12,[r11-0x1]
+0x7f2b18044eb5   235  450fb764240b         movzxwl r12,[r12+0xb]
+0x7f2b18044ebb   23b  4d89e7               REX.W movq r15,r12
+0x7f2b18044ebe   23e  4183e707             andl r15,0x7
+0x7f2b18044ec2   242  4183ff06             cmpl r15,0x6
+0x7f2b18044ec6   246  0f8313040000         jnc 0x7f2b180452df  <+0x65f>
+0x7f2b18044ecc   24c  4c8d158d050000       REX.W leaq r10,[rip+0x58d]
+0x7f2b18044ed3   253  43ff24fa             jmp [r10+r15*8]
+0x7f2b18044ed7   257  660f1f840000000000   nop
+0x7f2b18044ee0   260  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044ee4   264  e948000000           jmp 0x7f2b18044f31  <+0x2b1>
+0x7f2b18044ee9   269  0f1f8000000000       nop
+0x7f2b18044ef0   270  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044ef4   274  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044ef8   278  49c1fc20             REX.W sarq r12, 32
+0x7f2b18044efc   27c  4589e4               movl r12,r12
+0x7f2b18044eff   27f  4d63e4               REX.W movsxlq r12,r12
+0x7f2b18044f02   282  4d01e0               REX.W addq r8,r12
+0x7f2b18044f05   285  e927000000           jmp 0x7f2b18044f31  <+0x2b1>
+0x7f2b18044f0a   28a  660f1f440000         nop
+0x7f2b18044f10   290  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044f14   294  660f1f840000000000   nop
+0x7f2b18044f1d   29d  0f1f00               nop
+0x7f2b18044f20   2a0  4d39a548020000       REX.W cmpq [r13+0x248] (root (empty_string)),r12
+0x7f2b18044f27   2a7  0f85eb030000         jnz 0x7f2b18045318  <+0x698>
+0x7f2b18044f2d   2ad  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044f31   2b1  4d8b63ff             REX.W movq r12,[r11-0x1]
+0x7f2b18044f35   2b5  450fb764240b         movzxwl r12,[r12+0xb]
+0x7f2b18044f3b   2bb  4d89e7               REX.W movq r15,r12
+0x7f2b18044f3e   2be  4183e707             andl r15,0x7
+0x7f2b18044f42   2c2  4183ff06             cmpl r15,0x6
+0x7f2b18044f46   2c6  0f8393030000         jnc 0x7f2b180452df  <+0x65f>
+0x7f2b18044f4c   2cc  4c8d15dd040000       REX.W leaq r10,[rip+0x4dd]
+0x7f2b18044f53   2d3  43ff24fa             jmp [r10+r15*8]
+0x7f2b18044f57   2d7  660f1f840000000000   nop
+0x7f2b18044f60   2e0  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044f64   2e4  e957feffff           jmp 0x7f2b18044dc0  <+0x140>
+0x7f2b18044f69   2e9  0f1f8000000000       nop
+0x7f2b18044f70   2f0  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044f74   2f4  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044f78   2f8  49c1fc20             REX.W sarq r12, 32
+0x7f2b18044f7c   2fc  4589e4               movl r12,r12
+0x7f2b18044f7f   2ff  4d63e4               REX.W movsxlq r12,r12
+0x7f2b18044f82   302  4d01e0               REX.W addq r8,r12
+0x7f2b18044f85   305  e936feffff           jmp 0x7f2b18044dc0  <+0x140>
+0x7f2b18044f8a   30a  660f1f440000         nop
+0x7f2b18044f90   310  4d8b6317             REX.W movq r12,[r11+0x17]
+0x7f2b18044f94   314  660f1f840000000000   nop
+0x7f2b18044f9d   31d  0f1f00               nop
+0x7f2b18044fa0   320  4d39a548020000       REX.W cmpq [r13+0x248] (root (empty_string)),r12
+0x7f2b18044fa7   327  0f856b030000         jnz 0x7f2b18045318  <+0x698>
+0x7f2b18044fad   32d  4d8b5b0f             REX.W movq r11,[r11+0xf]
+0x7f2b18044fb1   331  e90afeffff           jmp 0x7f2b18044dc0  <+0x140>
+0x7f2b18044fb6   336  660f1f840000000000   nop
+0x7f2b18044fbf   33f  90                   nop
+0x7f2b18044fc0   340  41f6c410             testb r12,0x10
+0x7f2b18044fc4   344  0f854e030000         jnz 0x7f2b18045318  <+0x698>
+0x7f2b18044fca   34a  4d8b5b17             REX.W movq r11,[r11+0x17]
+0x7f2b18044fce   34e  41f6c408             testb r12,0x8
+0x7f2b18044fd2   352  0f850a000000         jnz 0x7f2b18044fe2  <+0x362>
+0x7f2b18044fd8   358  470fb71c43           movzxwl r11,[r11+r8*2]
+0x7f2b18044fdd   35d  e929000000           jmp 0x7f2b1804500b  <+0x38b>
+0x7f2b18044fe2   362  470fb61c03           movzxbl r11,[r11+r8*1]
+0x7f2b18044fe7   367  e91f000000           jmp 0x7f2b1804500b  <+0x38b>
+0x7f2b18044fec   36c  0f1f4000             nop
+0x7f2b18044ff0   370  41f6c408             testb r12,0x8
+0x7f2b18044ff4   374  0f850b000000         jnz 0x7f2b18045005  <+0x385>
+0x7f2b18044ffa   37a  470fb75c430f         movzxwl r11,[r11+r8*2+0xf]
+0x7f2b18045000   380  e906000000           jmp 0x7f2b1804500b  <+0x38b>
+0x7f2b18045005   385  470fb65c030f         movzxbl r11,[r11+r8*1+0xf]
+0x7f2b1804500b   38b  4c895dc8             REX.W movq [rbp-0x38],r11
+0x7f2b1804500f   38f  4c8b6518             REX.W movq r12,[rbp+0x18]
+0x7f2b18045013   393  85f6                 testl rsi,rsi
+0x7f2b18045015   395  0f84eb030000         jz 0x7f2b18045406  <+0x786>
+0x7f2b1804501b   39b  448b5dc8             movl r11,[rbp-0x38]
+0x7f2b1804501f   39f  90                   nop
+0x7f2b18045020   3a0  4183fb2f             cmpl r11,0x2f
+0x7f2b18045024   3a4  0f8455000000         jz 0x7f2b1804507f  <+0x3ff>
+0x7f2b1804502a   3aa  4183fb2e             cmpl r11,0x2e
+0x7f2b1804502e   3ae  0f8536000000         jnz 0x7f2b1804506a  <+0x3ea>
+0x7f2b18045034   3b4  660f1f840000000000   nop
+0x7f2b1804503d   3bd  0f1f00               nop
+0x7f2b18045040   3c0  4183f9ff             cmpl r9,0xff
+0x7f2b18045044   3c4  0f8420000000         jz 0x7f2b1804506a  <+0x3ea>
+0x7f2b1804504a   3ca  4d8bc1               REX.W movq r8,r9
+0x7f2b1804504d   3cd  4183c001             addl r8,0x1
+0x7f2b18045051   3d1  0f80b3030000         jo 0x7f2b1804540a  <+0x78a>
+0x7f2b18045057   3d7  498bf8               REX.W movq rdi,r8
+0x7f2b1804505a   3da  4c8b45d8             REX.W movq r8,[rbp-0x28]
+0x7f2b1804505e   3de  8b55d0               movl rdx,[rbp-0x30]
+0x7f2b18045061   3e1  448b7da8             movl r15,[rbp-0x58]
+0x7f2b18045065   3e5  e93e020000           jmp 0x7f2b180452a8  <+0x628>
+0x7f2b1804506a   3ea  4c8b45d8             REX.W movq r8,[rbp-0x28]
+0x7f2b1804506e   3ee  8b55d0               movl rdx,[rbp-0x30]
+0x7f2b18045071   3f1  448b7da8             movl r15,[rbp-0x58]
+0x7f2b18045075   3f5  bfffffffff           movl rdi,0xffffffff
+0x7f2b1804507a   3fa  e929020000           jmp 0x7f2b180452a8  <+0x628>
+0x7f2b1804507f   3ff  448d41ff             leal r8,[rcx-0x1]
+0x7f2b18045083   403  448b7da8             movl r15,[rbp-0x58]
+0x7f2b18045087   407  453bc7               cmpl r8,r15
+0x7f2b1804508a   40a  0f840f020000         jz 0x7f2b1804529f  <+0x61f>
+0x7f2b18045090   410  4183f901             cmpl r9,0x1
+0x7f2b18045094   414  0f8405020000         jz 0x7f2b1804529f  <+0x61f>
+0x7f2b1804509a   41a  4c8b45d8             REX.W movq r8,[rbp-0x28]
+0x7f2b1804509e   41e  418b700b             movl rsi,[r8+0xb]
+0x7f2b180450a2   422  488975b8             REX.W movq [rbp-0x48],rsi
+0x7f2b180450a6   426  4183f902             cmpl r9,0x2
+0x7f2b180450aa   42a  0f84f7000000         jz 0x7f2b180451a7  <+0x527>
+0x7f2b180450b0   430  458d4f01             leal r9,[r15+0x1]
+0x7f2b180450b4   434  453bce               cmpl r9,r14
+0x7f2b180450b7   437  0f8203000000         jc 0x7f2b180450c0  <+0x440>
+0x7f2b180450bd   43d  458bce               movl r9,r14
+0x7f2b180450c0   440  4c894dd0             REX.W movq [rbp-0x30],r9
+0x7f2b180450c4   444  413bce               cmpl rcx,r14
+0x7f2b180450c7   447  0f8303000000         jnc 0x7f2b180450d0  <+0x450>
+0x7f2b180450cd   44d  448bf1               movl r14,rcx
+0x7f2b180450d0   450  4c8975b0             REX.W movq [rbp-0x50],r14
+0x7f2b180450d4   454  85f6                 testl rsi,rsi
+0x7f2b180450d6   456  0f8726000000         ja 0x7f2b18045102  <+0x482>
+0x7f2b180450dc   45c  0f1f4000             nop
+0x7f2b180450e0   460  453bce               cmpl r9,r14
+0x7f2b180450e3   463  0f8380020000         jnc 0x7f2b18045369  <+0x6e9>
+0x7f2b180450e9   469  4d63c1               REX.W movsxlq r8,r9
+0x7f2b180450ec   46c  4d63ce               REX.W movsxlq r9,r14
+0x7f2b180450ef   46f  4c89e0               REX.W movq rax,r12
+0x7f2b180450f2   472  498bd8               REX.W movq rbx,r8
+0x7f2b180450f5   475  498bc9               REX.W movq rcx,r9
+0x7f2b180450f8   478  e8c374d81f           call 0x7f2b37dcc5c0  (StringSubstring)    ;; near builtin entry
+0x7f2b180450fd   47d  e985000000           jmp 0x7f2b18045187  <+0x507>
+0x7f2b18045102   482  488b4528             REX.W movq rax,[rbp+0x28]
+0x7f2b18045106   486  48be0901c0c9b5270000 REX.W movq rsi,0x27b5c9c00109    ;; object: 0x27b5c9c00109 <NativeContext[302]>
+0x7f2b18045110   490  e8ab3be81f           call 0x7f2b37ec8cc0  (ToString)    ;; near builtin entry
+0x7f2b18045115   495  448b4dd0             movl r9,[rbp-0x30]
+0x7f2b18045119   499  488945a0             REX.W movq [rbp-0x60],rax
+0x7f2b1804511d   49d  0f1f00               nop
+0x7f2b18045120   4a0  443b4db0             cmpl r9,[rbp-0x50]
+0x7f2b18045124   4a4  0f834b020000         jnc 0x7f2b18045375  <+0x6f5>
+0x7f2b1804512a   4aa  4963d9               REX.W movsxlq rbx,r9
+0x7f2b1804512d   4ad  48634db0             REX.W movsxlq rcx,[rbp-0x50]
+0x7f2b18045131   4b1  488b4518             REX.W movq rax,[rbp+0x18]
+0x7f2b18045135   4b5  e88674d81f           call 0x7f2b37dcc5c0  (StringSubstring)    ;; near builtin entry
+0x7f2b1804513a   4ba  8b500b               movl rdx,[rax+0xb]
+0x7f2b1804513d   4bd  488b7da0             REX.W movq rdi,[rbp-0x60]
+0x7f2b18045141   4c1  448b470b             movl r8,[rdi+0xb]
+0x7f2b18045145   4c5  4103d0               addl rdx,r8
+0x7f2b18045148   4c8  81fae9ffff1f         cmpl rdx,0x1fffffe9
+0x7f2b1804514e   4ce  0f83ba020000         jnc 0x7f2b1804540e  <+0x78e>
+0x7f2b18045154   4d4  448b45b8             movl r8,[rbp-0x48]
+0x7f2b18045158   4d8  4103d0               addl rdx,r8
+0x7f2b1804515b   4db  0f1f440000           nop
+0x7f2b18045160   4e0  81fae9ffff1f         cmpl rdx,0x1fffffe9
+0x7f2b18045166   4e6  0f83a6020000         jnc 0x7f2b18045412  <+0x792>
+0x7f2b1804516c   4ec  33f6                 xorl rsi,rsi
+0x7f2b1804516e   4ee  488bd8               REX.W movq rbx,rax
+0x7f2b18045171   4f1  488bc7               REX.W movq rax,rdi
+0x7f2b18045174   4f4  e8871ce31f           call 0x7f2b37e76e00  (StringAdd_CheckNone)    ;; near builtin entry
+0x7f2b18045179   4f9  488bd8               REX.W movq rbx,rax
+0x7f2b1804517c   4fc  488b45d8             REX.W movq rax,[rbp-0x28]
+0x7f2b18045180   500  33f6                 xorl rsi,rsi
+0x7f2b18045182   502  e8791ce31f           call 0x7f2b37e76e00  (StringAdd_CheckNone)    ;; near builtin entry
+0x7f2b18045187   507  8b55c0               movl rdx,[rbp-0x40]
+0x7f2b1804518a   50a  2b55a8               subl rdx,[rbp-0x58]
+0x7f2b1804518d   50d  448d42ff             leal r8,[rdx-0x1]
+0x7f2b18045191   511  418bd0               movl rdx,r8
+0x7f2b18045194   514  4c8bc0               REX.W movq r8,rax
+0x7f2b18045197   517  4c8b6518             REX.W movq r12,[rbp+0x18]
+0x7f2b1804519b   51b  448b5dc8             movl r11,[rbp-0x38]
+0x7f2b1804519f   51f  8b4dc0               movl rcx,[rbp-0x40]
+0x7f2b180451a2   522  e9ee000000           jmp 0x7f2b18045295  <+0x615>
+0x7f2b180451a7   527  83fe02               cmpl rsi,0x2
+0x7f2b180451aa   52a  0f820a000000         jc 0x7f2b180451ba  <+0x53a>
+0x7f2b180451b0   530  837dd002             cmpl [rbp-0x30],0x2
+0x7f2b180451b4   534  0f8426010000         jz 0x7f2b180452e0  <+0x660>
+0x7f2b180451ba   53a  660f1f440000         nop
+0x7f2b180451c0   540  83fe02               cmpl rsi,0x2
+0x7f2b180451c3   543  0f861c010000         jna 0x7f2b180452e5  <+0x665>
+0x7f2b180451c9   549  8bd6                 movl rdx,rsi
+0x7f2b180451cb   54b  2b55d0               subl rdx,[rbp-0x30]
+0x7f2b180451ce   54e  3b75d0               cmpl rsi,[rbp-0x30]
+0x7f2b180451d1   551  0f84b5000000         jz 0x7f2b1804528c  <+0x60c>
+0x7f2b180451d7   557  83ea01               subl rdx,0x1
+0x7f2b180451da   55a  660f1f440000         nop
+0x7f2b180451e0   560  85d2                 testl rdx,rdx
+0x7f2b180451e2   562  0f8c99010000         jl 0x7f2b18045381  <+0x701>
+0x7f2b180451e8   568  3bd6                 cmpl rdx,rsi
+0x7f2b180451ea   56a  0f8c02000000         jl 0x7f2b180451f2  <+0x572>
+0x7f2b180451f0   570  8bd6                 movl rdx,rsi
+0x7f2b180451f2   572  85d2                 testl rdx,rdx
+0x7f2b180451f4   574  0f8698010000         jna 0x7f2b18045392  <+0x712>
+0x7f2b180451fa   57a  4863d2               REX.W movsxlq rdx,rdx
+0x7f2b180451fd   57d  498bc0               REX.W movq rax,r8
+0x7f2b18045200   580  33db                 xorl rbx,rbx
+0x7f2b18045202   582  488bca               REX.W movq rcx,rdx
+0x7f2b18045205   585  e8b673d81f           call 0x7f2b37dcc5c0  (StringSubstring)    ;; near builtin entry
+0x7f2b1804520a   58a  8b500b               movl rdx,[rax+0xb]
+0x7f2b1804520d   58d  83ea01               subl rdx,0x1
+0x7f2b18045210   590  48bf59f222fa22000000 REX.W movq rdi,0x22fa22f259    ;; object: 0x0022fa22f259 <JSFunction lastIndexOf (sfi = 0x84a261140a9)>
+0x7f2b1804521a   59a  488b7727             REX.W movq rsi,[rdi+0x27]
+0x7f2b1804521e   59e  ff7528               push [rbp+0x28]
+0x7f2b18045221   5a1  50                   push rax
+0x7f2b18045222   5a2  4d8b8528020000       REX.W movq r8,[r13+0x228] (root (the_hole_value))
+0x7f2b18045229   5a9  4150                 push r8
+0x7f2b1804522b   5ab  49b80000000006000000 REX.W movq r8,0x600000000
+0x7f2b18045235   5b5  4150                 push r8
+0x7f2b18045237   5b7  57                   push rdi
+0x7f2b18045238   5b8  498bbd20020000       REX.W movq rdi,[r13+0x220] (root (undefined_value))
+0x7f2b1804523f   5bf  57                   push rdi
+0x7f2b18045240   5c0  488945d8             REX.W movq [rbp-0x28],rax
+0x7f2b18045244   5c4  488955d0             REX.W movq [rbp-0x30],rdx
+0x7f2b18045248   5c8  48bb003cce0000000000 REX.W movq rbx,0xce3c00
+0x7f2b18045252   5d2  b806000000           movl rax,0x6
+0x7f2b18045257   5d7  488bf8               REX.W movq rdi,rax
+0x7f2b1804525a   5da  e86116e31f           call 0x7f2b37e768c0  (CEntry_Return1_ArgvOnStack_BuiltinExit)    ;; near builtin entry
+0x7f2b1804525f   5df  90                   nop
+0x7f2b18045260   5e0  a801                 test al,0x1
+0x7f2b18045262   5e2  0f8536010000         jnz 0x7f2b1804539e  <+0x71e>
+0x7f2b18045268   5e8  48c1f820             REX.W sarq rax, 32
+0x7f2b1804526c   5ec  8bd0                 movl rdx,rax
+0x7f2b1804526e   5ee  448b45d0             movl r8,[rbp-0x30]
+0x7f2b18045272   5f2  442bc2               subl r8,rdx
+0x7f2b18045275   5f5  418bd0               movl rdx,r8
+0x7f2b18045278   5f8  4c8b45d8             REX.W movq r8,[rbp-0x28]
+0x7f2b1804527c   5fc  4c8b6518             REX.W movq r12,[rbp+0x18]
+0x7f2b18045280   600  448b5dc8             movl r11,[rbp-0x38]
+0x7f2b18045284   604  8b4dc0               movl rcx,[rbp-0x40]
+0x7f2b18045287   607  e909000000           jmp 0x7f2b18045295  <+0x615>
+0x7f2b1804528c   60c  4d8b8548020000       REX.W movq r8,[r13+0x248] (root (empty_string))
+0x7f2b18045293   613  33d2                 xorl rdx,rdx
+0x7f2b18045295   615  33ff                 xorl rdi,rdi
+0x7f2b18045297   617  448bf9               movl r15,rcx
+0x7f2b1804529a   61a  e909000000           jmp 0x7f2b180452a8  <+0x628>
+0x7f2b1804529f   61f  4c8b45d8             REX.W movq r8,[rbp-0x28]
+0x7f2b180452a3   623  8b55d0               movl rdx,[rbp-0x30]
+0x7f2b180452a6   626  ebed                 jmp 0x7f2b18045295  <+0x615>
+0x7f2b180452a8   628  83c101               addl rcx,0x1
+0x7f2b180452ab   62b  41807db100           cmpb [r13-0x4f] (external value (StackGuard::address_of_interrupt_request(StackGuard::InterruptLevel::kNoH
+0x7f2b180452b0   630  0f844afaffff         jz 0x7f2b18044d00  <+0x80>
+0x7f2b180452b6   636  e9f1000000           jmp 0x7f2b180453ac  <+0x72c>
+0x7f2b180452bb   63b  488b45d8             REX.W movq rax,[rbp-0x28]
+0x7f2b180452bf   63f  488b4de8             REX.W movq rcx,[rbp-0x18]
+0x7f2b180452c3   643  488be5               REX.W movq rsp,rbp
+0x7f2b180452c6   646  5d                   pop rbp
+0x7f2b180452c7   647  4883f905             REX.W cmpq rcx,0x5
+0x7f2b180452cb   64b  7f03                 jg 0x7f2b180452d0  <+0x650>
+0x7f2b180452cd   64d  c22800               ret 0x28
+0x7f2b180452d0   650  415a                 pop r10
+0x7f2b180452d2   652  488d24cc             REX.W leaq rsp,[rsp+rcx*8]
+0x7f2b180452d6   656  4152                 push r10
+0x7f2b180452d8   658  c3                   retl
+0x7f2b180452d9   659  488b45d8             REX.W movq rax,[rbp-0x28]
+0x7f2b180452dd   65d  ebe0                 jmp 0x7f2b180452bf  <+0x63f>
+0x7f2b180452df   65f  cc                   int3l
+0x7f2b180452e0   660  e931010000           jmp 0x7f2b18045416  <+0x796>
+0x7f2b180452e5   665  e930010000           jmp 0x7f2b1804541a  <+0x79a>
+0x7f2b180452ea   66a  48ba0000000058000000 REX.W movq rdx,0x5800000000
+0x7f2b180452f4   674  52                   push rdx
+0x7f2b180452f5   675  48be0901c0c9b5270000 REX.W movq rsi,0x27b5c9c00109    ;; object: 0x27b5c9c00109 <NativeContext[302]>
+0x7f2b180452ff   67f  48bb80a53a0100000000 REX.W movq rbx,0x13aa580
+0x7f2b18045309   689  b801000000           movl rax,0x1
+0x7f2b1804530e   68e  e86d16e31f           call 0x7f2b37e76980  (CEntry_Return1_ArgvOnStack_NoBuiltinExit)    ;; near builtin entry
+0x7f2b18045313   693  e981f9ffff           jmp 0x7f2b18044c99  <+0x19>
+0x7f2b18045318   698  458bc0               movl r8,r8
+0x7f2b1804531b   69b  49c1e020             REX.W shlq r8, 32
+0x7f2b1804531f   69f  4153                 push r11
+0x7f2b18045321   6a1  4150                 push r8
+0x7f2b18045323   6a3  4c8975b0             REX.W movq [rbp-0x50],r14
+0x7f2b18045327   6a7  4c894da0             REX.W movq [rbp-0x60],r9
+0x7f2b1804532b   6ab  488975b8             REX.W movq [rbp-0x48],rsi
+0x7f2b1804532f   6af  33f6                 xorl rsi,rsi
+0x7f2b18045331   6b1  b802000000           movl rax,0x2
+0x7f2b18045336   6b6  48bb90ef3c0100000000 REX.W movq rbx,0x13cef90
+0x7f2b18045340   6c0  4c8bc3               REX.W movq r8,rbx
+0x7f2b18045343   6c3  4c8bd8               REX.W movq r11,rax
+0x7f2b18045346   6c6  4c8be6               REX.W movq r12,rsi
+0x7f2b18045349   6c9  e83216e31f           call 0x7f2b37e76980  (CEntry_Return1_ArgvOnStack_NoBuiltinExit)    ;; near builtin entry
+0x7f2b1804534e   6ce  48c1f820             REX.W sarq rax, 32
+0x7f2b18045352   6d2  448bd8               movl r11,rax
+0x7f2b18045355   6d5  488b75b8             REX.W movq rsi,[rbp-0x48]
+0x7f2b18045359   6d9  8b4dc0               movl rcx,[rbp-0x40]
+0x7f2b1804535c   6dc  448b75b0             movl r14,[rbp-0x50]
+0x7f2b18045360   6e0  448b4da0             movl r9,[rbp-0x60]
+0x7f2b18045364   6e4  e9a2fcffff           jmp 0x7f2b1804500b  <+0x38b>
+0x7f2b18045369   6e9  498b8548020000       REX.W movq rax,[r13+0x248] (root (empty_string))
+0x7f2b18045370   6f0  e912feffff           jmp 0x7f2b18045187  <+0x507>
+0x7f2b18045375   6f5  498b8548020000       REX.W movq rax,[r13+0x248] (root (empty_string))
+0x7f2b1804537c   6fc  e9b9fdffff           jmp 0x7f2b1804513a  <+0x4ba>
+0x7f2b18045381   701  03d6                 addl rdx,rsi
+0x7f2b18045383   703  85d2                 testl rdx,rdx
+0x7f2b18045385   705  0f8d67feffff         jge 0x7f2b180451f2  <+0x572>
+0x7f2b1804538b   70b  33d2                 xorl rdx,rdx
+0x7f2b1804538d   70d  e960feffff           jmp 0x7f2b180451f2  <+0x572>
+0x7f2b18045392   712  498b8548020000       REX.W movq rax,[r13+0x248] (root (empty_string))
+0x7f2b18045399   719  e96cfeffff           jmp 0x7f2b1804520a  <+0x58a>
+0x7f2b1804539e   71e  c5fb104007           vmovsd xmm0,[rax+0x7]
+0x7f2b180453a3   723  c5fb2cd0             vcvttsd2si rdx,xmm0
+0x7f2b180453a7   727  e9c2feffff           jmp 0x7f2b1804526e  <+0x5ee>
+0x7f2b180453ac   72c  4c8945d8             REX.W movq [rbp-0x28],r8
+0x7f2b180453b0   730  488955d0             REX.W movq [rbp-0x30],rdx
+0x7f2b180453b4   734  4c897da8             REX.W movq [rbp-0x58],r15
+0x7f2b180453b8   738  48897db8             REX.W movq [rbp-0x48],rdi
+0x7f2b180453bc   73c  48894dc0             REX.W movq [rbp-0x40],rcx
+0x7f2b180453c0   740  48bbd0a33a0100000000 REX.W movq rbx,0x13aa3d0
+0x7f2b180453ca   74a  33c0                 xorl rax,rax
+0x7f2b180453cc   74c  48be0901c0c9b5270000 REX.W movq rsi,0x27b5c9c00109    ;; object: 0x27b5c9c00109 <NativeContext[302]>
+0x7f2b180453d6   756  e8a515e31f           call 0x7f2b37e76980  (CEntry_Return1_ArgvOnStack_NoBuiltinExit)    ;; near builtin entry
+0x7f2b180453db   75b  4c8b6518             REX.W movq r12,[rbp+0x18]
+0x7f2b180453df   75f  448b5dc8             movl r11,[rbp-0x38]
+0x7f2b180453e3   763  4c8b45d8             REX.W movq r8,[rbp-0x28]
+0x7f2b180453e7   767  8b55d0               movl rdx,[rbp-0x30]
+0x7f2b180453ea   76a  448b7da8             movl r15,[rbp-0x58]
+0x7f2b180453ee   76e  8b7db8               movl rdi,[rbp-0x48]
+0x7f2b180453f1   771  8b4dc0               movl rcx,[rbp-0x40]
+0x7f2b180453f4   774  e907f9ffff           jmp 0x7f2b18044d00  <+0x80>
+0x7f2b180453f9   779  90                   nop
+0x7f2b180453fa   77a  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset 'c41'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'Smi'
+                                                             ;; debug: deopt index 0
+0x7f2b180453fe   77e  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset 'c41'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'not a String'
+                                                             ;; debug: deopt index 1
+0x7f2b18045402   782  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset 'ca7'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'wrong call target'
+                                                             ;; debug: deopt index 2
+0x7f2b18045406   786  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset 'cfe'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'wrong call target'
+                                                             ;; debug: deopt index 3
+0x7f2b1804540a   78a  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '12ca'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'overflow'
+                                                             ;; debug: deopt index 4
+0x7f2b1804540e   78e  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '11ba'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'out of bounds'
+                                                             ;; debug: deopt index 5
+0x7f2b18045412   792  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '11ba'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'out of bounds'
+                                                             ;; debug: deopt index 6
+0x7f2b18045416   796  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset 'de4'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'Insufficient type feedback for binary operation'
+                                                             ;; debug: deopt index 7
+0x7f2b1804541a   79a  41ff55d8             call [r13-0x28]    ;; debug: deopt position, script offset '104c'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason 'Insufficient type feedback for compare operation'
+                                                             ;; debug: deopt index 8
+0x7f2b1804541e   79e  41ff55e0             call [r13-0x20]    ;; debug: deopt position, script offset '11ae'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index 9
+0x7f2b18045422   7a2  41ff55e0             call [r13-0x20]    ;; debug: deopt position, script offset 'fab'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index a
+0x7f2b18045426   7a6  41ff55e0             call [r13-0x20]    ;; debug: deopt position, script offset 'b8d'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index b
+0x7f2b1804542a   7aa  41ff55e0             call [r13-0x20]    ;; debug: deopt position, script offset 'c27'
+                                                             ;; debug: deopt position, inlining id 'ffffffff'
+                                                             ;; debug: deopt reason '(unknown)'
+                                                             ;; debug: deopt index c
+0x7f2b1804542e   7ae  6690                 nop
+0x7f2b18045430   7b0  7f2b18044ff0       jump table entry  880    ;; internal reference
+0x7f2b18045438   7b8  7f2b18044f90       jump table entry  784    ;; internal reference
+0x7f2b18045440   7c0  7f2b18044fc0       jump table entry  832    ;; internal reference
+0x7f2b18045448   7c8  7f2b18044f70       jump table entry  752    ;; internal reference
+0x7f2b18045450   7d0  7f2b180452df       jump table entry 1631    ;; internal reference
+0x7f2b18045458   7d8  7f2b18044f60       jump table entry  736    ;; internal reference
+0x7f2b18045460   7e0  7f2b18044ff0       jump table entry  880    ;; internal reference
+0x7f2b18045468   7e8  7f2b18044f10       jump table entry  656    ;; internal reference
+0x7f2b18045470   7f0  7f2b18044fc0       jump table entry  832    ;; internal reference
+0x7f2b18045478   7f8  7f2b18044ef0       jump table entry  624    ;; internal reference
+0x7f2b18045480   800  7f2b180452df       jump table entry 1631    ;; internal reference
+0x7f2b18045488   808  7f2b18044ee0       jump table entry  608    ;; internal reference
+0x7f2b18045490   810  7f2b18044ff0       jump table entry  880    ;; internal reference
+0x7f2b18045498   818  7f2b18044e90       jump table entry  528    ;; internal reference
+0x7f2b180454a0   820  7f2b18044fc0       jump table entry  832    ;; internal reference
+0x7f2b180454a8   828  7f2b18044e70       jump table entry  496    ;; internal reference
+0x7f2b180454b0   830  7f2b180452df       jump table entry 1631    ;; internal reference
+0x7f2b180454b8   838  7f2b18044e60       jump table entry  480    ;; internal reference
+0x7f2b180454c0   840  7f2b18044ff0       jump table entry  880    ;; internal reference
+0x7f2b180454c8   848  7f2b18044e20       jump table entry  416    ;; internal reference
+0x7f2b180454d0   850  7f2b18044fc0       jump table entry  832    ;; internal reference
+0x7f2b180454d8   858  7f2b18044e00       jump table entry  384    ;; internal reference
+0x7f2b180454e0   860  7f2b180452df       jump table entry 1631    ;; internal reference
+0x7f2b180454e8   868  7f2b18044df0       jump table entry  368    ;; internal reference
+
+Source positions:
+ pc offset  position
+         b      2957
+        19      3022
+        93      3137
+        d2      3129
+        de      3326
+        f4      3162
+        fd      3239
+       112      2173
+       121      3190
+       393      3326
+       3aa      4773
+       3b4      4794
+       3ca      4810
+       3ea      4773
+       3ff      3377
+       403      3371
+       410      3389
+       41a      3723
+       422      3436
+       430      4575
+       434      4538
+       450      4501
+       45c      4615
+       482      4526
+       495      4538
+       507      4691
+       50d      4703
+       527      3468
+       530      3493
+       53a      3677
+       549      3730
+       54e      3786
+       557      3750
+       55a      3898
+       58a      3998
+       58d      4005
+       590      4011
+       5df      4009
+       60c      3786
+       615      4081
+       61f      3371
+       628      3147
+       62b      3111
+       63b      4871
+       65f      3190
+       660      3556
+       665      4172
+       66a      2957
+       698      3190
+       6e9      4615
+       6f5      4538
+       701      3898
+       71e      4009
+       72c      3111
+
+Inlined functions (count = 1)
+ 0x14bd626d2d91 <SharedFunctionInfo isPosixPathSeparator>
+
+Deoptimization Input Data (deopt points = 13)
+ index  bytecode-offset    pc
+     0               14    NA 
+     1               14    NA 
+     2               14    NA 
+     3               58    NA 
+     4              405    NA 
+     5              350    NA 
+     6              350    NA 
+     7              118    NA 
+     8              255    NA 
+     9              325   495 
+    10              233   5df 
+    11               -1   693 
+    12              432   75b 
+
+Safepoints (stack slots = 14, entries = 9, byte size = 75)
+0x7f2b180450fd    47d  slots (sp->fp): 00000000100000
+0x7f2b18045115    495  slots (sp->fp): 00000001100000  deopt      9 trampoline:    79e
+0x7f2b1804513a    4ba  slots (sp->fp): 10000001100000
+0x7f2b18045179    4f9  slots (sp->fp): 00000001100000
+0x7f2b18045187    507  slots (sp->fp): 00000000100000
+0x7f2b1804525f    5df  slots (sp->fp): 00000001100000  deopt     10 trampoline:    7a2
+0x7f2b18045313    693  slots (sp->fp): 00000000100000  deopt     11 trampoline:    7a6
+0x7f2b1804534e    6ce  slots (sp->fp): 00000001100000
+0x7f2b180453db    75b  slots (sp->fp): 00000001100000  deopt     12 trampoline:    7aa
+
+RelocInfo (size = 166)
+0x7f2b18044d60  full embedded object  (0x33f587a46571 <JSFunction isPosixPathSeparator (sfi = 0x14bd626d2d91)>)
+0x7f2b180450f9  near builtin entry
+0x7f2b18045108  full embedded object  (0x27b5c9c00109 <NativeContext[12e]>)
+0x7f2b18045111  near builtin entry
+0x7f2b18045136  near builtin entry
+0x7f2b18045175  near builtin entry
+0x7f2b18045183  near builtin entry
+0x7f2b18045206  near builtin entry
+0x7f2b18045212  full embedded object  (0x0022fa22f259 <JSFunction lastIndexOf (sfi = 0x84a261140a9)>)
+0x7f2b1804525b  near builtin entry
+0x7f2b180452f7  full embedded object  (0x27b5c9c00109 <NativeContext[12e]>)
+0x7f2b1804530f  near builtin entry
+0x7f2b1804534a  near builtin entry
+0x7f2b180453ce  full embedded object  (0x27b5c9c00109 <NativeContext[12e]>)
+0x7f2b180453d7  near builtin entry
+0x7f2b180453fa  deopt script offset  (c41)
+0x7f2b180453fa  deopt inlining id  (ffffffffffffffff)
+0x7f2b180453fa  deopt reason  (Smi)
+0x7f2b180453fa  deopt index
+0x7f2b180453fe  deopt script offset  (c41)
+0x7f2b180453fe  deopt inlining id  (ffffffffffffffff)
+0x7f2b180453fe  deopt reason  (not a String)
+0x7f2b180453fe  deopt index
+0x7f2b18045402  deopt script offset  (ca7)
+0x7f2b18045402  deopt inlining id  (ffffffffffffffff)
+0x7f2b18045402  deopt reason  (wrong call target)
+0x7f2b18045402  deopt index
+0x7f2b18045406  deopt script offset  (cfe)
+0x7f2b18045406  deopt inlining id  (ffffffffffffffff)
+0x7f2b18045406  deopt reason  (wrong call target)
+0x7f2b18045406  deopt index
+0x7f2b1804540a  deopt script offset  (12ca)
+0x7f2b1804540a  deopt inlining id  (ffffffffffffffff)
+0x7f2b1804540a  deopt reason  (overflow)
+0x7f2b1804540a  deopt index
+0x7f2b1804540e  deopt script offset  (11ba)
+0x7f2b1804540e  deopt inlining id  (ffffffffffffffff)
+0x7f2b1804540e  deopt reason  (out of bounds)
+0x7f2b1804540e  deopt index
+0x7f2b18045412  deopt script offset  (11ba)
+0x7f2b18045412  deopt inlining id  (ffffffffffffffff)
+0x7f2b18045412  deopt reason  (out of bounds)
+0x7f2b18045412  deopt index
+0x7f2b18045416  deopt script offset  (de4)
+0x7f2b18045416  deopt inlining id  (ffffffffffffffff)
+0x7f2b18045416  deopt reason  (Insufficient type feedback for binary operation)
+0x7f2b18045416  deopt index
+0x7f2b1804541a  deopt script offset  (104c)
+0x7f2b1804541a  deopt inlining id  (ffffffffffffffff)
+0x7f2b1804541a  deopt reason  (Insufficient type feedback for compare operation)
+0x7f2b1804541a  deopt index
+0x7f2b1804541e  deopt script offset  (11ae)
+0x7f2b1804541e  deopt inlining id  (ffffffffffffffff)
+0x7f2b1804541e  deopt reason  ((unknown))
+0x7f2b1804541e  deopt index
+0x7f2b18045422  deopt script offset  (fab)
+0x7f2b18045422  deopt inlining id  (ffffffffffffffff)
+0x7f2b18045422  deopt reason  ((unknown))
+0x7f2b18045422  deopt index
+0x7f2b18045426  deopt script offset  (b8d)
+0x7f2b18045426  deopt inlining id  (ffffffffffffffff)
+0x7f2b18045426  deopt reason  ((unknown))
+0x7f2b18045426  deopt index
+0x7f2b1804542a  deopt script offset  (c27)
+0x7f2b1804542a  deopt inlining id  (ffffffffffffffff)
+0x7f2b1804542a  deopt reason  ((unknown))
+0x7f2b1804542a  deopt index
+0x7f2b18045430  internal reference
+0x7f2b18045438  internal reference
+0x7f2b18045440  internal reference
+0x7f2b18045448  internal reference
+0x7f2b18045450  internal reference
+0x7f2b18045458  internal reference
+0x7f2b18045460  internal reference
+0x7f2b18045468  internal reference
+0x7f2b18045470  internal reference
+0x7f2b18045478  internal reference
+0x7f2b18045480  internal reference
+0x7f2b18045488  internal reference
+0x7f2b18045490  internal reference
+0x7f2b18045498  internal reference
+0x7f2b180454a0  internal reference
+0x7f2b180454a8  internal reference
+0x7f2b180454b0  internal reference
+0x7f2b180454b8  internal reference
+0x7f2b180454c0  internal reference
+0x7f2b180454c8  internal reference
+0x7f2b180454d0  internal reference
+0x7f2b180454d8  internal reference
+0x7f2b180454e0  internal reference
+0x7f2b180454e8  internal reference
+
+--- End code ---
+Optimized stdlib result: [0x3c91f71b, 0xf9aa0432]
