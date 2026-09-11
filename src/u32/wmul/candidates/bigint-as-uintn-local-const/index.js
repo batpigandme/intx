@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * 32-bit unsigned integer wide multiplication (32x32 -> 64-bit [hi, lo])
@@ -11,11 +11,11 @@
  * @returns {Array|Uint32Array} Destination buffer out.
  */
 function wmul(a, b, out) {
-  const S32 = 32n;
-  const prod = BigInt.asUintN(64, BigInt(a >>> 0) * BigInt(b >>> 0));
-  out[0] = Number(BigInt.asUintN(32, prod >> S32));
-  out[1] = Number(BigInt.asUintN(32, prod));
-  return out;
+	const S32 = 32n;
+	const prod = BigInt.asUintN(64, BigInt(a >>> 0) * BigInt(b >>> 0));
+	out[0] = Number(BigInt.asUintN(32, prod >> S32));
+	out[1] = Number(BigInt.asUintN(32, prod));
+	return out;
 }
 
 module.exports = wmul;

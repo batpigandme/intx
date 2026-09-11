@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /**
  * 32-bit unsigned integer multiplication (32x32 -> 32-bit low word).
@@ -9,7 +9,7 @@
  * @returns {number} Unsigned 32-bit product (a * b) mod 2^32.
  */
 function mul(a, b) {
-  return Math.imul(a, b) >>> 0;
+	return Math.imul(a, b) >>> 0;
 }
 
 module.exports = mul;

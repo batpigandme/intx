@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const INV_TWO_32 = 1 / 4294967296;
 
@@ -12,15 +12,15 @@ const INV_TWO_32 = 1 / 4294967296;
  * @returns {Array|Uint32Array} Destination buffer out.
  */
 function wmul(a, b, out) {
-  a >>>= 0;
-  b >>>= 0;
+	a >>>= 0;
+	b >>>= 0;
 
-  const lo = Math.imul(a, b) >>> 0;
-  const hi = ((a * b - lo) * INV_TWO_32 + 0.5) >>> 0;
+	const lo = Math.imul(a, b) >>> 0;
+	const hi = ((a * b - lo) * INV_TWO_32 + 0.5) >>> 0;
 
-  out[0] = hi;
-  out[1] = lo;
-  return out;
+	out[0] = hi;
+	out[1] = lo;
+	return out;
 }
 
 module.exports = wmul;

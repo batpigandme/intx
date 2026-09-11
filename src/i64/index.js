@@ -1,5 +1,5 @@
-'use strict';
+"use strict";
 
 module.exports = {
-  // To be populated with i64 operations
+	// To be populated with i64 operations
 };

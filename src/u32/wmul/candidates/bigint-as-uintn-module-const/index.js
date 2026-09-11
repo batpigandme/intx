@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 const SHIFT_32 = 32n;
 
@@ -13,10 +13,10 @@ const SHIFT_32 = 32n;
  * @returns {Array|Uint32Array} Destination buffer out.
  */
 function wmul(a, b, out) {
-  const prod = BigInt.asUintN(64, BigInt(a >>> 0) * BigInt(b >>> 0));
-  out[0] = Number(BigInt.asUintN(32, prod >> SHIFT_32));
-  out[1] = Number(BigInt.asUintN(32, prod));
-  return out;
+	const prod = BigInt.asUintN(64, BigInt(a >>> 0) * BigInt(b >>> 0));
+	out[0] = Number(BigInt.asUintN(32, prod >> SHIFT_32));
+	out[1] = Number(BigInt.asUintN(32, prod));
+	return out;
 }
 
 module.exports = wmul;

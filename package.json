@@ -1,31 +1,47 @@
 {
-  "name": "intx",
-  "version": "0.1.0",
-  "description": "Ultra high-performance multi-word integer arithmetic in pure JavaScript",
-  "type": "commonjs",
-  "main": "index.js",
-  "scripts": {
-    "test": "node --test test/**/*.test.js src/**/test.js",
-    "bench": "node bench/run.js",
-    "bench:u32": "node src/u32/wmul/bench.js",
-    "benchx": "node benchx/u32-wmul.js",
-    "bench:browser": "node benchx/browser/server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/impawstarlight/intx.git"
-  },
-  "author": {
-    "name": "Abdul Kaium",
-    "url": "https://github.com/impawstarlight"
-  },
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/impawstarlight/intx/issues"
-  },
-  "homepage": "https://github.com/impawstarlight/intx#readme",
-  "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
-    "@stdlib/muldw-cjs": "github:stdlib-js/number-uint32-base-muldw"
-  }
+	"name": "intx",
+	"version": "0.1.0",
+	"description": "Ultra high-performance multi-word integer arithmetic in pure JavaScript",
+	"type": "commonjs",
+	"main": "src/index.js",
+	"exports": {
+		".": "./src/index.js",
+		"./*": "./src/*"
+	},
+	"scripts": {
+		"test": "node --test 'src/**/*.test.js'",
+		"bench": "node bench/run.js",
+		"bench:u32": "node src/u32/wmul/bench.js",
+		"benchx": "node src/benchx/u32-wmul.js",
+		"bench:browser": "node src/benchx/browser/server.js"
+	},
+	"imports": {
+		"#*": "./src/*"
+	},
+	"files": [
+		"src/",
+		"!**/candidates/**",
+		"!**/bench/**",
+		"!**/bench.js",
+		"!**/benchx/**",
+		"!**/test/**",
+		"!**/*.test.js"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/impawstarlight/intx.git"
+	},
+	"author": {
+		"name": "Abdul Kaium",
+		"url": "https://github.com/impawstarlight"
+	},
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/impawstarlight/intx/issues"
+	},
+	"homepage": "https://github.com/impawstarlight/intx#readme",
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.12",
+		"@stdlib/muldw-cjs": "github:stdlib-js/number-uint32-base-muldw"
+	}
 }
