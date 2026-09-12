@@ -2,38 +2,38 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-
-// Oracle
-const oracle = require("../candidates/bigint-literal-mask");
 const { randomU32 } = require("#test/utils.js");
 
+// Oracle
+const oracle = require("./bigint-literal-mask");
+
 // Family 1: limb16-parallel
-const limb16_parallel_bitwise_lo = require("../candidates/limb16-parallel-bitwise-lo");
-const limb16_parallel_imul_lo = require("../candidates/limb16-parallel-imul-lo");
-const limb16_parallel_imul_all = require("../candidates/limb16-parallel-imul-all");
-const limb16_parallel_imul_cached = require("../candidates/limb16-parallel-imul-cached");
+const limb16_parallel_bitwise_lo = require("./limb16-parallel-bitwise-lo");
+const limb16_parallel_imul_lo = require("./limb16-parallel-imul-lo");
+const limb16_parallel_imul_all = require("./limb16-parallel-imul-all");
+const limb16_parallel_imul_cached = require("./limb16-parallel-imul-cached");
 
 // Family 2: limb16-pipeline
-const limb16_pipeline_bitwise_lo = require("../candidates/limb16-pipeline-bitwise-lo");
-const limb16_pipeline_imul_lo = require("../candidates/limb16-pipeline-imul-lo");
-const limb16_pipeline_imul_all = require("../candidates/limb16-pipeline-imul-all");
-const limb16_pipeline_imul_cached = require("../candidates/limb16-pipeline-imul-cached");
-const limb16_imul_import = require("../candidates/limb16-imul-import");
+const limb16_pipeline_bitwise_lo = require("./limb16-pipeline-bitwise-lo");
+const limb16_pipeline_imul_lo = require("./limb16-pipeline-imul-lo");
+const limb16_pipeline_imul_all = require("./limb16-pipeline-imul-all");
+const limb16_pipeline_imul_cached = require("./limb16-pipeline-imul-cached");
+const limb16_imul_import = require("./limb16-imul-import");
 
 // Family 3: limb16-float48
-const limb16_float48_bitwise_lo = require("../candidates/limb16-float48-bitwise-lo");
-const limb16_float48_imul_lo = require("../candidates/limb16-float48-imul-lo");
+const limb16_float48_bitwise_lo = require("./limb16-float48-bitwise-lo");
+const limb16_float48_imul_lo = require("./limb16-float48-imul-lo");
 
 // Family 4: float64
-const float64_corrected = require("../candidates/float64-corrected");
+const float64_corrected = require("./float64-corrected");
 
 // Family 5: bigint variations
-const bigint_as_uint32 = require("../candidates/bigint-as-uint32");
-const bigint_as_uintn_literal = require("../candidates/bigint-as-uintn-literal");
-const bigint_as_uintn_module_const = require("../candidates/bigint-as-uintn-module-const");
-const bigint_as_uintn_local_const = require("../candidates/bigint-as-uintn-local-const");
-const bigint_as_uint64_imul_lo = require("../candidates/bigint-as-uint64-imul-lo");
-const bigint_hi = require("../candidates/bigint-hi");
+const bigint_as_uint32 = require("./bigint-as-uint32");
+const bigint_as_uintn_literal = require("./bigint-as-uintn-literal");
+const bigint_as_uintn_module_const = require("./bigint-as-uintn-module-const");
+const bigint_as_uintn_local_const = require("./bigint-as-uintn-local-const");
+const bigint_as_uint64_imul_lo = require("./bigint-as-uint64-imul-lo");
+const bigint_hi = require("./bigint-hi");
 
 const candidates = {
 	"limb16-parallel-bitwise-lo": limb16_parallel_bitwise_lo,
@@ -56,7 +56,7 @@ const candidates = {
 	"bigint-hi": bigint_hi,
 };
 
-test("u32.wmul: candidates edge cases and fuzz testing vs BigInt oracle", () => {
+test("u32.wmul: candidates verification vs BigInt oracle", () => {
 	const edgeCases = [
 		[0, 0],
 		[1, 1],

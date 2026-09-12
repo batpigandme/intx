@@ -4,18 +4,20 @@
 	"description": "Ultra high-performance multi-word integer arithmetic in pure JavaScript",
 	"type": "commonjs",
 	"main": "src/index.js",
+	"engines": {
+		"node": ">=20.0.0"
+	},
 	"exports": {
 		".": "./src/index.js",
 		"./*": "./src/*"
 	},
 	"scripts": {
-		"test": "node --test 'src/**/*.test.js'",
-		"bench": "node bench/run.js",
-		"bench:u32": "node src/u32/wmul/bench.js",
-		"benchx": "node src/benchx/u32-wmul.js",
-		"bench:browser": "node src/benchx/browser/server.js"
+		"test": "node --test 'src/**/test.js' 'src/test/*.test.js'",
+		"bench": "node src/u32/wmul/candidates/bench.js",
+		"bench:u32": "node src/u32/wmul/candidates/bench.js"
 	},
 	"imports": {
+		"#benchx": "./src/benchx/index.js",
 		"#*": "./src/*"
 	},
 	"files": [
