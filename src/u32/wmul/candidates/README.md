@@ -1,6 +1,6 @@
 # `u32.wmul` Candidate Benchmark Notes
 
-Notes and benchmark results for 25 candidate implementations of 32-bit wide multiplication ($a \times b \to hi, lo$) across 5 algorithmic families.
+Notes and benchmark results for 25 candidate implementations of 32-bit wide multiplication (`a * b -> hi, lo`) across 5 algorithmic families.
 
 Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuffled order) across Node.js v20, v22, v24, and v26.
 
@@ -10,10 +10,10 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 
 | Family | Approach | Candidates | Idea |
 |---|---|---|---|
-| **1. Parallel 16-bit** | 4-way limb split | `limb16-parallel-*` (7) | $a = a_h 2^{16} + a_l$, $b = b_h 2^{16} + b_l$. Compute all 4 partial products ($a_l b_l, a_h b_l, a_l b_h, a_h b_h$) and sum carries. |
-| **2. Pipelined 16-bit** | 2-stage carry chain | `limb16-pipeline-*` (8) | Fold carries as we go: $\text{ahbl} = a_h b_l + (a_l b_l \gg 16)$, then $\text{albh} = a_l b_h + (\text{ahbl} \bmod 2^{16})$. Shorter register live ranges. |
-| **3. Float48** | 48-bit middle sum | `limb16-float48-*` (2) | Accumulate cross terms in float64 ($< 2^{33}$, fits within 53-bit mantissa). |
-| **4. Float64 Corrected** | Float64 + analytical fix | `float64-corrected` (1) | $hi = \lfloor (a \cdot b - lo) \cdot 2^{-32} + 0.5 \rfloor$. Exact for all $2^{64}$ pairs (float rounding error $|\epsilon| \le 1024 \implies \epsilon \cdot 2^{-32} \ll 0.5$). |
+| **1. Parallel 16-bit** | 4-way limb split | `limb16-parallel-*` (7) | Splits inputs into 16-bit halves `(ah, al)` and `(bh, bl)`. Computes all 4 partial products (`al*bl`, `ah*bl`, `al*bh`, `ah*bh`) and sums carries. |
+| **2. Pipelined 16-bit** | 2-stage carry chain | `limb16-pipeline-*` (8) | Folds carries sequentially: `ahbl = ah*bl + (al*bl >>> 16)`, then `albh = al*bh + (ahbl & 0xFFFF)`. Reduces register live ranges. |
+| **3. Float48** | 48-bit middle sum | `limb16-float48-*` (2) | Accumulates cross terms in float64 (sum is under 2^33, fits within 53-bit mantissa). |
+| **4. Float64 Corrected** | Float64 + analytical fix | `float64-corrected` (1) | `hi = ((a * b - lo) * 2^-32 + 0.5) >>> 0`. Exact for all 2^64 pairs (max float error is 1024, so error * 2^-32 << 0.5). |
 | **5. BigInt** | 64-bit BigInt / Oracle | `bigint-*` (7) | Reference oracle (`bigint-literal-mask`) and `BigInt.asUintN` / hybrid variants. |
 
 ---
@@ -46,7 +46,7 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 
 ## 3. Key Findings
 
-- **The JS Array SMI cliff**: On 64-bit Node, Smis are 32-bit signed integers ($[-2^{31}, 2^{31}-1]$). When writing unsigned 32-bit numbers ($\ge 0x80000000$) with `>>> 0` into a JS array, V8 transitions the array from `PACKED_SMI_ELEMENTS` to `PACKED_DOUBLE_ELEMENTS` / heap numbers, halving throughput on Node 20–24. Using `| 0` avoids this entirely.
+- **The JS Array SMI cliff**: On 64-bit Node, Smis are 32-bit signed integers (`[-2^31, 2^31 - 1]`). When writing unsigned 32-bit numbers (`>= 0x80000000`) with `>>> 0` into a JS array, V8 transitions the array from `PACKED_SMI_ELEMENTS` to `PACKED_DOUBLE_ELEMENTS` / heap numbers, halving throughput on Node 20–24. Using `| 0` avoids this entirely.
 - **Import inlining is free**: `limb16-pipeline-imul-import` (importing `mul` from `#u32/mul`) runs at the exact same speed as inline `Math.imul` (278.4 M/s). TurboFan inlines small helpers with zero penalty.
 - **`Math.imul` vs bitwise**: Bitwise limb multiplication without `Math.imul` is ~45% slower because it can't map to a single x86 `imul` instruction.
 - **`float64-corrected` is surprisingly fast and exact**: 1 integer multiplication + 1 float multiplication gets ~95% of peak throughput on TypedArrays and 240 M/s on Node 26 arrays.

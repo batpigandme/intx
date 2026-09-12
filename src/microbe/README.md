@@ -13,8 +13,8 @@ const { bench, compare, createRunner } = require('#microbe');
 Measuring tight arithmetic loops in JavaScript (e.g. integer math, bitwise ops) is tricky because V8 JIT optimizations can easily be distorted by the benchmark harness itself:
 
 1. **Megamorphic Call Sites (IC Pollution)**: If a single benchmark loop calls candidate A, candidate B, and candidate C from the same call site, V8's Inline Cache (IC) transitions to *megamorphic* (3+ distinct targets). This permanently disables TurboFan function inlining and creates an artificial 5x–10x slowdown.
-2. **Thermal Throttling & CPU Boost Bias**: Running $10^8$ iterations of candidate A, then candidate B sequentially gives candidate A an unfair advantage on a cold, high-boost CPU core (~4.8 GHz) before the CPU thermally throttles (~3.2 GHz) for candidate B.
-3. **Warmup Tier-Up**: Functions need enough warmup iterations to tier up through Ignition $\to$ Sparkplug $\to$ Maglev $\to$ TurboFan before timing starts.
+2. **Thermal Throttling & CPU Boost Bias**: Running 10^8 iterations of candidate A, then candidate B sequentially gives candidate A an unfair advantage on a cold, high-boost CPU core (~4.8 GHz) before the CPU thermally throttles (~3.2 GHz) for candidate B.
+3. **Warmup Tier-Up**: Functions need enough warmup iterations to tier up through Ignition → Sparkplug → Maglev → TurboFan before timing starts.
 
 `microbe` solves these by:
 - Compiling **isolated monomorphic closures** per candidate via `createRunner()`, giving each candidate its own pristine feedback vector.
