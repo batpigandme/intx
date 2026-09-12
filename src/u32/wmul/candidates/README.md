@@ -1,6 +1,12 @@
 # `u32.wmul` Candidate Benchmark Notes
 
-Notes and benchmark results for 25 candidate implementations of 32-bit wide multiplication (`a * b -> hi, lo`) across 5 algorithmic families.
+Notes and benchmark results for 25 candidate implementations of 32-bit wide multiplication across 5 algorithmic families.
+
+### Kernel Signature & Contract
+```javascript
+wmul(a, b, out) // a, b: uint32 [0, 2^32 - 1] -> writes [hi, lo] into out[0], out[1]
+```
+To eliminate return-object heap allocations, all kernels write their 64-bit product (`a * b = hi * 2^32 + lo`) in-place into a caller-supplied 2-element destination buffer `out` (`Uint32Array(2)` or Array `[0, 0]`).
 
 Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuffled order) across Node.js v20, v22, v24, and v26.
 
@@ -46,11 +52,31 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 
 ## 3. Key Findings
 
-- **The JS Array SMI cliff**: On 64-bit Node, Smis are 32-bit signed integers (`[-2^31, 2^31 - 1]`). When writing unsigned 32-bit numbers (`>= 0x80000000`) with `>>> 0` into a JS array, V8 transitions the array from `PACKED_SMI_ELEMENTS` to `PACKED_DOUBLE_ELEMENTS` / heap numbers, halving throughput on Node 20–24. Using `| 0` avoids this entirely.
-- **Import inlining is free**: `limb16-pipeline-imul-import` (importing `mul` from `#u32/mul`) runs at the exact same speed as inline `Math.imul` (278.4 M/s). TurboFan inlines small helpers with zero penalty.
-- **`Math.imul` vs bitwise**: Bitwise limb multiplication without `Math.imul` is ~45% slower because it can't map to a single x86 `imul` instruction.
-- **`float64-corrected` is surprisingly fast and exact**: 1 integer multiplication + 1 float multiplication gets ~95% of peak throughput on TypedArrays and 240 M/s on Node 26 arrays.
-- **BigInt is unusable for hot arithmetic**: BigInts top out at 20–24 M/s (12x–14x slower) due to heap allocation and GC churn on every operation.
+### The JS Array SMI Cliff (`Uint32Array` vs `Array [0, 0]`)
+- **The `out` buffer difference**: Because `wmul(a, b, out)` writes its 64-bit result in-place into `out[0] = hi` and `out[1] = lo`, the memory backing of the destination container determines write throughput.
+- **TypedArrays (`Uint32Array(2)`)**: TypedArrays are unboxed contiguous memory blocks where element writes (`out[0] = hi`) compile directly to raw machine stores (`mov DWORD PTR [rdi], eax`), sustaining peak throughput (~278 M/s).
+- **Standard JS arrays (`[0, 0]`)**: Standard arrays start with the `PACKED_SMI_ELEMENTS` map. On 64-bit Node, a Small Integer (Smi) is a 32-bit **signed** integer in `[-2^31, 2^31 - 1]`.
+- **The transition**: When kernels write unsigned 32-bit values with the high bit set (`>= 0x80000000`) into `out` using `>>> 0`, the value exceeds the signed 32-bit Smi range. V8 is forced to transition the array from `PACKED_SMI_ELEMENTS` to `PACKED_DOUBLE_ELEMENTS` or allocate boxed `HeapNumber` objects, cutting throughput by half (~97–100 M/s vs ~183–225 M/s) on Node 20–24.
+- **The fix**: Applying signed 32-bit coercion (`| 0`) before writing to `out` (in the `*_smi` variants) keeps all written elements inside the Smi range, preserving `PACKED_SMI_ELEMENTS` and running at full speed.
+
+### Import Inlining Has Zero Overhead
+- A common question when structuring low-level arithmetic modules is whether importing a helper like `const mul = require('#u32/mul')` adds call-frame overhead compared to calling `Math.imul` directly.
+- Benchmark data confirms that TurboFan's `Inliner` flattens small monomorphic helper functions completely during graph construction. `limb16-pipeline-imul-import` matches inline `Math.imul` kernels instruction-for-instruction, achieving the same top throughput (278.4 M/s).
+
+### Hardware `Math.imul` vs Bitwise Synthesis
+- Older JS arithmetic libraries synthesized 32-bit multiplication using manual 16-bit limb shift-and-add logic (`limb16_*_bitwise_lo`) to avoid floating-point rounding before `Math.imul` was standardized.
+- `Math.imul` lowers directly to a single 1-cycle hardware instruction (`imull` on x86-64).
+- Bitwise synthesis adds multiple shift, mask, and add instructions with long dependency chains, leading to a ~45% throughput drop (~150 M/s vs ~278 M/s).
+
+### Exact Analytical Correction in `float64-corrected`
+- Standard IEEE-754 doubles have 53 bits of precision. Multiplying two 32-bit integers in double precision ($a \times b < 2^{64}$) loses up to 11 bits of precision, with a maximum rounding error bounded by 1024.
+- By getting the exact low 32 bits ($lo$) via `Math.imul`, subtracting it gives `hi * 2^32 + error`. Multiplying by `2^-32` shrinks the error to at most `1024 * 2^-32 ≈ 2.38e-7 << 0.5`.
+- Adding `0.5` places the value safely in the center of the integer rounding interval, making `>>> 0` truncation 100% exact for all $2^{64}$ possible input pairs.
+- With only 1 integer multiplication and 1 float multiplication, it reaches ~95% of peak TypedArray performance and won Node 26 array benchmarks (240.4 M/s) thanks to newer V8 float-unboxing optimizations.
+
+### The BigInt Heap Allocation Wall
+- Native BigInt arithmetic (`BigInt(a) * BigInt(b)`) is mathematically exact and readable, but every BigInt operation allocates a heap object.
+- In tight loops, these short-lived heap allocations flood the young-generation nursery and trigger frequent GC scavenges. This caps BigInt throughput at 20–24 M/s (12x–14x slower than 16-bit limb arithmetic), making it unsuitable for hot arithmetic loops.
 
 ---
 
