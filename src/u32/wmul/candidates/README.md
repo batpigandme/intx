@@ -51,3 +51,17 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 - **`Math.imul` vs bitwise**: Bitwise limb multiplication without `Math.imul` is ~45% slower because it can't map to a single x86 `imul` instruction.
 - **`float64-corrected` is surprisingly fast and exact**: 1 integer multiplication + 1 float multiplication gets ~95% of peak throughput on TypedArrays and 240 M/s on Node 26 arrays.
 - **BigInt is unusable for hot arithmetic**: BigInts top out at 20–24 M/s (12x–14x slower) due to heap allocation and GC churn on every operation.
+
+---
+
+## 4. Running the Showdown
+
+```bash
+# Using npm script
+npm run u32:wmul:showdown
+
+# Directly with node
+node src/u32/wmul/candidates/showdown.js
+```
+
+Or open `src/u32/wmul/candidates/showdown.js` in VS Code and run it via the **Code Runner** extension (`Ctrl+Alt+N` / `Cmd+Option+N` or *Run Code*).

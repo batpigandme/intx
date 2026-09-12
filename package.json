@@ -13,8 +13,7 @@
 	},
 	"scripts": {
 		"test": "node --test 'src/**/test.js' 'src/test/*.test.js'",
-		"bench": "node src/u32/wmul/candidates/bench.js",
-		"bench:u32": "node src/u32/wmul/candidates/bench.js"
+		"u32:wmul:showdown": "node src/u32/wmul/candidates/showdown.js"
 	},
 	"imports": {
 		"#*": "./src/*/index.js"
