@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { randomU32 } = require("#test/utils.js");
+const { randomU32 } = require("#utils");
 
 // Oracle
 const oracle = require("./bigint-literal-mask");
@@ -10,14 +10,20 @@ const oracle = require("./bigint-literal-mask");
 // Family 1: limb16-parallel
 const limb16_parallel_bitwise_lo = require("./limb16-parallel-bitwise-lo");
 const limb16_parallel_imul_lo = require("./limb16-parallel-imul-lo");
+const limb16_parallel_imul_lo_smi = require("./limb16-parallel-imul-lo-smi");
 const limb16_parallel_imul_all = require("./limb16-parallel-imul-all");
+const limb16_parallel_imul_all_smi = require("./limb16-parallel-imul-all-smi");
 const limb16_parallel_imul_cached = require("./limb16-parallel-imul-cached");
+const limb16_parallel_imul_cached_smi = require("./limb16-parallel-imul-cached-smi");
 
 // Family 2: limb16-pipeline
 const limb16_pipeline_bitwise_lo = require("./limb16-pipeline-bitwise-lo");
 const limb16_pipeline_imul_lo = require("./limb16-pipeline-imul-lo");
+const limb16_pipeline_imul_lo_smi = require("./limb16-pipeline-imul-lo-smi");
 const limb16_pipeline_imul_all = require("./limb16-pipeline-imul-all");
+const limb16_pipeline_imul_all_smi = require("./limb16-pipeline-imul-all-smi");
 const limb16_pipeline_imul_cached = require("./limb16-pipeline-imul-cached");
+const limb16_pipeline_imul_cached_smi = require("./limb16-pipeline-imul-cached-smi");
 const limb16_pipeline_imul_import = require("./limb16-pipeline-imul-import");
 
 // Family 3: limb16-float48
@@ -38,12 +44,18 @@ const bigint_hi = require("./bigint-hi");
 const candidates = {
 	"limb16-parallel-bitwise-lo": limb16_parallel_bitwise_lo,
 	"limb16-parallel-imul-lo": limb16_parallel_imul_lo,
+	"limb16-parallel-imul-lo-smi": limb16_parallel_imul_lo_smi,
 	"limb16-parallel-imul-all": limb16_parallel_imul_all,
+	"limb16-parallel-imul-all-smi": limb16_parallel_imul_all_smi,
 	"limb16-parallel-imul-cached": limb16_parallel_imul_cached,
+	"limb16-parallel-imul-cached-smi": limb16_parallel_imul_cached_smi,
 	"limb16-pipeline-bitwise-lo": limb16_pipeline_bitwise_lo,
 	"limb16-pipeline-imul-lo": limb16_pipeline_imul_lo,
+	"limb16-pipeline-imul-lo-smi": limb16_pipeline_imul_lo_smi,
 	"limb16-pipeline-imul-all": limb16_pipeline_imul_all,
+	"limb16-pipeline-imul-all-smi": limb16_pipeline_imul_all_smi,
 	"limb16-pipeline-imul-cached": limb16_pipeline_imul_cached,
+	"limb16-pipeline-imul-cached-smi": limb16_pipeline_imul_cached_smi,
 	"limb16-pipeline-imul-import": limb16_pipeline_imul_import,
 	"limb16-float48-bitwise-lo": limb16_float48_bitwise_lo,
 	"limb16-float48-imul-lo": limb16_float48_imul_lo,

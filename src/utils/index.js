@@ -13,7 +13,7 @@ function randomU32() {
  * @returns {number}
  */
 function randomI32() {
-	return ((Math.random() * 0x100000000) >>> 0) | 0;
+	return (Math.random() * 0x100000000) | 0;
 }
 
 module.exports = {
