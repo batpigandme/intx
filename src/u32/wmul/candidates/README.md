@@ -11,7 +11,7 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 | Family | Approach | Candidates | Idea |
 |---|---|---|---|
 | **1. Parallel 16-bit** | 4-way limb split | `limb16-parallel-*` (7) | $a = a_h 2^{16} + a_l$, $b = b_h 2^{16} + b_l$. Compute all 4 partial products ($a_l b_l, a_h b_l, a_l b_h, a_h b_h$) and sum carries. |
-| **2. Pipelined 16-bit** | 2-stage carry chain | `limb16-pipeline-*` (8) | Fold carries as we go: $\text{ahbl} = a_h b_l + (a_l b_l \gg 16)$, then $\text{albh} = a_l b_h + (\text{ahbl} \ \& \ \text{0xFFFF})$. Shorter register live ranges. |
+| **2. Pipelined 16-bit** | 2-stage carry chain | `limb16-pipeline-*` (8) | Fold carries as we go: $\text{ahbl} = a_h b_l + (a_l b_l \gg 16)$, then $\text{albh} = a_l b_h + (\text{ahbl} \bmod 2^{16})$. Shorter register live ranges. |
 | **3. Float48** | 48-bit middle sum | `limb16-float48-*` (2) | Accumulate cross terms in float64 ($< 2^{33}$, fits within 53-bit mantissa). |
 | **4. Float64 Corrected** | Float64 + analytical fix | `float64-corrected` (1) | $hi = \lfloor (a \cdot b - lo) \cdot 2^{-32} + 0.5 \rfloor$. Exact for all $2^{64}$ pairs (float rounding error $|\epsilon| \le 1024 \implies \epsilon \cdot 2^{-32} \ll 0.5$). |
 | **5. BigInt** | 64-bit BigInt / Oracle | `bigint-*` (7) | Reference oracle (`bigint-literal-mask`) and `BigInt.asUintN` / hybrid variants. |
