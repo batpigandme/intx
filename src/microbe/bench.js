@@ -2,7 +2,7 @@
 
 const { performance } = require("node:perf_hooks");
 const { computeStats } = require("./stats");
-const { renderBench } = require("./format");
+const { renderBench } = require("./render");
 
 /**
  * Benchmarks a single kernel runner across multiple measurement rounds.
@@ -29,14 +29,16 @@ function bench(name, runner, options = {}) {
 		);
 	}
 
-	const rounds = options.rounds || 5;
-	const iters = options.iters || 5e7;
-	const warmup = options.warmup || Math.min(iters * 0.1, 5e6);
+	const rounds = options.rounds ?? 5;
+	const iters = options.iters ?? 5e7;
+	const warmup = options.warmup ?? Math.min(iters * 0.1, 5e6);
 	const silent = !!options.silent;
 
 	// 1. Warmup for JIT tier-up
-	runner(warmup);
-	runner(warmup);
+	if (warmup > 0) {
+		runner(warmup);
+		runner(warmup);
+	}
 
 	// 2. Multi-round measurement
 	let value;

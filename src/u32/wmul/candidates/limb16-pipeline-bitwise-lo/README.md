@@ -1,4 +1,4 @@
-# Pipelined 16-Bit Limb Split (Bitwise Lo) (`limb16-pipe-bitwise-lo`)
+# Pipelined 16-Bit Limb Split (Bitwise Lo) (`limb16-pipeline-bitwise-lo`)
 
 ## Approach Overview
 This candidate chains 16-bit intermediate carry calculations sequentially through a 3-stage pipeline:

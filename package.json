@@ -17,7 +17,7 @@
 		"bench:u32": "node src/u32/wmul/candidates/bench.js"
 	},
 	"imports": {
-		"#*": "./src/*"
+		"#*": "./src/*/index.js"
 	},
 	"files": [
 		"src/",

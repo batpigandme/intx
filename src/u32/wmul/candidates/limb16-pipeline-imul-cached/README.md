@@ -1,4 +1,4 @@
-# Pipelined 16-Bit Limb Split (All `imul` Cached) (`limb16-pipe-imul-cached`)
+# Pipelined 16-Bit Limb Split (All `imul` Cached) (`limb16-pipeline-imul-cached`)
 
 ## Approach Overview
 This candidate caches `Math.imul` into a module-level variable (`const imul = Math.imul;`) and uses it for all 5 multiplication operations in the 3-stage pipelined carry chain.

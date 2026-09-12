@@ -1,4 +1,4 @@
-# Pipelined 16-Bit Limb Split (`imul` Lo) (`limb16-pipe-imul-lo`)
+# Pipelined 16-Bit Limb Split (`imul` Lo) (`limb16-pipeline-imul-lo`)
 
 ## Approach Overview
 This candidate combines minimal 16-bit carry propagation with a single direct `Math.imul(a, b)` for the low word:

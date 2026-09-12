@@ -18,7 +18,7 @@ const limb16_pipeline_bitwise_lo = require("./limb16-pipeline-bitwise-lo");
 const limb16_pipeline_imul_lo = require("./limb16-pipeline-imul-lo");
 const limb16_pipeline_imul_all = require("./limb16-pipeline-imul-all");
 const limb16_pipeline_imul_cached = require("./limb16-pipeline-imul-cached");
-const limb16_imul_import = require("./limb16-imul-import");
+const limb16_pipeline_imul_import = require("./limb16-pipeline-imul-import");
 
 // Family 3: limb16-float48
 const limb16_float48_bitwise_lo = require("./limb16-float48-bitwise-lo");
@@ -44,7 +44,7 @@ const candidates = {
 	"limb16-pipeline-imul-lo": limb16_pipeline_imul_lo,
 	"limb16-pipeline-imul-all": limb16_pipeline_imul_all,
 	"limb16-pipeline-imul-cached": limb16_pipeline_imul_cached,
-	"limb16-imul-import": limb16_imul_import,
+	"limb16-pipeline-imul-import": limb16_pipeline_imul_import,
 	"limb16-float48-bitwise-lo": limb16_float48_bitwise_lo,
 	"limb16-float48-imul-lo": limb16_float48_imul_lo,
 	"float64-corrected": float64_corrected,

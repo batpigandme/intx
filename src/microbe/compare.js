@@ -2,7 +2,7 @@
 
 const { performance } = require("node:perf_hooks");
 const { computeStats } = require("./stats");
-const { renderTable } = require("./format");
+const { renderTable } = require("./render");
 
 /**
  * Fisher-Yates array shuffle.
@@ -29,7 +29,8 @@ function shuffle(array) {
  * @param {object} [options={}] - Comparison configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.iters=5e7] - Default iteration count per round.
- * @param {number} [options.warmup=5e6] - Warmup iteration count.
+ * @param {number} [options.warmup] - Warmup iteration count.
+ * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {Array<object>} Sorted array of evaluated results.
  *
@@ -42,6 +43,7 @@ function shuffle(array) {
  * }, {
  *   rounds: 5,
  *   iters: 5e7,
+ *   shuffled: true,
  * });
  */
 function compare(title, runners, options = {}) {
@@ -56,19 +58,24 @@ function compare(title, runners, options = {}) {
 		throw new Error("compare requires at least two runner functions.");
 	}
 
-	const rounds = options.rounds || 5;
-	const iters = options.iters || 5e7;
-	const warmupIters = options.warmup || 5e6;
+	const rounds = options.rounds ?? 5;
+	const iters = options.iters ?? 5e7;
+	const warmup = options.warmup ?? Math.min(iters * 0.1, 5e6);
+	const shuffled = options.shuffled ?? true;
 	const silent = !!options.silent;
 
+	const orderLabel = shuffled ? "Order: Shuffled" : "Order: Round-Robin";
+
 	if (!silent) {
-		console.log(`\n${"=".repeat(80)}`);
+		console.log(`\n${"=".repeat(100)}`);
 		console.log(` ${title} (Node ${process.version}, ${process.arch})`);
 		console.log(
-			` Config: ${rounds} rounds × ${(iters).toExponential()} iters/round | Interleaved Shuffled Order`,
+			` Config: ${rounds} rounds × ${iters.toExponential()} iters/round | ${orderLabel}`,
 		);
-		console.log(`${"=".repeat(80)}\n`);
-		process.stdout.write("🔥 Warming up JIT compilers... ");
+		console.log(`${"=".repeat(100)}\n`);
+		if (warmup > 0) {
+			process.stdout.write("🔥 Warming up JIT compilers... ");
+		}
 	}
 
 	// 1. Warmup Phase (tier-up all runners in V8 TurboFan)
@@ -82,24 +89,26 @@ function compare(title, runners, options = {}) {
 				`compare expected runner function for '${name}', received: ${typeof runner}`,
 			);
 		}
-		runner(warmupIters);
-		runner(warmupIters);
+		if (warmup > 0) {
+			runner(warmup);
+			runner(warmup);
+		}
 		samples[name] = [];
 	}
 
-	if (!silent) {
+	if (!silent && warmup > 0) {
 		console.log("Ready.\n");
 	}
 
-	// 2. Interleaved Shuffled Measurement Rounds
+	// 2. Interleaved Measurement Rounds
 	for (let round = 1; round <= rounds; round++) {
 		if (!silent) {
 			process.stdout.write(
-				` [Round ${round}/${rounds}] Sampling runners in randomized order... \r`,
+				`\r [Round ${round}/${rounds}] Sampling runners... `,
 			);
 		}
 
-		const roundOrder = shuffle([...names]);
+		const roundOrder = shuffled ? shuffle([...names]) : names;
 
 		for (const name of roundOrder) {
 			const runner = runners[name];
@@ -111,9 +120,7 @@ function compare(title, runners, options = {}) {
 	}
 
 	if (!silent) {
-		console.log(
-			` [Completed ${rounds} measurement rounds]                                \n`,
-		);
+		console.log(`\r [Completed ${rounds} measurement rounds]             \n`);
 	}
 
 	// 3. Compute statistics for all targets

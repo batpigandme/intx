@@ -13,7 +13,7 @@ const limb16_pipeline_bitwise_lo = require("./limb16-pipeline-bitwise-lo");
 const limb16_pipeline_imul_lo = require("./limb16-pipeline-imul-lo");
 const limb16_pipeline_imul_all = require("./limb16-pipeline-imul-all");
 const limb16_pipeline_imul_cached = require("./limb16-pipeline-imul-cached");
-const limb16_imul_import = require("./limb16-imul-import");
+const limb16_pipeline_imul_import = require("./limb16-pipeline-imul-import");
 
 // Family 3: limb16-float48
 const limb16_float48_bitwise_lo = require("./limb16-float48-bitwise-lo");
@@ -32,7 +32,7 @@ const bigint_as_uint64_imul_lo = require("./bigint-as-uint64-imul-lo");
 const bigint_hi = require("./bigint-hi");
 
 // Helper to build a monomorphic JIT runner for u32.wmul kernels: wmul(a, b, out)
-function makeWmulRunner(candidate, name) {
+function createWmulRunner(candidate, name) {
 	const r = new Uint32Array(2);
 	return createRunner({
 		name,
@@ -55,7 +55,7 @@ const candidates = {
 	limb16_pipeline_imul_lo,
 	limb16_pipeline_imul_all,
 	limb16_pipeline_imul_cached,
-	limb16_imul_import,
+	limb16_pipeline_imul_import,
 
 	// Family 3: Float48
 	limb16_float48_bitwise_lo,
@@ -76,13 +76,12 @@ const candidates = {
 
 const runners = {};
 for (const name in candidates) {
-	runners[name] = makeWmulRunner(candidates[name], name);
+	runners[name] = createWmulRunner(candidates[name], name);
 }
 
 // TODO: Add @stdlib/muldw benchmark comparison once strided wmul candidates are implemented
 
 compare("u32.wmul: Grand Candidate Evaluation", runners, {
 	rounds: 5,
-	iters: 5e7,
-	warmup: 5e6,
+	iters: 1e7,
 });

@@ -1,4 +1,4 @@
-# Pipelined 16-Bit Limb Split (All `imul` Direct) (`limb16-pipe-imul-all`)
+# Pipelined 16-Bit Limb Split (All `imul` Direct) (`limb16-pipeline-imul-all`)
 
 ## Approach Overview
 This candidate computes all intermediate carry multiplications and the full 32-bit `lo` word using direct `Math.imul(...)` calls:
