@@ -19,12 +19,13 @@ function formatRate(rate) {
  * @param {object} result - Benchmark result object.
  */
 function renderBench(result) {
-	const padName = result.name.padEnd(40);
+	const title = result.title || result.name || "";
+	const padTitle = title.padEnd(40);
 	const medianStr = `${formatRate(result.medianRate)} iters/s`;
 	const peakStr = `${formatRate(result.maxRate)} iters/s`;
 	const moeStr = `±${result.moePercent.toFixed(1)}%`;
 	console.log(
-		`${padName} :: ${result.rounds} rounds × ${result.iters.toExponential()} iters | Median: ${medianStr.padStart(18)} | Peak: ${peakStr.padStart(18)} (${moeStr})`,
+		`${padTitle} :: ${result.rounds} rounds × ${result.iters.toExponential()} iters | Median: ${medianStr.padStart(18)} | Peak: ${peakStr.padStart(18)} (${moeStr})`,
 	);
 }
 
@@ -66,4 +67,3 @@ module.exports = {
 	renderBench,
 	renderTable,
 };
-

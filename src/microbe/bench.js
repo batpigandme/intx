@@ -7,7 +7,7 @@ const { renderBench } = require("./render");
 /**
  * Benchmarks a single kernel runner across multiple measurement rounds.
  *
- * @param {string} name - Benchmark title.
+ * @param {string} title - Benchmark title.
  * @param {Function} runner - Synchronous runner function `(iters: number) => any`.
  * @param {object} [options={}] - Configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
@@ -22,7 +22,7 @@ const { renderBench } = require("./render");
  * const runner = createRunner({ ... });
  * bench('u32.mul', runner, { iters: 1e8, rounds: 5 });
  */
-function bench(name, runner, options = {}) {
+function bench(title, runner, options = {}) {
 	if (typeof runner !== "function") {
 		throw new TypeError(
 			`bench expected runner function as 2nd argument, received: ${typeof runner}`,
@@ -53,7 +53,8 @@ function bench(name, runner, options = {}) {
 	// 3. Statistical analysis
 	const stats = computeStats(samples, iters);
 	const result = {
-		name,
+		title,
+		name: title,
 		value,
 		...stats,
 		rounds,
