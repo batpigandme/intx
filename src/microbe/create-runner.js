@@ -49,7 +49,7 @@ function createRunner(options = {}) {
 	const uniqueId = `${cleanName}_${Date.now()}_${(Math.random() * 1e9) | 0}`;
 
 	const functionSource = `
-    /* [BenchX Monomorphic Unit: ${uniqueId}] */
+    /* [Microbe Monomorphic Unit: ${uniqueId}] */
     return function bench_${cleanName}(n) {
       ${setup}
       for (let i = 0; i < n; i++) {

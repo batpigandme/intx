@@ -17,9 +17,9 @@ const { renderBench } = require("./format");
  * @returns {object} Object containing statistical metrics for the run.
  *
  * @example
- * const { bench, createRunner } = require('#benchx');
+ * const { bench, createRunner } = require('#microbe');
  *
- * const runner = createRunner(myKernel, { ... });
+ * const runner = createRunner({ ... });
  * bench('u32.mul', runner, { iters: 1e8, rounds: 5 });
  */
 function bench(name, runner, options = {}) {

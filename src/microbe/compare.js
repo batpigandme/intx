@@ -34,7 +34,7 @@ function shuffle(array) {
  * @returns {Array<object>} Sorted array of evaluated results.
  *
  * @example
- * const { compare, createRunner } = require('#benchx');
+ * const { compare, createRunner } = require('#microbe');
  *
  * compare('u32.wmul: Showdown', {
  *   'candidate-1': runner1,

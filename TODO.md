@@ -1,7 +1,7 @@
 # Project Roadmap & TODOs
 
 ## 1. Benchmarking & Tooling Infrastructure
-- [ ] **Rename `benchx` to `microbe`** (`microbe[nchmark]`):
+- [x] **Rename `benchx` to `microbe`** (`microbe[nchmark]`):
   - Rename `src/benchx/` to `src/microbe/`.
   - Update subpath import in `package.json` (`#benchx` -> `#microbe`).
   - Update imports across benchmark files.

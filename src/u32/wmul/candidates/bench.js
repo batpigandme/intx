@@ -1,6 +1,6 @@
 "use strict";
 
-const { compare, createRunner } = require("#benchx");
+const { compare, createRunner } = require("#microbe");
 
 // Family 1: limb16-parallel
 const limb16_parallel_bitwise_lo = require("./limb16-parallel-bitwise-lo");
@@ -31,7 +31,7 @@ const bigint_as_uintn_local_const = require("./bigint-as-uintn-local-const");
 const bigint_as_uint64_imul_lo = require("./bigint-as-uint64-imul-lo");
 const bigint_hi = require("./bigint-hi");
 
-// Helper to build a monomorphic JIT runner for u32.wmul kernels: fn(a, b, out)
+// Helper to build a monomorphic JIT runner for u32.wmul kernels: wmul(a, b, out)
 function makeWmulRunner(candidate, name) {
 	const r = new Uint32Array(2);
 	return createRunner({
