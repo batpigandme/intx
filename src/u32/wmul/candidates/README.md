@@ -37,7 +37,7 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 
 | Candidate / Family | Node v20 (M/s) | Node v22 (M/s) | Node v24 (M/s) | Node v26 (M/s) | Notes |
 |---|:---:|:---:|:---:|:---:|---|
-| **`limb16_*_smi`** | **~183** | **~196–200** | **~221–225** | **~216–227** | `| 0` keeps array in `PACKED_SMI_ELEMENTS` |
+| **`limb16_*_smi`** | **~183** | **~196–200** | **~221–225** | **~216–227** | Signed coercion (`\| 0`) keeps array in `PACKED_SMI_ELEMENTS` |
 | **`float64_corrected`** | 106.6 | 101.1 | 106.4 | **240.4** | Faster on v26 due to better double unboxing in arrays |
 | **`limb16_*` (non-SMI / `>>> 0`)** | ~96–100 | ~99–105 | ~99–102 | ~188–195 | **2x drop on v20–v24** (array transitions to doubles/heap numbers) |
 | **`bigint_*`** | 5.5–23.4 | 5.2–19.0 | 5.2–20.5 | 5.3–20.4 | Bottlenecked by BigInt allocations |
