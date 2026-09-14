@@ -1,0 +1,41 @@
+[Running] node "/Stuff/GSoC/intx/src/u32/mulhi/candidates/showdown.js"
+
+====================================================================================================
+ u32.mulhi: Grand Candidate Showdown (Node v24.19.0, x64)
+ Config: 5 rounds × 1e+7 iters/round | Order: Shuffled
+====================================================================================================
+
+🔥 Warming up JIT compilers... Ready.
+
+ [Round 1/5] Sampling runners... 
+ [Round 2/5] Sampling runners... 
+ [Round 3/5] Sampling runners... 
+ [Round 4/5] Sampling runners... 
+ [Round 5/5] Sampling runners... 
+ [Completed 5 measurement rounds]             
+
+Rank  Kernel / Target                           Median (iters/s)  Peak (iters/s)  MoE (±%)  Relative
+----------------------------------------------------------------------------------------------------
+  1.  limb16_parallel_bitwise_smi                       143.26 M        146.69 M     ±2.9%  baseline
+  2.  limb16_parallel_bitwise                           142.63 M        143.13 M     ±9.6%     1.00x
+  3.  limb16_parallel_imul_all_smi                      140.65 M        143.04 M     ±7.5%     0.98x
+  4.  limb16_pipeline_imul_all_smi                      140.07 M        142.26 M     ±1.8%     0.98x
+  5.  limb16_pipeline_bitwise_smi                       138.97 M        143.69 M    ±11.3%     0.97x
+  6.  limb16_pipeline_bitwise                           138.48 M        145.67 M     ±6.7%     0.97x
+  7.  limb16_pipeline_imul_cached_smi                   136.28 M        142.75 M     ±8.0%     0.95x
+  8.  limb16_parallel_imul_all                          135.95 M        138.46 M     ±4.8%     0.95x
+  9.  limb16_parallel_imul_cached                       135.26 M        137.37 M     ±6.6%     0.94x
+ 10.  limb16_pipeline_imul_all                          132.51 M        133.30 M    ±10.6%     0.92x
+ 11.  limb16_pipeline_imul_import                       132.27 M        136.66 M     ±6.1%     0.92x
+ 12.  limb16_pipeline_imul_cached                       131.45 M        133.09 M     ±5.7%     0.92x
+ 13.  limb16_parallel_imul_cached_smi                   130.90 M        140.95 M    ±20.8%     0.91x
+ 14.  float64_corrected_smi                              59.16 M         59.57 M     ±4.7%     0.41x
+ 15.  float64_corrected                                  58.88 M         60.31 M     ±4.7%     0.41x
+ 16.  float64_corrected_cached                           58.84 M         59.06 M     ±6.5%     0.41x
+ 17.  limb16_float48_trunc_smi                           42.90 M         43.04 M     ±1.2%     0.30x
+ 18.  limb16_float48_trunc                               42.80 M         43.10 M     ±1.1%     0.30x
+ 19.  limb16_float48_floor                               39.77 M         41.30 M     ±5.5%     0.28x
+----------------------------------------------------------------------------------------------------
+🏆 Winner: limb16_parallel_bitwise_smi (143.26 M iters/s)
+
+[Done] exited with code=0
