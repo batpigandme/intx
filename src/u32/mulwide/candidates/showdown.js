@@ -1,6 +1,6 @@
 "use strict";
 
-const { compare, createRunner } = require("#microbe");
+const { bench } = require("#microbe");
 
 // Family 1: limb16-parallel
 const limb16_parallel_bitwise_lo = require("./limb16-parallel-bitwise-lo");
@@ -78,7 +78,7 @@ const candidates = {
 function createMulwideRunner(candidate, name) {
 	// const r = [0, 0];
 	const r = new Uint32Array(2);
-	return createRunner({
+	return bench.createRunner({
 		name,
 		context: { mulwide: candidate, r, a: 0xdeadbeef },
 		setup: "r[0] = 0; r[1] = 1;",
@@ -92,7 +92,7 @@ for (const name in candidates) {
 	runners[name] = createMulwideRunner(candidates[name], name);
 }
 
-compare("u32.mulwide: Grand Candidate Showdown", runners, {
+bench.suite.rank("u32.mulwide: Grand Candidate Showdown", runners, {
 	rounds: 5,
 	iters: 1e7,
 });

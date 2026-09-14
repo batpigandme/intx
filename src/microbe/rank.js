@@ -43,12 +43,13 @@ function getComparator(order) {
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
+ * @param {number} [options.width=80] - Total table column width.
  * @returns {Array<object>} Sorted array of evaluated results.
  *
  * @example
- * const { compare, createRunner } = require('#microbe');
+ * const { bench } = require('#microbe');
  *
- * compare('u32.wmul: Showdown', {
+ * bench.suite.rank('u32.mulwide: Showdown', {
  *   'candidate-1': runner1,
  *   'candidate-2': runner2,
  * }, {
@@ -58,16 +59,16 @@ function getComparator(order) {
  *   order: 'median',
  * });
  */
-function compare(title, runners, options = {}) {
+function rank(title, runners, options = {}) {
 	if (!runners || typeof runners !== "object" || Array.isArray(runners)) {
 		throw new TypeError(
-			"compare expected runners to be an object map of runner functions.",
+			"bench.suite.rank expected runners to be an object map of runner functions.",
 		);
 	}
 
 	const names = Object.keys(runners);
 	if (names.length < 2) {
-		throw new Error("compare requires at least two runner functions.");
+		throw new Error("bench.suite.rank requires at least two runner functions.");
 	}
 
 	const order = options.order ?? "median";
@@ -77,7 +78,6 @@ function compare(title, runners, options = {}) {
 	const rounds = options.rounds ?? 5;
 	const iters = options.iters ?? 5e7;
 	const shuffled = options.shuffled ?? true;
-
 	const width = options.width ?? 80;
 
 	if (!silent) {
@@ -103,5 +103,5 @@ function compare(title, runners, options = {}) {
 }
 
 module.exports = {
-	compare,
+	rank,
 };

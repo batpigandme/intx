@@ -1,6 +1,6 @@
 "use strict";
 
-const { compare, createRunner } = require("#microbe");
+const { bench } = require("#microbe");
 const { randomI32 } = require("#utils");
 const i32 = require("./index.js");
 
@@ -17,28 +17,28 @@ for (let i = 0; i < 1024; i++) {
 }
 
 const ops = {
-	add: createRunner({
+	add: bench.createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		body: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	sub: createRunner({
+	sub: bench.createRunner({
 		context: { sub: i32.sub, c },
 		setup: "let acc = 1;",
 		body: "acc = sub(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	mul: createRunner({
+	mul: bench.createRunner({
 		context: { mul: i32.mul, c },
 		setup: "let acc = 1;",
 		body: "acc = mul(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	div: createRunner({
+	div: bench.createRunner({
 		context: { div: i32.div, d, buf },
 		setup: "let acc = 0, idx = 0;",
 		body: `
@@ -48,7 +48,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	mod: createRunner({
+	mod: bench.createRunner({
 		context: { mod: i32.mod, d, buf },
 		setup: "let acc = 0, idx = 0;",
 		body: `
@@ -58,7 +58,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	divmod: createRunner({
+	divmod: bench.createRunner({
 		context: { divmod: i32.divmod, d, buf, out },
 		setup: "let idx = 0;",
 		body: `
@@ -68,21 +68,21 @@ const ops = {
 		teardown: "return out[0] ^ out[1];",
 	}),
 
-	rotl: createRunner({
+	rotl: bench.createRunner({
 		context: { rotl: i32.rotl, k },
 		setup: "let acc = 0x12345678;",
 		body: "acc = rotl(acc, k);",
 		teardown: "return acc;",
 	}),
 
-	rotr: createRunner({
+	rotr: bench.createRunner({
 		context: { rotr: i32.rotr, k },
 		setup: "let acc = 0x12345678;",
 		body: "acc = rotr(acc, k);",
 		teardown: "return acc;",
 	}),
 
-	clz: createRunner({
+	clz: bench.createRunner({
 		context: { clz: i32.clz, c },
 		setup: "let acc = 1;",
 		body: "acc = clz(acc ^ c);",
@@ -90,7 +90,7 @@ const ops = {
 	}),
 };
 
-compare("i32: Intrinsic Scalar Operations Showdown", ops, {
+bench.suite.rank("i32: Intrinsic Scalar Operations Showdown", ops, {
 	rounds: 5,
 	iters: 1e7,
 });

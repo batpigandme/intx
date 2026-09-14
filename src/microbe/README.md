@@ -3,7 +3,7 @@
 A lightweight microbenchmarking harness designed for measuring low-level JavaScript arithmetic kernels without JIT pollution or thermal bias.
 
 ```javascript
-const { bench, suite, compare, createRunner } = require('#microbe');
+const { bench } = require('#microbe');
 ```
 
 ---
@@ -18,7 +18,7 @@ Measuring tight arithmetic loops in JavaScript (e.g. integer math, bitwise ops) 
 4. **Warmup Tier-Up**: Functions need initial execution to tier up through Ignition → Sparkplug → Maglev → TurboFan before timing starts.
 
 `microbe` solves these by:
-- Compiling **isolated monomorphic closures** per candidate via `createRunner()`, giving each candidate its own pristine feedback vector.
+- Compiling **isolated monomorphic closures** per candidate via `bench.createRunner()`, giving each candidate its own pristine feedback vector.
 - Timing **only the measurement loop** via `startClock()` / `stopClock()`, excluding setup and teardown overhead.
 - **Interleaving and shuffling** measurement rounds across candidates so thermal fluctuations affect all targets equally.
 - Providing an automatic **Round 0 warmup** round for JIT tier-up and robust statistics (Median, Peak, Margin of Error).
@@ -65,14 +65,14 @@ bench('u32.mul', (iters, startClock, stopClock) => {
   ── Summary: Median 278.40 M iters/s | Peak 278.71 M iters/s | Mean 278.32 M iters/s (±0.1%)
 ```
 
-### 2. Isolate JIT Compilation with `createRunner`
+### 2. Isolate JIT Compilation with `bench.createRunner`
 
 To prevent megamorphic call sites when testing multiple kernels, compile an isolated runner:
 
 ```javascript
-const { bench, createRunner } = require('#microbe');
+const { bench } = require('#microbe');
 
-const runner = createRunner({
+const runner = bench.createRunner({
   name: 'u32_mul',
   context: {
     mul: (a, b) => Math.imul(a, b) >>> 0,
@@ -90,27 +90,27 @@ bench('u32.mul (isolated)', runner, {
 });
 ```
 
-### 3. Multi-Target Suite (`suite`)
+### 3. Multi-Target Suite (`bench.suite`)
 
 To run multiple related benchmarks from a single file without sorting (e.g. testing scaling or execution patterns), while preserving definition order and eliminating thermal and execution bias:
 
 ```javascript
-const { suite, createRunner } = require('#microbe');
+const { bench } = require('#microbe');
 
 const ops = {
-  '1. Serial': createRunner({
+  '1. Serial': bench.createRunner({
     setup: 'let acc = 1;',
     body: 'acc = (acc + 1) | 0;',
     teardown: 'return acc;',
   }),
-  '2. Parallel 2x': createRunner({
+  '2. Parallel 2x': bench.createRunner({
     setup: 'let a0 = 1, a1 = 2;',
     body: 'a0 = (a0 + 1) | 0; a1 = (a1 + 1) | 0;',
     teardown: 'return a0 ^ a1;',
   }),
 };
 
-suite('Integer Addition Patterns', ops, {
+bench.suite('Integer Addition Patterns', ops, {
   rounds: 5,
   iters: 2e7,
 });
@@ -128,12 +128,12 @@ suite('Integer Addition Patterns', ops, {
 |    2 | 2. Parallel 2x        |      1.19 B |    1.19 B |    ±0.3% |    0.61x |
 ```
 
-### 4. Multi-Candidate Showdown (`compare`)
+### 4. Multi-Candidate Showdown (`bench.suite.rank`)
 
 To compare multiple algorithmic approaches side-by-side with automatic ranking:
 
 ```javascript
-const { compare, createRunner } = require('#microbe');
+const { bench } = require('#microbe');
 
 // Two candidate implementations to compare
 const bitwiseMul = (a, b) => {
@@ -150,12 +150,12 @@ const nativeImul = (a, b) => Math.imul(a, b) >>> 0;
 
 // Build monomorphic runners
 const runners = {
-  bitwise: createRunner({
+  bitwise: bench.createRunner({
     name: 'bitwise',
     context: { fn: bitwiseMul },
     body: 'fn(0x1234, 0x5678);',
   }),
-  native_imul: createRunner({
+  native_imul: bench.createRunner({
     name: 'native_imul',
     context: { fn: nativeImul },
     body: 'fn(0x1234, 0x5678);',
@@ -163,7 +163,7 @@ const runners = {
 };
 
 // Run showdown
-compare('Multiplication Showdown', runners, {
+bench.suite.rank('Multiplication Showdown', runners, {
   rounds: 5,
   iters: 1e7,
   shuffled: true,
@@ -187,7 +187,18 @@ compare('Multiplication Showdown', runners, {
 
 ## API Reference
 
-### `createRunner(options)`
+### `bench(title, runner, options)`
+Runs a multi-round benchmark for a single runner function.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `rounds` | `number` | `5` | Number of measurement rounds. |
+| `iters` | `number` | `5e7` | Loop iterations per round. |
+| `silent` | `boolean` | `false` | Suppress console output and return stats object. |
+
+---
+
+### `bench.createRunner(options)`
 Generates an isolated closure `(iters, startClock, stopClock) => ...` with its own `SharedFunctionInfo`.
 
 | Option | Type | Default | Description |
@@ -200,18 +211,7 @@ Generates an isolated closure `(iters, startClock, stopClock) => ...` with its o
 
 ---
 
-### `bench(title, runner, options)`
-Runs a multi-round benchmark for a single runner function.
-
-| Option | Type | Default | Description |
-|---|---|---|---|
-| `rounds` | `number` | `5` | Number of measurement rounds. |
-| `iters` | `number` | `5e7` | Loop iterations per round. |
-| `silent` | `boolean` | `false` | Suppress console output and return stats object. |
-
----
-
-### `suite(title, runners, options)`
+### `bench.suite(title, runners, options)`
 Runs an interleaved multi-target benchmark suite preserving declaration order in output and results.
 
 | Option | Type | Default | Description |
@@ -221,11 +221,11 @@ Runs an interleaved multi-target benchmark suite preserving declaration order in
 | `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
 | `render` | `boolean` | `true` | If true and not silent, renders detailed benchmark blocks. |
-| `width` | `number` | `80` | Total table and banner width in characters. |
+| `width` | `number` | `80` | Total table column width. |
 
 ---
 
-### `compare(title, runners, options)`
+### `bench.suite.rank(title, runners, options)`
 Runs an interleaved multi-candidate showdown and outputs a ranked results table.
 
 | Option | Type | Default | Description |
@@ -235,5 +235,4 @@ Runs an interleaved multi-candidate showdown and outputs a ranked results table.
 | `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
 | `order` | `string \| Function` | `'median'` | Metric to sort by (`"median"`, `"mean"`, `"max"`, `"min"`, `"warmup"`) or comparator. |
-| `width` | `number` | `80` | Total table and banner width in characters. |
-
+| `width` | `number` | `80` | Total table column width. |
