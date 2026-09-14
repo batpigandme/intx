@@ -3,7 +3,7 @@
 A lightweight microbenchmarking harness designed for measuring low-level JavaScript arithmetic kernels without JIT pollution or thermal bias.
 
 ```javascript
-const { bench, compare, createRunner } = require('#microbe');
+const { bench, suite, compare, createRunner } = require('#microbe');
 ```
 
 ---
@@ -53,6 +53,18 @@ bench('u32.mul', (iters, startClock, stopClock) => {
 });
 ```
 
+#### Output:
+```text
+● u32.mul (5 rounds × 1e+7 iters)
+  • Warmup:    36.21 ms (276.16 M iters/s)
+  • Round 1:   35.89 ms (278.63 M iters/s)
+  • Round 2:   35.92 ms (278.40 M iters/s)
+  • Round 3:   36.01 ms (277.70 M iters/s)
+  • Round 4:   35.88 ms (278.71 M iters/s)
+  • Round 5:   35.95 ms (278.16 M iters/s)
+  ── Summary: Median 278.40 M iters/s | Peak 278.71 M iters/s | Mean 278.32 M iters/s (±0.1%)
+```
+
 ### 2. Isolate JIT Compilation with `createRunner`
 
 To prevent megamorphic call sites when testing multiple kernels, compile an isolated runner:
@@ -78,9 +90,47 @@ bench('u32.mul (isolated)', runner, {
 });
 ```
 
-### 3. Multi-Candidate Showdown (`compare`)
+### 3. Multi-Target Suite (`suite`)
 
-To compare multiple algorithmic approaches side-by-side:
+To run multiple related benchmarks from a single file without sorting (e.g. testing scaling or execution patterns), while preserving definition order and eliminating thermal and execution bias:
+
+```javascript
+const { suite, createRunner } = require('#microbe');
+
+const ops = {
+  '1. Serial': createRunner({
+    setup: 'let acc = 1;',
+    body: 'acc = (acc + 1) | 0;',
+    teardown: 'return acc;',
+  }),
+  '2. Parallel 2x': createRunner({
+    setup: 'let a0 = 1, a1 = 2;',
+    body: 'a0 = (a0 + 1) | 0; a1 = (a1 + 1) | 0;',
+    teardown: 'return a0 ^ a1;',
+  }),
+};
+
+suite('Integer Addition Patterns', ops, {
+  rounds: 5,
+  iters: 2e7,
+});
+```
+
+#### Output:
+```markdown
+### Integer Addition Patterns
+> **Config:** 5 rounds × 2e+7 iters/round | Order: Shuffled  
+> **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
+
+|  #   | Title                 | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:----------------------|------------:|----------:|---------:|---------:|
+|    1 | 1. Serial             |      1.96 B |    1.97 B |    ±0.3% | baseline |
+|    2 | 2. Parallel 2x        |      1.19 B |    1.19 B |    ±0.3% |    0.61x |
+```
+
+### 4. Multi-Candidate Showdown (`compare`)
+
+To compare multiple algorithmic approaches side-by-side with automatic ranking:
 
 ```javascript
 const { compare, createRunner } = require('#microbe');
@@ -117,26 +167,20 @@ compare('Multiplication Showdown', runners, {
   rounds: 5,
   iters: 1e7,
   shuffled: true,
+  order: 'median', // 'median' | 'mean' | 'max' | 'min' | 'warmup' | comparator fn
 });
 ```
 
 #### Output:
-```text
-====================================================================================================
- Multiplication Showdown (Node v22.22.1, x64)
- Config: 5 rounds × 1e+7 iters/round | Order: Shuffled
-====================================================================================================
+```markdown
+### Multiplication Showdown
+> **Config:** 5 rounds × 1e+7 iters/round | Order: Shuffled  
+> **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
 
-🔥 Warming up JIT compilers (Round 0)... Ready.
-
- [Completed 5 measurement rounds]             
-
-Rank  Kernel / Target                           Median (iters/s)  Peak (iters/s)  MoE (±%)  Relative
-----------------------------------------------------------------------------------------------------
-  1.  native_imul                                       278.29 M        278.72 M     ±0.2%  baseline
-  2.  bitwise                                            15.42 M         15.65 M     ±1.2%     0.06x
-----------------------------------------------------------------------------------------------------
-🏆 Winner: native_imul (278.29 M iters/s)
+| Rank | Title                 | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:----------------------|------------:|----------:|---------:|---------:|
+|    1 | native_imul           |    278.29 M |  278.72 M |    ±0.2% | baseline |
+|    2 | bitwise               |     15.42 M |   15.65 M |    ±1.2% |    0.06x |
 ```
 
 ---
@@ -167,6 +211,20 @@ Runs a multi-round benchmark for a single runner function.
 
 ---
 
+### `suite(title, runners, options)`
+Runs an interleaved multi-target benchmark suite preserving declaration order in output and results.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `rounds` | `number` | `5` | Number of measurement rounds. |
+| `iters` | `number` | `5e7` | Iterations per round. |
+| `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
+| `silent` | `boolean` | `false` | Suppress console output and return results array. |
+| `render` | `boolean` | `true` | If true and not silent, renders detailed benchmark blocks. |
+| `width` | `number` | `80` | Total table and banner width in characters. |
+
+---
+
 ### `compare(title, runners, options)`
 Runs an interleaved multi-candidate showdown and outputs a ranked results table.
 
@@ -176,3 +234,6 @@ Runs an interleaved multi-candidate showdown and outputs a ranked results table.
 | `iters` | `number` | `5e7` | Iterations per round. |
 | `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
+| `order` | `string \| Function` | `'median'` | Metric to sort by (`"median"`, `"mean"`, `"max"`, `"min"`, `"warmup"`) or comparator. |
+| `width` | `number` | `80` | Total table and banner width in characters. |
+

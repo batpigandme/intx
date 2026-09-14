@@ -1,24 +1,35 @@
 "use strict";
 
-const { sample } = require("./timer");
-const { computeStats } = require("./stats");
-const { renderTable } = require("./render");
+const { suite } = require("./suite");
+const { renderTable, renderBanner } = require("./render");
 
 /**
- * Fisher-Yates array shuffle.
+ * Returns a comparator function for sorting benchmark results based on order key.
  *
- * @template T
- * @param {T[]} array - Target array to shuffle in-place.
- * @returns {T[]} Shuffled array.
+ * @param {string|Function} order - Metric name or custom comparison function.
+ * @returns {Function} Comparator function (a, b) => number.
  */
-function shuffle(array) {
-	for (let i = array.length - 1; i > 0; i--) {
-		const j = (Math.random() * (i + 1)) | 0;
-		const temp = array[i];
-		array[i] = array[j];
-		array[j] = temp;
+function getComparator(order) {
+	if (typeof order === "function") {
+		return order;
 	}
-	return array;
+	switch (order) {
+		case "median":
+			return (a, b) => b.medianRate - a.medianRate;
+		case "mean":
+			return (a, b) => b.meanRate - a.meanRate;
+		case "max":
+		case "peak":
+			return (a, b) => b.maxRate - a.maxRate;
+		case "min":
+			return (a, b) => b.minRate - a.minRate;
+		case "warmup":
+			return (a, b) => (b.warmup?.rate ?? 0) - (a.warmup?.rate ?? 0);
+		default:
+			throw new Error(
+				`Unknown comparison order: "${order}". Expected "median", "mean", "max", "min", "warmup", or a custom comparator function.`,
+			);
+	}
 }
 
 /**
@@ -31,6 +42,7 @@ function shuffle(array) {
  * @param {number} [options.iters=5e7] - Default iteration count per round.
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
+ * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
  * @returns {Array<object>} Sorted array of evaluated results.
  *
  * @example
@@ -43,6 +55,7 @@ function shuffle(array) {
  *   rounds: 5,
  *   iters: 5e7,
  *   shuffled: true,
+ *   order: 'median',
  * });
  */
 function compare(title, runners, options = {}) {
@@ -57,88 +70,33 @@ function compare(title, runners, options = {}) {
 		throw new Error("compare requires at least two runner functions.");
 	}
 
+	const order = options.order ?? "median";
+	const comparator = getComparator(order);
+
+	const silent = !!options.silent;
 	const rounds = options.rounds ?? 5;
 	const iters = options.iters ?? 5e7;
 	const shuffled = options.shuffled ?? true;
-	const silent = !!options.silent;
 
-	const orderLabel = shuffled ? "Order: Shuffled" : "Order: Round-Robin";
-
-	if (!silent) {
-		console.log(`\n${"=".repeat(100)}`);
-		console.log(` ${title} (Node ${process.version}, ${process.arch})`);
-		console.log(
-			` Config: ${rounds} rounds × ${iters.toExponential()} iters/round | ${orderLabel}`,
-		);
-		console.log(`${"=".repeat(100)}\n`);
-		process.stdout.write("🔥 Warming up JIT compilers (Round 0)... ");
-	}
-
-	// 1. Warmup Phase (Round 0 for JIT tier-up across all candidates)
-	const samples = {};
-	const values = {};
-	const warmup = {};
-
-	for (const name of names) {
-		const runner = runners[name];
-		if (typeof runner !== "function") {
-			throw new TypeError(
-				`compare expected runner function for '${name}', received: ${typeof runner}`,
-			);
-		}
-		const warmupSample = sample(runner, iters);
-		warmup[name] = {
-			elapsed: warmupSample.elapsed,
-			iters,
-			rate: iters / warmupSample.elapsed,
-		};
-		values[name] = warmupSample.value;
-		samples[name] = [];
-	}
+	const width = options.width ?? 80;
 
 	if (!silent) {
-		console.log("Ready.\n");
+		renderBanner(title, { rounds, iters, shuffled, width });
 	}
 
-	// 2. Interleaved Measurement Rounds
-	for (let round = 1; round <= rounds; round++) {
-		if (!silent) {
-			process.stdout.write(
-				`\r [Round ${round}/${rounds}] Sampling runners... `,
-			);
-		}
-
-		const roundOrder = shuffled ? shuffle([...names]) : names;
-
-		for (const name of roundOrder) {
-			const runner = runners[name];
-			const res = sample(runner, iters);
-			values[name] = res.value;
-			samples[name].push(res.elapsed);
-		}
-	}
-
-	if (!silent) {
-		console.log(`\r [Completed ${rounds} measurement rounds]             \n`);
-	}
-
-	// 3. Compute statistics for all targets
-	const results = names.map((name) => {
-		const stats = computeStats(samples[name], iters);
-		return {
-			name,
-			value: values[name],
-			warmup: warmup[name],
-			...stats,
-		};
+	// 1. Run suite without individual block rendering
+	const results = suite(title, runners, {
+		...options,
+		silent,
+		render: false,
 	});
 
-	// Sort by median throughput descending
-	results.sort((a, b) => b.medianRate - a.medianRate);
+	// 2. Sort by specified metric/comparator
+	results.sort(comparator);
 
-	// 4. Render Table
+	// 3. Render comparison showdown table
 	if (!silent) {
-		renderTable(results);
+		renderTable(results, { isRanked: true, width });
 	}
 
 	return results;

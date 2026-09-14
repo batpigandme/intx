@@ -17,28 +17,28 @@ for (let i = 0; i < 1024; i++) {
 }
 
 const ops = {
-	"add    ( add(acc, c) )": createRunner({
+	add: createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		body: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"sub    ( sub(acc, c) )": createRunner({
+	sub: createRunner({
 		context: { sub: i32.sub, c },
 		setup: "let acc = 1;",
 		body: "acc = sub(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"mul    ( mul(acc, c) )": createRunner({
+	mul: createRunner({
 		context: { mul: i32.mul, c },
 		setup: "let acc = 1;",
 		body: "acc = mul(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"div    ( div(buf[idx], 17) )": createRunner({
+	div: createRunner({
 		context: { div: i32.div, d, buf },
 		setup: "let acc = 0, idx = 0;",
 		body: `
@@ -48,7 +48,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"mod    ( mod(buf[idx], 17) )": createRunner({
+	mod: createRunner({
 		context: { mod: i32.mod, d, buf },
 		setup: "let acc = 0, idx = 0;",
 		body: `
@@ -58,7 +58,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"divmod ( divmod(buf[idx], 17, out) )": createRunner({
+	divmod: createRunner({
 		context: { divmod: i32.divmod, d, buf, out },
 		setup: "let idx = 0;",
 		body: `
@@ -68,21 +68,21 @@ const ops = {
 		teardown: "return out[0] ^ out[1];",
 	}),
 
-	"rotl   ( rotl(acc, 13) )": createRunner({
+	rotl: createRunner({
 		context: { rotl: i32.rotl, k },
 		setup: "let acc = 0x12345678;",
 		body: "acc = rotl(acc, k);",
 		teardown: "return acc;",
 	}),
 
-	"rotr   ( rotr(acc, 13) )": createRunner({
+	rotr: createRunner({
 		context: { rotr: i32.rotr, k },
 		setup: "let acc = 0x12345678;",
 		body: "acc = rotr(acc, k);",
 		teardown: "return acc;",
 	}),
 
-	"clz    ( clz(acc) )": createRunner({
+	clz: createRunner({
 		context: { clz: i32.clz, c },
 		setup: "let acc = 1;",
 		body: "acc = clz(acc ^ c);",
@@ -92,5 +92,5 @@ const ops = {
 
 compare("i32: Intrinsic Scalar Operations Showdown", ops, {
 	rounds: 5,
-	iters: 5e7,
+	iters: 1e7,
 });
