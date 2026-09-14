@@ -13,7 +13,12 @@
 	},
 	"scripts": {
 		"test": "node --test 'src/**/test.js' 'src/test/*.test.js'",
-		"u32:wmul:showdown": "node src/u32/wmul/candidates/showdown.js"
+		"i32:showdown": "node src/i32/showdown.js",
+		"i32:add:showdown": "node src/i32/add/showdown.js",
+		"i32:mul:showdown": "node src/i32/mul/showdown.js",
+		"u32:mul:bench": "node src/u32/mul/bench.js",
+		"u32:mulhi:showdown": "node src/u32/mulhi/candidates/showdown.js",
+		"u32:mulwide:showdown": "node src/u32/mulwide/candidates/showdown.js"
 	},
 	"imports": {
 		"#*": "./src/*/index.js"
