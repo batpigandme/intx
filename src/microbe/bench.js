@@ -1,6 +1,6 @@
 "use strict";
 
-const { performance } = require("node:perf_hooks");
+const { sample } = require("./timer");
 const { computeStats } = require("./stats");
 const { renderBench } = require("./render");
 
@@ -8,11 +8,10 @@ const { renderBench } = require("./render");
  * Benchmarks a single kernel runner across multiple measurement rounds.
  *
  * @param {string} title - Benchmark title.
- * @param {Function} runner - Synchronous runner function `(iters: number) => any`.
+ * @param {Function} runner - Synchronous runner function `(iters: number, startClock: Function, stopClock: Function) => any`.
  * @param {object} [options={}] - Configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.iters=5e7] - Iteration count per round.
- * @param {number} [options.warmup=5e6] - Warmup iterations for JIT tier-up.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {object} Object containing statistical metrics for the run.
  *
@@ -31,23 +30,23 @@ function bench(title, runner, options = {}) {
 
 	const rounds = options.rounds ?? 5;
 	const iters = options.iters ?? 5e7;
-	const warmup = options.warmup ?? Math.min(iters * 0.1, 5e6);
 	const silent = !!options.silent;
 
-	// 1. Warmup for JIT tier-up
-	if (warmup > 0) {
-		runner(warmup);
-		runner(warmup);
-	}
+	// 1. Warmup Round (Round 0 for JIT tier-up, excluded from stats)
+	const warmupSample = sample(runner, iters);
+	const warmup = {
+		elapsed: warmupSample.elapsed,
+		iters,
+		rate: iters / warmupSample.elapsed,
+	};
 
 	// 2. Multi-round measurement
-	let value;
+	let value = warmupSample.value;
 	const samples = [];
 	for (let r = 0; r < rounds; r++) {
-		const t0 = performance.now();
-		value = runner(iters);
-		const t1 = performance.now();
-		samples.push((t1 - t0) / 1000);
+		const res = sample(runner, iters);
+		samples.push(res.elapsed);
+		value = res.value;
 	}
 
 	// 3. Statistical analysis
@@ -57,6 +56,7 @@ function bench(title, runner, options = {}) {
 		name: title,
 		value,
 		...stats,
+		warmup,
 		rounds,
 		iters,
 	};

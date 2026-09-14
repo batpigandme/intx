@@ -3,9 +3,9 @@
 /**
  * Runner Contract:
  * A runner function is any synchronous function with the signature:
- *   (iters: number) => any
+ *   (iters: number, startClock: Function, stopClock: Function) => any
  *
- * @typedef {(iters: number) => any} RunnerFunction
+ * @typedef {(iters: number, startClock: Function, stopClock: Function) => any} RunnerFunction
  */
 
 /**
@@ -22,10 +22,10 @@
  * @param {object} options - Runner configuration options.
  * @param {string} [options.name="kernel"] - Descriptive name used for function naming and compilation tagging.
  * @param {object} [options.context={}] - Key-value map of variables to inject into the runner's closure scope.
- * @param {string} [options.setup=""] - JavaScript code string executed before the loop.
- * @param {string} [options.body=""] - JavaScript code string executed inside the `for (let i = 0; i < n; i++)` loop.
- * @param {string} [options.teardown=""] - JavaScript code string executed after the loop (e.g. return value).
- * @returns {RunnerFunction} Generated monomorphic runner function `(n) => ...`.
+ * @param {string} [options.setup=""] - JavaScript code string executed before the loop (un-timed).
+ * @param {string} [options.body=""] - JavaScript code string executed inside the timed `for (let i = 0; i < iters; i++)` loop.
+ * @param {string} [options.teardown=""] - JavaScript code string executed after the loop (un-timed, e.g. return value).
+ * @returns {RunnerFunction} Generated monomorphic runner function `(iters, startClock, stopClock) => ...`.
  *
  * @example
  * const runner = createRunner({
@@ -50,11 +50,13 @@ function createRunner(options = {}) {
 
 	const functionSource = `
     /* [Microbe Monomorphic Unit: ${uniqueId}] */
-    return function bench_${cleanName}(n) {
+    return function bench_${cleanName}(iters, startClock, stopClock) {
       ${setup}
-      for (let i = 0; i < n; i++) {
+      startClock();
+      for (let i = 0; i < iters; i++) {
         ${body}
       }
+      stopClock();
       ${teardown}
     };
   `;

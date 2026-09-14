@@ -1,6 +1,6 @@
 "use strict";
 
-const { performance } = require("node:perf_hooks");
+const { sample } = require("./timer");
 const { computeStats } = require("./stats");
 const { renderTable } = require("./render");
 
@@ -25,11 +25,10 @@ function shuffle(array) {
  * Multi-target benchmark showdown & ranking orchestrator.
  *
  * @param {string} title - Title of the comparison suite.
- * @param {object} runners - Object map of target names to runner functions.
+ * @param {object} runners - Object map of target names to runner functions `(iters, startClock, stopClock) => any`.
  * @param {object} [options={}] - Comparison configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.iters=5e7] - Default iteration count per round.
- * @param {number} [options.warmup] - Warmup iteration count.
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {Array<object>} Sorted array of evaluated results.
@@ -60,7 +59,6 @@ function compare(title, runners, options = {}) {
 
 	const rounds = options.rounds ?? 5;
 	const iters = options.iters ?? 5e7;
-	const warmup = options.warmup ?? Math.min(iters * 0.1, 5e6);
 	const shuffled = options.shuffled ?? true;
 	const silent = !!options.silent;
 
@@ -73,14 +71,13 @@ function compare(title, runners, options = {}) {
 			` Config: ${rounds} rounds × ${iters.toExponential()} iters/round | ${orderLabel}`,
 		);
 		console.log(`${"=".repeat(100)}\n`);
-		if (warmup > 0) {
-			process.stdout.write("🔥 Warming up JIT compilers... ");
-		}
+		process.stdout.write("🔥 Warming up JIT compilers (Round 0)... ");
 	}
 
-	// 1. Warmup Phase (tier-up all runners in V8 TurboFan)
+	// 1. Warmup Phase (Round 0 for JIT tier-up across all candidates)
 	const samples = {};
 	const values = {};
+	const warmup = {};
 
 	for (const name of names) {
 		const runner = runners[name];
@@ -89,14 +86,17 @@ function compare(title, runners, options = {}) {
 				`compare expected runner function for '${name}', received: ${typeof runner}`,
 			);
 		}
-		if (warmup > 0) {
-			runner(warmup);
-			runner(warmup);
-		}
+		const warmupSample = sample(runner, iters);
+		warmup[name] = {
+			elapsed: warmupSample.elapsed,
+			iters,
+			rate: iters / warmupSample.elapsed,
+		};
+		values[name] = warmupSample.value;
 		samples[name] = [];
 	}
 
-	if (!silent && warmup > 0) {
+	if (!silent) {
 		console.log("Ready.\n");
 	}
 
@@ -112,10 +112,9 @@ function compare(title, runners, options = {}) {
 
 		for (const name of roundOrder) {
 			const runner = runners[name];
-			const t0 = performance.now();
-			values[name] = runner(iters);
-			const t1 = performance.now();
-			samples[name].push((t1 - t0) / 1000);
+			const res = sample(runner, iters);
+			values[name] = res.value;
+			samples[name].push(res.elapsed);
 		}
 	}
 
@@ -129,6 +128,7 @@ function compare(title, runners, options = {}) {
 		return {
 			name,
 			value: values[name],
+			warmup: warmup[name],
 			...stats,
 		};
 	});

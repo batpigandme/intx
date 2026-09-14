@@ -14,12 +14,14 @@ Measuring tight arithmetic loops in JavaScript (e.g. integer math, bitwise ops) 
 
 1. **Megamorphic Call Sites (IC Pollution)**: If a single benchmark loop calls candidate A, candidate B, and candidate C from the same call site, V8's Inline Cache (IC) transitions to *megamorphic* (3+ distinct targets). This permanently disables TurboFan function inlining and creates an artificial 5x–10x slowdown.
 2. **Thermal Throttling & CPU Boost Bias**: Running 10^8 iterations of candidate A, then candidate B sequentially gives candidate A an unfair advantage on a cold, high-boost CPU core (~4.8 GHz) before the CPU thermally throttles (~3.2 GHz) for candidate B.
-3. **Warmup Tier-Up**: Functions need enough warmup iterations to tier up through Ignition → Sparkplug → Maglev → TurboFan before timing starts.
+3. **Setup/Teardown Contamination**: Fixture allocations or array resets included in the timing loop distort nanosecond-scale arithmetic measurements.
+4. **Warmup Tier-Up**: Functions need initial execution to tier up through Ignition → Sparkplug → Maglev → TurboFan before timing starts.
 
 `microbe` solves these by:
 - Compiling **isolated monomorphic closures** per candidate via `createRunner()`, giving each candidate its own pristine feedback vector.
+- Timing **only the measurement loop** via `startClock()` / `stopClock()`, excluding setup and teardown overhead.
 - **Interleaving and shuffling** measurement rounds across candidates so thermal fluctuations affect all targets equally.
-- Providing **warmup rounds** and robust statistics (Median, Peak, Margin of Error).
+- Providing an automatic **Round 0 warmup** round for JIT tier-up and robust statistics (Median, Peak, Margin of Error).
 
 ---
 
@@ -34,13 +36,17 @@ function mul(a, b) {
   return Math.imul(a, b) >>> 0;
 }
 
-// Runner contract: (iters: number) => any
-bench('u32.mul', (iters) => {
-  let acc = 1;
+// Runner contract: (iters: number, startClock: Function, stopClock: Function) => any
+bench('u32.mul', (iters, startClock, stopClock) => {
+  let acc = 1; // un-timed setup
+
+  startClock();
   for (let i = 0; i < iters; i++) {
     acc = mul(acc, 0x12345678);
   }
-  return acc;
+  stopClock();
+
+  return acc; // un-timed teardown
 }, {
   rounds: 5,
   iters: 1e7,
@@ -121,7 +127,7 @@ compare('Multiplication Showdown', runners, {
  Config: 5 rounds × 1e+7 iters/round | Order: Shuffled
 ====================================================================================================
 
-🔥 Warming up JIT compilers... Ready.
+🔥 Warming up JIT compilers (Round 0)... Ready.
 
  [Completed 5 measurement rounds]             
 
@@ -138,15 +144,15 @@ Rank  Kernel / Target                           Median (iters/s)  Peak (iters/s)
 ## API Reference
 
 ### `createRunner(options)`
-Generates an isolated closure `(n) => ...` with its own `SharedFunctionInfo`.
+Generates an isolated closure `(iters, startClock, stopClock) => ...` with its own `SharedFunctionInfo`.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `name` | `string` | `'kernel'` | Identifier used for function tagging. |
 | `context` | `object` | `{}` | Variables injected into the runner's closure scope. |
-| `setup` | `string` | `''` | JS executed before the iteration loop. |
-| `body` | `string` | `''` | JS executed inside `for (let i = 0; i < n; i++)`. |
-| `teardown` | `string` | `''` | JS executed after the loop (e.g. `return out;`). |
+| `setup` | `string` | `''` | JS executed before `startClock()`. |
+| `body` | `string` | `''` | JS executed inside the timed loop `for (let i = 0; i < iters; i++)`. |
+| `teardown` | `string` | `''` | JS executed after `stopClock()` (e.g. `return out;`). |
 
 ---
 
@@ -157,7 +163,6 @@ Runs a multi-round benchmark for a single runner function.
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
 | `iters` | `number` | `5e7` | Loop iterations per round. |
-| `warmup` | `number` | `min(iters*0.1, 5e6)` | Warmup iterations before timing. |
 | `silent` | `boolean` | `false` | Suppress console output and return stats object. |
 
 ---
@@ -169,6 +174,5 @@ Runs an interleaved multi-candidate showdown and outputs a ranked results table.
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
 | `iters` | `number` | `5e7` | Iterations per round. |
-| `warmup` | `number` | `min(iters*0.1, 5e6)` | Warmup iterations per runner. |
 | `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
