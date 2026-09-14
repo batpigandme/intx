@@ -74,25 +74,25 @@ const candidates = {
 	// bigint_hi,
 };
 
-// Helper to build a monomorphic JIT runner for u32.wmul kernels: wmul(a, b, out)
-function createWmulRunner(candidate, name) {
+// Helper to build a monomorphic JIT runner for u32.mulwide kernels: mulwide(a, b, out)
+function createMulwideRunner(candidate, name) {
 	// const r = [0, 0];
 	const r = new Uint32Array(2);
 	return createRunner({
 		name,
-		context: { wmul: candidate, r, a: 0xdeadbeef },
+		context: { mulwide: candidate, r, a: 0xdeadbeef },
 		setup: "r[0] = 0; r[1] = 1;",
-		body: "wmul(r[1], a, r);",
-		teardown: "return r;",
+		body: "mulwide(r[0] ^ r[1], a, r);",
+		teardown: "return r[1];",
 	});
 }
 
 const runners = {};
 for (const name in candidates) {
-	runners[name] = createWmulRunner(candidates[name], name);
+	runners[name] = createMulwideRunner(candidates[name], name);
 }
 
-compare("u32.wmul: Grand Candidate Showdown", runners, {
+compare("u32.mulwide: Grand Candidate Showdown", runners, {
 	rounds: 5,
 	iters: 1e7,
 });

@@ -68,7 +68,7 @@ const candidates = {
 	"bigint-hi": bigint_hi,
 };
 
-test("u32.wmul: candidates verification vs BigInt oracle", () => {
+test("u32.mulwide: candidates verification vs BigInt oracle", () => {
 	const edgeCases = [
 		[0, 0],
 		[1, 1],

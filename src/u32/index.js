@@ -2,5 +2,6 @@
 
 module.exports = {
 	mul: require("./mul"),
-	wmul: require("./wmul"),
+	mulhi: require("./mulhi"),
+	mulwide: require("./mulwide"),
 };
