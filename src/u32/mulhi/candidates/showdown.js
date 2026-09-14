@@ -1,6 +1,6 @@
 "use strict";
 
-const { bench } = require("#microbe");
+const { bench, createRunner } = require("#microbe");
 
 // Family 1: limb16-parallel
 const limb16_parallel_bitwise = require("./limb16-parallel-bitwise");
@@ -78,7 +78,7 @@ const candidates = {
 function createMulhiRunner(candidate, name) {
 	// const r = [0];
 	const r = new Uint32Array(1);
-	return bench.createRunner({
+	return createRunner({
 		name,
 		context: { mulhi: candidate, r, a: 0xdeadbeef },
 		setup: "r[0] = 1;",

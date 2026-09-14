@@ -7,8 +7,8 @@ const { createRunner } = require("./create-runner");
 
 suite.rank = rank;
 bench.suite = suite;
-bench.createRunner = createRunner;
 
 module.exports = {
 	bench,
+	createRunner,
 };

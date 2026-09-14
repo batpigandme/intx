@@ -1,6 +1,6 @@
 "use strict";
 
-const { bench } = require("#microbe");
+const { bench, createRunner } = require("#microbe");
 const { randomI32 } = require("#utils");
 const i32 = require("./index.js");
 
@@ -17,28 +17,28 @@ for (let i = 0; i < 1024; i++) {
 }
 
 const ops = {
-	add: bench.createRunner({
+	add: createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		body: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	sub: bench.createRunner({
+	sub: createRunner({
 		context: { sub: i32.sub, c },
 		setup: "let acc = 1;",
 		body: "acc = sub(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	mul: bench.createRunner({
+	mul: createRunner({
 		context: { mul: i32.mul, c },
 		setup: "let acc = 1;",
 		body: "acc = mul(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	div: bench.createRunner({
+	div: createRunner({
 		context: { div: i32.div, d, buf },
 		setup: "let acc = 0, idx = 0;",
 		body: `
@@ -48,7 +48,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	mod: bench.createRunner({
+	mod: createRunner({
 		context: { mod: i32.mod, d, buf },
 		setup: "let acc = 0, idx = 0;",
 		body: `
@@ -58,7 +58,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	divmod: bench.createRunner({
+	divmod: createRunner({
 		context: { divmod: i32.divmod, d, buf, out },
 		setup: "let idx = 0;",
 		body: `
@@ -68,21 +68,21 @@ const ops = {
 		teardown: "return out[0] ^ out[1];",
 	}),
 
-	rotl: bench.createRunner({
+	rotl: createRunner({
 		context: { rotl: i32.rotl, k },
 		setup: "let acc = 0x12345678;",
 		body: "acc = rotl(acc, k);",
 		teardown: "return acc;",
 	}),
 
-	rotr: bench.createRunner({
+	rotr: createRunner({
 		context: { rotr: i32.rotr, k },
 		setup: "let acc = 0x12345678;",
 		body: "acc = rotr(acc, k);",
 		teardown: "return acc;",
 	}),
 
-	clz: bench.createRunner({
+	clz: createRunner({
 		context: { clz: i32.clz, c },
 		setup: "let acc = 1;",
 		body: "acc = clz(acc ^ c);",
