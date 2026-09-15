@@ -8,22 +8,31 @@
 - [x] **L1 Buffer Walk Benchmark Pattern**:
   - Replaced decaying serial recurrence in division / modulo benchmarks with 1,024-element L1 cached test vector buffer.
   - Utilized `(idx + 1) & 1023` to trigger TurboFan Bounds Check Elimination (BCE) and branch-free evaluation.
-- [ ] **JIT & Microbenchmarking Pattern Explorations**:
-  - [ ] **Observe DCE in a Bench Run**: Construct a benchmark demonstrator showing dead code elimination (DCE) when pure expressions or unused loop values fold into an empty loop.
-  - [ ] **Observe No DCE in Closure Constants**: Verify that constants injected via `context` are treated as runtime parameters preventing static folding/DCE while staying hoisted and monomorphic.
-  - [ ] **Theoretical Peak (Reg-to-Reg) & ILP Exploration for All Ops**:
-    - Formulate independent multi-accumulator strategies (1x latency-bound vs 2x, 4x, 8x instruction-level parallelism throughput bounds) across arithmetic and bitwise ops.
-  - [ ] **Read-Only Buffer Walk: BCE vs Non-BCE & Buffer Sizing**:
+- [x] **JIT & Microbenchmarking Pattern Explorations**:
+  - [x] **Observe DCE in a Bench Run**: Construct a benchmark demonstrator showing dead code elimination (DCE) when pure expressions or unused loop values fold into an empty loop (`explorations/01-dce-and-constants.js`).
+  - [x] **Observe No DCE in Closure Constants**: Verify that constants injected via `context` are treated as runtime parameters preventing static folding/DCE while staying hoisted and monomorphic (`explorations/01-dce-and-constants.js`).
+  - [x] **Theoretical Peak (Reg-to-Reg) & ILP Exploration for All Ops**:
+    - Formulate independent multi-accumulator strategies (1x latency-bound vs 2x, 4x, 8x instruction-level parallelism throughput bounds) across arithmetic and bitwise ops (`explorations/04-reg2reg-ilp.js`).
+  - [x] **Read-Only Buffer Walk: BCE vs Non-BCE & Buffer Sizing**:
     - Benchmark Bounds Check Elimination (BCE) vs non-BCE indexing (e.g., `& 0x3ff` vs dynamic modulo or unmasked indices).
-    - Test smaller L1 cache footprints (e.g., 1 KB / 256 elements with `& 0xff` hex mask vs 4 KB / 1024 elements with `& 0x3ff`).
-  - [ ] **Buffer Mutation: In-Place vs Separate Write Buffers vs Local Allocation**:
+    - Test smaller L1 cache footprints (e.g., 1 KB / 256 elements with `& 0xff` hex mask vs 4 KB / 1024 elements with `& 0x3ff`) (`explorations/05-readonly-buffer-walk.js`).
+  - [x] **Buffer Mutation: In-Place vs Separate Write Buffers vs Local Allocation**:
     - Benchmark `context` (allocated once) vs local `setup` (allocated per round) buffers.
-    - Separate read inputs from write outputs (`inBuf` -> `outBuf`) and compare in-place mutation vs separate output buffer writes.
-  - [ ] **Observe Loop Producing Constant Value (DCE / DLE)**: Test whether loops that compute invariant or statically predictable values (e.g., identity operations or closed-form expressions) trigger Dead Loop Elimination.
-  - [ ] **Observe Aliasing a Context Variable in Local Scope**: Compare accessing closure context variables directly vs aliasing them into local `setup` bindings (`const localC = c;`) to analyze register allocation and context slot load hoisting.
-  - [ ] **Observe Megamorphic IC Degradation on `out` Buffer**: Test whether kernels with an `out` destination parameter (e.g. `divmod(a, b, out)`, `mulwide(a, b, out)`) degrade into polymorphic or megamorphic IC states when passed different backing types (`Int32Array`, `Uint32Array`, generic `Array`, etc.) within the same program or shared call site.
-  - [ ] **Isolate Pure Loop Overhead**:
-    - Construct baseline empty loop runners (`for (let i = 0; i < iters; i++) {}`) to accurately measure and subtract loop control overhead.
+    - Separate read inputs from write outputs (`inBuf` -> `outBuf`) and compare in-place mutation vs separate output buffer writes (`explorations/06-buffer-mutation.js`).
+  - [x] **Observe Loop Producing Constant Value (DCE / DLE)**: Test whether loops that compute invariant or statically predictable values (e.g., identity operations or closed-form expressions) trigger Dead Loop Elimination (`explorations/02-constant-loop-dle.js`).
+  - [x] **Observe Aliasing a Context Variable in Local Scope**: Compare accessing closure context variables directly vs aliasing them into local `setup` bindings (`const localC = c;`) to analyze register allocation and context slot load hoisting (`explorations/03-context-aliasing.js`).
+  - [x] **Observe Megamorphic IC Degradation on `out` Buffer**: Test whether kernels with an `out` destination parameter (e.g. `divmod(a, b, out)`, `mulwide(a, b, out)`) degrade into polymorphic or megamorphic IC states when passed different backing types (`Int32Array`, `Uint32Array`, generic `Array`, etc.) within the same program or shared call site (`explorations/08-megamorphic-out-param.js`).
+  - [x] **Isolate Pure Loop Overhead**:
+    - Construct baseline empty loop runners (`for (let i = 0; i < iters; i++) {}`) to accurately measure and subtract loop control overhead (`explorations/07-loop-overhead-isolation.js`).
+  - [x] **Signed vs Unsigned `mulwide` Latency & Throughput**:
+    - Measure and compare max 1x serial throughput and Hacker's Delight correction latency between `i32.mulwide` and `u32.mulwide` (`explorations/09-mulwide-signed-vs-unsigned.js`).
+- [ ] **Cross-Engine & Compiler Deep-Dives**:
+  - [ ] **Probe Loop Unrolling Thresholds in V8/TurboFan**:
+    - Profile exact compile-time constant trip count boundaries (e.g. `<= 16` or `32` iterations) where TurboFan unrolls and fully eliminates empty loops vs where loop headers and back-edges are emitted.
+  - [ ] **Document Empty Loop DLE Across Different Engines**:
+    - Document Dead Loop Elimination behavior across runtimes: JavaScriptCore / B3 (Bun, Safari), SpiderMonkey (Firefox), and V8 (Node, Chrome).
+  - [ ] **Cross-Check Microbenchmark Findings Across Node Versions & Engines**:
+    - Run the exploration benchmark matrix across multiple Node versions (Node 16/18 Crankshaft/TurboFan transition -> Node 20/22/24 Maglev/Concurrent Sparkplug) and alternate engines (Bun/JSC, Deno/V8).
 - [ ] **Build `testx` Tool**:
   - Implement a modular candidate validation and fuzz testing harness matching the design of `microbe`.
 - [ ] **Rebuild Browser Benchmarking UI**:
