@@ -84,4 +84,5 @@ const ops = {
 bench.suite("i32.add: Execution Pattern Suite", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

@@ -26,7 +26,7 @@ const buf128 = new Int32Array(128);
 for (let i = 0; i < 128; i++) buf128[i] = randomI32();
 
 const ops = {
-	"1. BCE: 1 KB (256 elements, mask & 0xff)": createRunner({
+	"BCE: 1 KB (256 elements, mask & 0xff)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -36,7 +36,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"2. BCE: 4 KB (1024 elements, mask & 0x3ff)": createRunner({
+	"BCE: 4 KB (1024 elements, mask & 0x3ff)": createRunner({
 		context: { add: i32.add, buf: buf1024 },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -46,7 +46,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"3. BCE: 512 B (128 elements, mask & 0x7f)": createRunner({
+	"BCE: 512 B (128 elements, mask & 0x7f)": createRunner({
 		context: { add: i32.add, buf: buf128 },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -56,7 +56,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"4. Non-BCE: Modulo Indexing ((idx + 1) % 256)": createRunner({
+	"Non-BCE: Modulo Indexing ((idx + 1) % 256)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -66,7 +66,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"5. Non-BCE: Modulo Non-Power-of-Two ((idx + 1) % 250)": createRunner({
+	"Non-BCE: Modulo Non-Power-of-Two ((idx + 1) % 250)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -76,7 +76,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"6. Non-BCE: Branching Reset (idx >= 256 ? 0 : idx)": createRunner({
+	"Non-BCE: Branching Reset (idx >= 256 ? 0 : idx)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -91,4 +91,5 @@ const ops = {
 bench.suite("Exp 5: Read-Only Buffer Walk: BCE vs Non-BCE & Sizing", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

@@ -17,26 +17,26 @@ const buf = new Int32Array(256);
 for (let i = 0; i < 256; i++) buf[i] = (i * 0x45d9f3b + 1) | 0;
 
 const ops = {
-	"1. Empty Loop (DLE Candidate)": createRunner({
+	"Empty Loop (DLE Candidate)": createRunner({
 		setup: "let acc = 0;",
 		loop: "",
 		teardown: "return acc;",
 	}),
 
-	"2. Minimal Opaque Induction Sink (acc ^= (i & mask))": createRunner({
+	"Minimal Opaque Induction Sink (acc ^= (i & mask))": createRunner({
 		context: { mask: 0x7fffffff },
 		setup: "let acc = 0;",
 		loop: "acc = (acc ^ (i & mask)) | 0;",
 		teardown: "return acc;",
 	}),
 
-	"3. Minimal Register In-Place Step (acc = (acc + 1) | 0)": createRunner({
+	"Minimal Register In-Place Step (acc = (acc + 1) | 0)": createRunner({
 		setup: "let acc = 0;",
 		loop: "acc = (acc + 1) | 0;",
 		teardown: "return acc;",
 	}),
 
-	"4. Read-Only Buffer Walk Baseline (acc ^= buf[idx])": createRunner({
+	"Read-Only Buffer Walk Baseline (acc ^= buf[idx])": createRunner({
 		context: { buf },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -46,14 +46,14 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"5. Target Operation: i32.add (acc = add(acc, c))": createRunner({
+	"Target Operation: i32.add (acc = add(acc, c))": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"6. Target Operation: i32.add on Buffer (acc = add(acc, buf[idx]))":
+	"Target Operation: i32.add on Buffer (acc = add(acc, buf[idx]))":
 		createRunner({
 			context: { add: i32.add, buf },
 			setup: "let acc = 0, idx = 0;",
@@ -68,4 +68,5 @@ const ops = {
 bench.suite("Exp 7: Pure Loop Overhead & Calibration Baseline", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

@@ -93,4 +93,5 @@ const ops = {
 bench.suite.rank("i32: Intrinsic Scalar Operations Showdown", ops, {
 	rounds: 5,
 	iters: 1e7,
+	width: 100,
 });

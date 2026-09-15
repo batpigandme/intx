@@ -18,42 +18,42 @@ const buf = new Int32Array(256);
 for (let i = 0; i < 256; i++) buf[i] = (i * 0x45d9f3b + 1) | 0;
 
 const ops = {
-	"1. Scalar Constant: Direct Closure Access": createRunner({
+	"Scalar Constant: Direct Closure Access": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"2. Scalar Constant: Local 'const' Alias in setup": createRunner({
+	"Scalar Constant: Local 'const' Alias in setup": createRunner({
 		context: { add: i32.add, c },
 		setup: "const localC = c; let acc = 1;",
 		loop: "acc = add(acc, localC);",
 		teardown: "return acc;",
 	}),
 
-	"3. Scalar Constant: Local 'let' Alias in setup": createRunner({
+	"Scalar Constant: Local 'let' Alias in setup": createRunner({
 		context: { add: i32.add, c },
 		setup: "let localC = c, acc = 1;",
 		loop: "acc = add(acc, localC);",
 		teardown: "return acc;",
 	}),
 
-	"4. Function Ref: Direct Closure Access": createRunner({
+	"Function Ref: Direct Closure Access": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"5. Function Ref: Local 'const' Alias in setup": createRunner({
+	"Function Ref: Local 'const' Alias in setup": createRunner({
 		context: { add: i32.add, c },
 		setup: "const localAdd = add; let acc = 1;",
 		loop: "acc = localAdd(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"6. Buffer Ref: Direct Closure Access": createRunner({
+	"Buffer Ref: Direct Closure Access": createRunner({
 		context: { add: i32.add, buf },
 		setup: "let acc = 1, idx = 0;",
 		loop: `
@@ -63,7 +63,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"7. Buffer Ref: Local 'const' Alias in setup": createRunner({
+	"Buffer Ref: Local 'const' Alias in setup": createRunner({
 		context: { add: i32.add, buf },
 		setup: "const localBuf = buf; let acc = 1, idx = 0;",
 		loop: `
@@ -77,4 +77,5 @@ const ops = {
 bench.suite("Exp 3: Context Variable Direct Access vs Local Aliasing", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

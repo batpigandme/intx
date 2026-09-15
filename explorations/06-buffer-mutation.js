@@ -29,7 +29,7 @@ for (let i = 0; i < 256; i++) {
 }
 
 const ops = {
-	"1. Read-Only Baseline (Walk Only)": createRunner({
+	"Read-Only Baseline (Walk Only)": createRunner({
 		context: { add: i32.add, c, inBuf },
 		setup: "let acc = 0, idx = 0;",
 		loop: `
@@ -39,7 +39,7 @@ const ops = {
 		teardown: "return acc;",
 	}),
 
-	"2. In-Place Mutation (Context Buffer)": createRunner({
+	"In-Place Mutation (Context Buffer)": createRunner({
 		context: { add: i32.add, c, mutBuf },
 		setup: "let idx = 0;",
 		loop: `
@@ -49,7 +49,7 @@ const ops = {
 		teardown: "return mutBuf[0];",
 	}),
 
-	"3. In-Place Mutation (Local Setup Buffer)": createRunner({
+	"In-Place Mutation (Local Setup Buffer)": createRunner({
 		context: { add: i32.add, c },
 		setup: `
 			const localBuf = new Int32Array(256);
@@ -63,7 +63,7 @@ const ops = {
 		teardown: "return localBuf[0];",
 	}),
 
-	"4. Separate Write Buffer (inBuf -> outBuf, Context)": createRunner({
+	"Separate Write Buffer (inBuf -> outBuf, Context)": createRunner({
 		context: { add: i32.add, c, inBuf, outBuf },
 		setup: "let idx = 0;",
 		loop: `
@@ -73,7 +73,7 @@ const ops = {
 		teardown: "return outBuf[0];",
 	}),
 
-	"5. Separate Write Buffer (Local Setup Buffers)": createRunner({
+	"Separate Write Buffer (Local Setup Buffers)": createRunner({
 		context: { add: i32.add, c },
 		setup: `
 			const localIn = new Int32Array(256);
@@ -88,7 +88,7 @@ const ops = {
 		teardown: "return localOut[0];",
 	}),
 
-	"6. Fixed Fixture Mutation (out[0] = ... like divmod)": createRunner({
+	"Fixed Fixture Mutation (out[0] = ... like divmod)": createRunner({
 		context: { add: i32.add, c, inBuf, outFix },
 		setup: "let idx = 0;",
 		loop: `
@@ -103,4 +103,5 @@ const ops = {
 bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

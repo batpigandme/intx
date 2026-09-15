@@ -16,55 +16,57 @@ const i32 = require("#i32");
 const c = 0x9e3779b9 | 0;
 
 const ops = {
-	"1. DCE: Unused Pure Function (Math.imul(42, 17))": createRunner({
+	"DCE: Unused Pure Function (Math.imul(42, 17))": createRunner({
 		setup: "let acc = 0;",
 		loop: "Math.imul(42, 17);",
 		teardown: "return acc;",
 	}),
 
-	"2. DCE: Static Invariant Expression ((42 * 17) | 0)": createRunner({
+	"DCE: Static Invariant Expression ((42 * 17) | 0)": createRunner({
 		setup: "let acc = 0;",
 		loop: "acc = ((42 * 17) | 0);",
 		teardown: "return acc;",
 	}),
 
-	"3. Kernel with Context Constant (i32.add(acc, c))": createRunner({
+	"Kernel with Context Constant (i32.add(acc, c))": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
 		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
-	"4. Kernel with Inlined Literal (i32.add(acc, 0x9e3779b9))": createRunner({
+	"Kernel with Inlined Literal (i32.add(acc, 0x9e3779b9))": createRunner({
 		context: { add: i32.add },
 		setup: "let acc = 1;",
 		loop: "acc = add(acc, 0x9e3779b9 | 0);",
 		teardown: "return acc;",
 	}),
 
-	"5. Inline Op with Literal (((acc|0) + -1640531527)|0)": createRunner({
+	"Inline Op with Literal (((acc|0) + -1640531527)|0)": createRunner({
 		setup: "let acc = 1;",
 		loop: "acc = ((acc | 0) + (-1640531527)) | 0;",
 		teardown: "return acc;",
 	}),
 
-	"6. Inline Op with Coerced Context Var (((acc|0) + (c|0))|0)": createRunner({
+	"Inline Op with Coerced Context Var (((acc|0) + (c|0))|0)": createRunner({
 		context: { c },
 		setup: "let acc = 1;",
 		loop: "acc = ((acc | 0) + (c | 0)) | 0;",
 		teardown: "return acc;",
 	}),
 
-	"7. Inline Op with Uncoerced Context Var (((acc|0) + c)|0) [TRAP]":
-		createRunner({
+	"Inline Op with Uncoerced Context Var (((acc|0) + c)|0) [TRAP]": createRunner(
+		{
 			context: { c },
 			setup: "let acc = 1;",
 			loop: "acc = ((acc | 0) + c) | 0;",
 			teardown: "return acc;",
-		}),
+		},
+	),
 };
 
 bench.suite("Exp 1: Dead Code Elimination (DCE) & Closure Constants", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

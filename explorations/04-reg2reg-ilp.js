@@ -138,14 +138,17 @@ const rotlOps = {
 bench.suite("Exp 4A: i32.add ILP Stream Scaling", addOps, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });
 
 bench.suite("Exp 4B: i32.mul ILP Stream Scaling (Pipelined)", mulOps, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });
 
 bench.suite("Exp 4C: i32.rotl ILP Stream Scaling", rotlOps, {
 	rounds: 5,
 	iters: 1e8,
+	width: 100,
 });

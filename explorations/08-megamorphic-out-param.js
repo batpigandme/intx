@@ -83,7 +83,7 @@ for (let i = 0; i < 256; i++) buf[i] = (i * 0x45d9f3b + 1) | 0;
 const c = 0x9e3779b9 | 0;
 
 const ops = {
-	"1. Monomorphic: Pristine Int32Array out": createRunner({
+	"Monomorphic: Pristine Int32Array out": createRunner({
 		context: { mulwide: mulwideI32, c, buf, out: outI32 },
 		setup: "let idx = 0;",
 		loop: `
@@ -93,7 +93,7 @@ const ops = {
 		teardown: "return out[0] ^ out[1];",
 	}),
 
-	"2. Monomorphic: Pristine Uint32Array out": createRunner({
+	"Monomorphic: Pristine Uint32Array out": createRunner({
 		context: { mulwide: mulwideU32, c, buf, out: outU32 },
 		setup: "let idx = 0;",
 		loop: `
@@ -103,7 +103,7 @@ const ops = {
 		teardown: "return out[0] ^ out[1];",
 	}),
 
-	"3. Monomorphic: Pristine Generic Array out ([0, 0])": createRunner({
+	"Monomorphic: Pristine Generic Array out ([0, 0])": createRunner({
 		context: { mulwide: mulwideGeneric, c, buf, out: outGeneric },
 		setup: "let idx = 0;",
 		loop: `
@@ -113,19 +113,18 @@ const ops = {
 		teardown: "return out[0] ^ out[1];",
 	}),
 
-	"4. Polymorphic Call Site (2 types: Int32 + Uint32 alternating)":
-		createRunner({
-			context: { mulwide: mulwidePolymorphic, c, buf, polyBuffers },
-			setup: "let idx = 0, bIdx = 0;",
-			loop: `
+	"Polymorphic Call Site (2 types: Int32 + Uint32 alternating)": createRunner({
+		context: { mulwide: mulwidePolymorphic, c, buf, polyBuffers },
+		setup: "let idx = 0, bIdx = 0;",
+		loop: `
 			mulwide(buf[idx], c, polyBuffers[bIdx]);
 			bIdx = (bIdx + 1) & 1;
 			idx = (idx + 1) & 0xff;
 		`,
-			teardown: "return polyBuffers[0][0] ^ polyBuffers[1][0];",
-		}),
+		teardown: "return polyBuffers[0][0] ^ polyBuffers[1][0];",
+	}),
 
-	"5. Megamorphic Call Site (4 types: Int32 + Uint32 + Float64 + Generic)":
+	"Megamorphic Call Site (4 types: Int32 + Uint32 + Float64 + Generic)":
 		createRunner({
 			context: { mulwide: mulwideMegamorphic, c, buf, megaBuffers },
 			setup: "let idx = 0, bIdx = 0;",
@@ -138,7 +137,7 @@ const ops = {
 				"return (megaBuffers[0][0] ^ megaBuffers[1][0] ^ megaBuffers[2][0] ^ megaBuffers[3][0]) | 0;",
 		}),
 
-	"6. Contaminated Kernel: Int32Array on Pre-Polluted mulwide": createRunner({
+	"Contaminated Kernel: Int32Array on Pre-Polluted mulwide": createRunner({
 		context: { mulwide: contaminatedMulwide, c, buf, out: outI32 },
 		setup: "let idx = 0;",
 		loop: `

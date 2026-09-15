@@ -95,4 +95,5 @@ for (const name in candidates) {
 bench.suite.rank("u32.mulhi: Grand Candidate Showdown", runners, {
 	rounds: 5,
 	iters: 1e7,
+	width: 100,
 });
