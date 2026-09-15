@@ -17,6 +17,7 @@ This report documents comprehensive empirical investigations into V8 TurboFan op
 | **Exp 6** | Buffer Mutation | Read-Only: 597 M/s vs In-Place: 524 M/s vs Separate: 494 M/s | In-place mutation adds store buffer latency and risks input test-vector decay across iterations. |
 | **Exp 7** | Loop Overhead Isolation | Baseline loop: ~0.61 ns/iter; Kernel delta: ~0.20 ns | Pure loop control overhead can be cleanly isolated and subtracted to obtain true kernel latencies. |
 | **Exp 8** | Megamorphic `out` Parameter | Mono Int32: **235 M/s** vs Generic Array: **158 M/s** vs Mega: **168 M/s** | Passing mixed array types into `out` triggers Megamorphic IC deopts (~30-40% degradation); unboxed TypedArrays avoid V8 property access stubs. |
+| **Exp 9** | Signed vs Unsigned `mulwide` | u32: **139.5 M/s** (7.17 ns) vs i32: **125.8 M/s** (7.95 ns) | Signed correction adds a small ~0.78 ns ALU overhead in 1x serial recurrence (~10% throughput delta). |
 
 ---
 
@@ -177,6 +178,22 @@ TurboFan's inlining subsystem (`JSInliningHeuristic`) uses a cost-benefit model 
    * Functions containing `eval()`, `with`, `debugger` statements, or exceeding maximum graph node thresholds (`--max-inlining-nodes`) are disqualified from inlining.
 5. **Execution Frequency (Hotness)**:
    * Call sites situated inside tight loops with high execution frequency are given maximum priority in the inlining budget.
+
+---
+
+### Experiment 9: Signed (`i32.mulwide`) vs Unsigned (`u32.mulwide`) 1x Serial Throughput
+
+#### Results (1e8 iterations, 5 rounds):
+| Benchmark Pattern | `u32.mulwide` (Unsigned) | `i32.mulwide` (Signed) | Absolute Delta | Relative Throughput |
+| :--- | :--- | :--- | :--- | :--- |
+| **Pure Serial Recurrence (1x Latency Bound)** | **139.5 M/s** (7.17 ns) | **125.8 M/s** (7.95 ns) | +0.78 ns | **0.90x** (~10% delta) |
+| **L1 Buffer Walk (Diverse Inputs)** | **215.6 M/s** (4.64 ns) | **180.0 M/s** (5.55 ns) | +0.91 ns | **0.84x** (~16% delta) |
+
+#### Key Architectural Findings:
+1. **The Exact Cost of Hacker's Delight Signed Correction**:
+   The branch-free sign correction stage (`hi - ((a >> 31) & b) - ((b >> 31) & a)`) adds exactly **~0.78 to 0.91 nanoseconds** of ALU execution time (~3 to 4 CPU cycles on modern x86).
+2. **Pipelining Gains in Buffer Walks**:
+   Both signed and unsigned operations achieve significantly higher throughput under the L1 Buffer Walk pattern (+54% for u32, +43% for i32) because independent buffer inputs allow the CPU's out-of-order execution engine to overlap instruction execution across consecutive loop iterations, whereas pure serial recurrence is strictly latency-bound on the output feedback dependency.
 
 ---
 

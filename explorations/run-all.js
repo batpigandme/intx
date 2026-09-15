@@ -12,6 +12,7 @@ const experiments = [
 	"06-buffer-mutation.js",
 	"07-loop-overhead-isolation.js",
 	"08-megamorphic-out-param.js",
+	"09-mulwide-signed-vs-unsigned.js",
 ];
 
 console.log("===============================================================");
