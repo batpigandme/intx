@@ -11,6 +11,7 @@ const experiments = [
 	"05-readonly-buffer-walk.js",
 	"06-buffer-mutation.js",
 	"07-loop-overhead-isolation.js",
+	"08-megamorphic-out-param.js",
 ];
 
 console.log("===============================================================");

@@ -21,6 +21,7 @@
     - Separate read inputs from write outputs (`inBuf` -> `outBuf`) and compare in-place mutation vs separate output buffer writes.
   - [ ] **Observe Loop Producing Constant Value (DCE / DLE)**: Test whether loops that compute invariant or statically predictable values (e.g., identity operations or closed-form expressions) trigger Dead Loop Elimination.
   - [ ] **Observe Aliasing a Context Variable in Local Scope**: Compare accessing closure context variables directly vs aliasing them into local `setup` bindings (`const localC = c;`) to analyze register allocation and context slot load hoisting.
+  - [ ] **Observe Megamorphic IC Degradation on `out` Buffer**: Test whether kernels with an `out` destination parameter (e.g. `divmod(a, b, out)`, `mulwide(a, b, out)`) degrade into polymorphic or megamorphic IC states when passed different backing types (`Int32Array`, `Uint32Array`, generic `Array`, etc.) within the same program or shared call site.
   - [ ] **Isolate Pure Loop Overhead**:
     - Construct baseline empty loop runners (`for (let i = 0; i < iters; i++) {}`) to accurately measure and subtract loop control overhead.
 - [ ] **Build `testx` Tool**:

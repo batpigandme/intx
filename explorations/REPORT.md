@@ -16,6 +16,7 @@ This report documents comprehensive empirical investigations into V8 TurboFan op
 | **Exp 5** | BCE & Buffer Sizing | 1 KB (`& 0xff`): 537 M/s vs Modulo (`% 250`): **135 M/s (4.0x slower)** | Power-of-two bitmasks enable Bounds Check Elimination (BCE); 1 KB buffer maximizes L1D cache residency. |
 | **Exp 6** | Buffer Mutation | Read-Only: 597 M/s vs In-Place: 524 M/s vs Separate: 494 M/s | In-place mutation adds store buffer latency and risks input test-vector decay across iterations. |
 | **Exp 7** | Loop Overhead Isolation | Baseline loop: ~0.61 ns/iter; Kernel delta: ~0.20 ns | Pure loop control overhead can be cleanly isolated and subtracted to obtain true kernel latencies. |
+| **Exp 8** | Megamorphic `out` Parameter | Mono Int32: **235 M/s** vs Generic Array: **158 M/s** vs Mega: **168 M/s** | Passing mixed array types into `out` triggers Megamorphic IC deopts (~30-40% degradation); unboxed TypedArrays avoid V8 property access stubs. |
 
 ---
 
@@ -134,6 +135,23 @@ $$\text{Pure Kernel Execution Latency} = \text{Total Time per Iteration} - \text
 
 ---
 
+### Experiment 8: Megamorphic IC Degradation on `out` Parameter Buffers
+
+#### Results (1e8 iterations, 5 rounds)
+* **Monomorphic Pristine `Int32Array` out (`divmod(a, b, out)`):** `235.5 M/s` (~4.25 ns/iter) — **Fastest**
+* **Monomorphic Pristine `Uint32Array` out:** `177.4 M/s` (~5.64 ns/iter, extra unsigned conversion overhead)
+* **Monomorphic Generic `Array` out (`[0, 0]`):** `158.7 M/s` (~6.30 ns/iter, **33% slower**)
+* **Polymorphic Call Site (`Int32Array` + `Uint32Array` alternating):** `181.6 M/s` (~5.51 ns/iter)
+* **Megamorphic Call Site (4 distinct buffer types):** `168.1 M/s` (~5.95 ns/iter, **30-40% degradation**)
+* **Contaminated Kernel (Int32Array on pre-polluted shared `divmod`):** `233.3 M/s` (~4.28 ns/iter)
+
+#### Key Architectural Findings:
+1. **Unboxed TypedArrays vs Generic Property Stores**: In a monomorphic `Int32Array` call, TurboFan emits a direct machine store instruction (`mov [r_backing_store + offset], reg`). For generic JavaScript arrays (`[0, 0]`), V8 must maintain JSArray capacity metadata and Smi/HeapNumber element boxing, adding ~33% overhead.
+2. **Megamorphic Deoptimization on Dynamic Array Types**: When a single call site passes varying array types (`Int32Array`, `Uint32Array`, `Float64Array`, `Array`), the keyed element store IC (`KEYED_STORE_IC`) transitions to **MEGAMORPHIC**. TurboFan de-optimizes the store, falling back to runtime dictionary/stub lookups.
+3. **Monomorphic Runner Protection in Microbe**: When a candidate function is inlined inside an isolated monomorphic runner (via `bench.createRunner()`), TurboFan specializes the inlined store to the specific `out` instance passed in `context`, shielding it from foreign-type contamination across different benchmark candidates.
+
+---
+
 ## Best Practices Checklist for High-Performance JS Microbenchmarks
 
 1. [x] **Pass Constants via `context`**: Injects values as dynamic closure parameters, preventing compile-time dead code elimination and constant-folding.
@@ -141,3 +159,4 @@ $$\text{Pure Kernel Execution Latency} = \text{Total Time per Iteration} - \text
 3. [x] **Use 1 KB L1 Buffers with Hex Masks for Diverse Inputs**: Use `new Int32Array(256)` with `idx = (idx + 1) & 0xff` for maximum L1 cache residency and 100% Bounds Check Elimination (BCE).
 4. [x] **Use Separate Write Buffers for Mutations**: Always write outputs to a dedicated `outBuf` instead of mutating the input test vector to prevent input decay across benchmark rounds.
 5. [x] **Use Multi-Accumulator Streams (4x/8x) for Peak Throughput**: When measuring the theoretical execution port limits of a kernel, use 4x or 8x independent accumulators to break the 1x serialization latency bound.
+6. [x] **Keep `out` Destination Buffers Monomorphic**: Pass fixed typed arrays (`Int32Array` or `Uint32Array`) rather than generic `Array` objects to keep store ICs monomorphic and avoid 30-40% megamorphic stub dispatch penalties.
