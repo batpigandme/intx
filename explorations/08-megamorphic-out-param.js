@@ -25,13 +25,10 @@ function createMulwide() {
 		a |= 0;
 		b |= 0;
 
-		const ua = a >>> 0;
-		const ub = b >>> 0;
-
-		const ah = ua >>> 16;
-		const al = ua & LOW_16;
-		const bh = ub >>> 16;
-		const bl = ub & LOW_16;
+		const ah = a >>> 16;
+		const al = a & LOW_16;
+		const bh = b >>> 16;
+		const bl = b & LOW_16;
 
 		const albl = Math.imul(al, bl) >>> 0;
 		const llh = albl >>> 16;

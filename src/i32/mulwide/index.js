@@ -6,8 +6,12 @@ const LOW_16 = 0xffff;
  * 32-bit signed integer widening multiplication (32x32 -> 64-bit [hi, lo]).
  * Uses 2-stage pipelined 16-bit unsigned limb decomposition with algebraic signed correction.
  *
- * Mathematical Identity:
+ * Mathematical Identity (Hacker's Delight 2nd ed, §8-3: "High-Order Product Signed from/to Unsigned"):
  *   hi_signed = hi_unsigned - ((a < 0) ? b : 0) - ((b < 0) ? a : 0)
+ *
+ * References:
+ *   - Warren, Henry S. (2013). "Hacker's Delight" (2nd ed.), Chapter 8, Section 8-3.
+ *   - Knuth, Donald E. (1997). "The Art of Computer Programming", Vol 2 (3rd ed.), Section 4.3.1.
  *
  * Writes signed 32-bit high word into out[0] and low word into out[1].
  *
@@ -20,13 +24,10 @@ function mulwide(a, b, out) {
 	a |= 0;
 	b |= 0;
 
-	const ua = a >>> 0;
-	const ub = b >>> 0;
-
-	const ah = ua >>> 16;
-	const al = ua & LOW_16;
-	const bh = ub >>> 16;
-	const bl = ub & LOW_16;
+	const ah = a >>> 16;
+	const al = a & LOW_16;
+	const bh = b >>> 16;
+	const bl = b & LOW_16;
 
 	const albl = Math.imul(al, bl) >>> 0;
 	const llh = albl >>> 16;
