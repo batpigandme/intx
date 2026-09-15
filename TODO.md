@@ -27,6 +27,8 @@
   - [x] **Signed vs Unsigned `mulwide` Latency & Throughput**:
     - Measure and compare max 1x serial throughput and Hacker's Delight correction latency between `i32.mulwide` and `u32.mulwide` (`explorations/09-mulwide-signed-vs-unsigned.js`).
 - [ ] **Cross-Engine & Compiler Deep-Dives**:
+  - [ ] **Investigate Signed (`| 0`) vs Unsigned (`>>> 0`) Performance Drop in Bun (JSC)**:
+    - Deep-dive into why unsigned right shift intermediate expressions in multi-limb arithmetic (`mulwide`) trigger throughput drops (~51 M/s vs ~134 M/s) under JavaScriptCore NaN-boxing and DFG type feedback.
   - [ ] **Probe Loop Unrolling Thresholds in V8/TurboFan**:
     - Profile exact compile-time constant trip count boundaries (e.g. `<= 16` or `32` iterations) where TurboFan unrolls and fully eliminates empty loops vs where loop headers and back-edges are emitted.
   - [ ] **Document Empty Loop DLE Across Different Engines**:
