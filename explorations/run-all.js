@@ -24,7 +24,7 @@ console.log(
 for (const exp of experiments) {
 	const expPath = path.join(__dirname, exp);
 	console.log(`\n▶ Running ${exp}...\n`);
-	const result = spawnSync("node", [expPath], {
+	const result = spawnSync(process.execPath, [expPath], {
 		stdio: "inherit",
 		env: process.env,
 	});
