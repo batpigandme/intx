@@ -82,7 +82,7 @@ function createMulhiRunner(candidate, name) {
 		name,
 		context: { mulhi: candidate, r, a: 0xdeadbeef },
 		setup: "r[0] = 1;",
-		body: "r[0] = mulhi(r[0], a);",
+		loop: "r[0] = mulhi(r[0], a);",
 		teardown: "return r[0];",
 	});
 }

@@ -23,7 +23,7 @@
  * @param {string} [options.name="kernel"] - Descriptive name used for function naming and compilation tagging.
  * @param {object} [options.context={}] - Key-value map of variables to inject into the runner's closure scope.
  * @param {string} [options.setup=""] - JavaScript code string executed before the loop (un-timed).
- * @param {string} [options.body=""] - JavaScript code string executed inside the timed `for (let i = 0; i < iters; i++)` loop.
+ * @param {string} [options.loop=""] - JavaScript code string executed inside the timed `for (let i = 0; i < iters; i++)` loop.
  * @param {string} [options.teardown=""] - JavaScript code string executed after the loop (un-timed, e.g. return value).
  * @returns {RunnerFunction} Generated monomorphic runner function `(iters, startClock, stopClock) => ...`.
  *
@@ -32,7 +32,7 @@
  *   name: 'u32_wmul_candidate',
  *   context: { wmul: myKernel, r: new Uint32Array(2), a: 0xdeadbeef },
  *   setup: 'r[0] = 0; r[1] = 1;',
- *   body: 'wmul(r[1], a, r);',
+ *   loop: 'wmul(r[1], a, r);',
  *   teardown: 'return r;'
  * });
  */
@@ -41,7 +41,7 @@ function createRunner(options = {}) {
 	const cleanName = name.replace(/[^a-zA-Z0-9_$]/g, "_");
 	const context = options.context || {};
 	const setup = options.setup || "";
-	const body = options.body || "";
+	const loop = options.loop || "";
 	const teardown = options.teardown || "";
 
 	const contextKeys = Object.keys(context);
@@ -54,7 +54,7 @@ function createRunner(options = {}) {
       ${setup}
       startClock();
       for (let i = 0; i < iters; i++) {
-        ${body}
+        ${loop}
       }
       stopClock();
       ${teardown}

@@ -18,40 +18,40 @@ const c = 0x9e3779b9 | 0;
 const ops = {
 	"1. DCE: Unused Pure Function (Math.imul(42, 17))": createRunner({
 		setup: "let acc = 0;",
-		body: "Math.imul(42, 17);",
+		loop: "Math.imul(42, 17);",
 		teardown: "return acc;",
 	}),
 
 	"2. DCE: Static Invariant Expression ((42 * 17) | 0)": createRunner({
 		setup: "let acc = 0;",
-		body: "acc = ((42 * 17) | 0);",
+		loop: "acc = ((42 * 17) | 0);",
 		teardown: "return acc;",
 	}),
 
 	"3. Kernel with Context Constant (i32.add(acc, c))": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
-		body: "acc = add(acc, c);",
+		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
 	"4. Kernel with Inlined Literal (i32.add(acc, 0x9e3779b9))": createRunner({
 		context: { add: i32.add },
 		setup: "let acc = 1;",
-		body: "acc = add(acc, 0x9e3779b9 | 0);",
+		loop: "acc = add(acc, 0x9e3779b9 | 0);",
 		teardown: "return acc;",
 	}),
 
 	"5. Inline Op with Literal (((acc|0) + -1640531527)|0)": createRunner({
 		setup: "let acc = 1;",
-		body: "acc = ((acc | 0) + (-1640531527)) | 0;",
+		loop: "acc = ((acc | 0) + (-1640531527)) | 0;",
 		teardown: "return acc;",
 	}),
 
 	"6. Inline Op with Coerced Context Var (((acc|0) + (c|0))|0)": createRunner({
 		context: { c },
 		setup: "let acc = 1;",
-		body: "acc = ((acc | 0) + (c | 0)) | 0;",
+		loop: "acc = ((acc | 0) + (c | 0)) | 0;",
 		teardown: "return acc;",
 	}),
 
@@ -59,7 +59,7 @@ const ops = {
 		createRunner({
 			context: { c },
 			setup: "let acc = 1;",
-			body: "acc = ((acc | 0) + c) | 0;",
+			loop: "acc = ((acc | 0) + c) | 0;",
 			teardown: "return acc;",
 		}),
 };

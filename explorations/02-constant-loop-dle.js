@@ -13,43 +13,43 @@ const { bench, createRunner } = require("#microbe");
 const ops = {
 	"1. Empty Loop (Bare Induction i++)": createRunner({
 		setup: "let acc = 0;",
-		body: "",
+		loop: "",
 		teardown: "return acc;",
 	}),
 
 	"2. Identity Addition (acc = (acc + 0) | 0)": createRunner({
 		setup: "let acc = 0;",
-		body: "acc = (acc + 0) | 0;",
+		loop: "acc = (acc + 0) | 0;",
 		teardown: "return acc;",
 	}),
 
 	"3. Identity Bitwise XOR (acc = acc ^ 0)": createRunner({
 		setup: "let acc = 0x12345678;",
-		body: "acc = acc ^ 0;",
+		loop: "acc = acc ^ 0;",
 		teardown: "return acc;",
 	}),
 
 	"4. Fixed-Point Collapse (acc = acc & 0)": createRunner({
 		setup: "let acc = 0x12345678;",
-		body: "acc = acc & 0;",
+		loop: "acc = acc & 0;",
 		teardown: "return acc;",
 	}),
 
 	"5. Identity Multiplication (acc = Math.imul(acc, 1))": createRunner({
 		setup: "let acc = 0x12345678;",
-		body: "acc = Math.imul(acc, 1);",
+		loop: "acc = Math.imul(acc, 1);",
 		teardown: "return acc;",
 	}),
 
 	"6. Active Linear Induction (acc = (acc + 1) | 0)": createRunner({
 		setup: "let acc = 0;",
-		body: "acc = (acc + 1) | 0;",
+		loop: "acc = (acc + 1) | 0;",
 		teardown: "return acc;",
 	}),
 
 	"7. Non-Linear Recurrence (acc = Math.imul(acc, 33) + 1 | 0)": createRunner({
 		setup: "let acc = 1;",
-		body: "acc = (Math.imul(acc, 33) + 1) | 0;",
+		loop: "acc = (Math.imul(acc, 33) + 1) | 0;",
 		teardown: "return acc;",
 	}),
 };

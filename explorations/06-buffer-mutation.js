@@ -32,7 +32,7 @@ const ops = {
 	"1. Read-Only Baseline (Walk Only)": createRunner({
 		context: { add: i32.add, c, inBuf },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, inBuf[idx]);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -42,7 +42,7 @@ const ops = {
 	"2. In-Place Mutation (Context Buffer)": createRunner({
 		context: { add: i32.add, c, mutBuf },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mutBuf[idx] = add(mutBuf[idx], c);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -56,7 +56,7 @@ const ops = {
 			for (let i = 0; i < 256; i++) localBuf[i] = (i * 0x45d9f3b + 1) | 0;
 			let idx = 0;
 		`,
-		body: `
+		loop: `
 			localBuf[idx] = add(localBuf[idx], c);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -66,7 +66,7 @@ const ops = {
 	"4. Separate Write Buffer (inBuf -> outBuf, Context)": createRunner({
 		context: { add: i32.add, c, inBuf, outBuf },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			outBuf[idx] = add(inBuf[idx], c);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -81,7 +81,7 @@ const ops = {
 			for (let i = 0; i < 256; i++) localIn[i] = (i * 0x45d9f3b + 1) | 0;
 			let idx = 0;
 		`,
-		body: `
+		loop: `
 			localOut[idx] = add(localIn[idx], c);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -91,7 +91,7 @@ const ops = {
 	"6. Fixed Fixture Mutation (out[0] = ... like divmod)": createRunner({
 		context: { add: i32.add, c, inBuf, outFix },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			outFix[0] = add(inBuf[idx], c);
 			outFix[1] = add(inBuf[idx], -c);
 			idx = (idx + 1) & 0xff;

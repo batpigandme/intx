@@ -86,7 +86,7 @@ const ops = {
 	"1. Monomorphic: Pristine Int32Array out": createRunner({
 		context: { mulwide: mulwideI32, c, buf, out: outI32 },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mulwide(buf[idx], c, out);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -96,7 +96,7 @@ const ops = {
 	"2. Monomorphic: Pristine Uint32Array out": createRunner({
 		context: { mulwide: mulwideU32, c, buf, out: outU32 },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mulwide(buf[idx], c, out);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -106,7 +106,7 @@ const ops = {
 	"3. Monomorphic: Pristine Generic Array out ([0, 0])": createRunner({
 		context: { mulwide: mulwideGeneric, c, buf, out: outGeneric },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mulwide(buf[idx], c, out);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -117,7 +117,7 @@ const ops = {
 		createRunner({
 			context: { mulwide: mulwidePolymorphic, c, buf, polyBuffers },
 			setup: "let idx = 0, bIdx = 0;",
-			body: `
+			loop: `
 			mulwide(buf[idx], c, polyBuffers[bIdx]);
 			bIdx = (bIdx + 1) & 1;
 			idx = (idx + 1) & 0xff;
@@ -129,7 +129,7 @@ const ops = {
 		createRunner({
 			context: { mulwide: mulwideMegamorphic, c, buf, megaBuffers },
 			setup: "let idx = 0, bIdx = 0;",
-			body: `
+			loop: `
 			mulwide(buf[idx], c, megaBuffers[bIdx]);
 			bIdx = (bIdx + 1) & 3;
 			idx = (idx + 1) & 0xff;
@@ -141,7 +141,7 @@ const ops = {
 	"6. Contaminated Kernel: Int32Array on Pre-Polluted mulwide": createRunner({
 		context: { mulwide: contaminatedMulwide, c, buf, out: outI32 },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mulwide(buf[idx], c, out);
 			idx = (idx + 1) & 0xff;
 		`,

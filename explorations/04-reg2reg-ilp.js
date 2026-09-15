@@ -21,14 +21,14 @@ const addOps = {
 	"i32.add 1x (Latency Bound)": createRunner({
 		context: { add: i32.add, c },
 		setup: "let a0 = 1;",
-		body: "a0 = add(a0, c);",
+		loop: "a0 = add(a0, c);",
 		teardown: "return a0;",
 	}),
 
 	"i32.add 2x (2 Streams)": createRunner({
 		context: { add: i32.add, c },
 		setup: "let a0 = 1, a1 = 2;",
-		body: `
+		loop: `
 			a0 = add(a0, c);
 			a1 = add(a1, c);
 		`,
@@ -38,7 +38,7 @@ const addOps = {
 	"i32.add 4x (4 Streams - Peak ALU)": createRunner({
 		context: { add: i32.add, c },
 		setup: "let a0 = 1, a1 = 2, a2 = 3, a3 = 4;",
-		body: `
+		loop: `
 			a0 = add(a0, c);
 			a1 = add(a1, c);
 			a2 = add(a2, c);
@@ -51,7 +51,7 @@ const addOps = {
 		context: { add: i32.add, c },
 		setup:
 			"let a0 = 1, a1 = 2, a2 = 3, a3 = 4, a4 = 5, a5 = 6, a6 = 7, a7 = 8;",
-		body: `
+		loop: `
 			a0 = add(a0, c);
 			a1 = add(a1, c);
 			a2 = add(a2, c);
@@ -69,14 +69,14 @@ const mulOps = {
 	"i32.mul 1x (Latency Bound)": createRunner({
 		context: { mul: i32.mul, c },
 		setup: "let a0 = 1;",
-		body: "a0 = mul(a0, c);",
+		loop: "a0 = mul(a0, c);",
 		teardown: "return a0;",
 	}),
 
 	"i32.mul 2x (2 Streams)": createRunner({
 		context: { mul: i32.mul, c },
 		setup: "let a0 = 1, a1 = 2;",
-		body: `
+		loop: `
 			a0 = mul(a0, c);
 			a1 = mul(a1, c);
 		`,
@@ -86,7 +86,7 @@ const mulOps = {
 	"i32.mul 4x (4 Streams - Pipelined Saturation)": createRunner({
 		context: { mul: i32.mul, c },
 		setup: "let a0 = 1, a1 = 2, a2 = 3, a3 = 4;",
-		body: `
+		loop: `
 			a0 = mul(a0, c);
 			a1 = mul(a1, c);
 			a2 = mul(a2, c);
@@ -99,7 +99,7 @@ const mulOps = {
 		context: { mul: i32.mul, c },
 		setup:
 			"let a0 = 1, a1 = 2, a2 = 3, a3 = 4, a4 = 5, a5 = 6, a6 = 7, a7 = 8;",
-		body: `
+		loop: `
 			a0 = mul(a0, c);
 			a1 = mul(a1, c);
 			a2 = mul(a2, c);
@@ -117,7 +117,7 @@ const rotlOps = {
 	"i32.rotl 1x (Latency Bound)": createRunner({
 		context: { rotl: i32.rotl, k },
 		setup: "let a0 = 0x12345678;",
-		body: "a0 = rotl(a0, k);",
+		loop: "a0 = rotl(a0, k);",
 		teardown: "return a0;",
 	}),
 
@@ -125,7 +125,7 @@ const rotlOps = {
 		context: { rotl: i32.rotl, k },
 		setup:
 			"let a0 = 0x12345678, a1 = 0x87654321, a2 = 0x13579bdf, a3 = 0x2468ace0;",
-		body: `
+		loop: `
 			a0 = rotl(a0, k);
 			a1 = rotl(a1, k);
 			a2 = rotl(a2, k);

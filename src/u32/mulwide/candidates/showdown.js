@@ -82,7 +82,7 @@ function createMulwideRunner(candidate, name) {
 		name,
 		context: { mulwide: candidate, r, a: 0xdeadbeef },
 		setup: "r[0] = 0; r[1] = 1;",
-		body: "mulwide(r[0] ^ r[1], a, r);",
+		loop: "mulwide(r[0] ^ r[1], a, r);",
 		teardown: "return r[1];",
 	});
 }

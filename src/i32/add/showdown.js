@@ -13,14 +13,14 @@ const ops = {
 	"Serialized (1x Latency Bound)": createRunner({
 		context: { add, c },
 		setup: "let acc = 1;",
-		body: "acc = add(acc, c);",
+		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
 	"Parallel 2x (2 Independent Accumulators)": createRunner({
 		context: { add, c },
 		setup: "let a0 = 1, a1 = 2;",
-		body: `
+		loop: `
 			a0 = add(a0, c);
 			a1 = add(a1, c);
 		`,
@@ -30,7 +30,7 @@ const ops = {
 	"Parallel 4x (4 Independent Accumulators)": createRunner({
 		context: { add, c },
 		setup: "let a0 = 1, a1 = 2, a2 = 3, a3 = 4;",
-		body: `
+		loop: `
 			a0 = add(a0, c);
 			a1 = add(a1, c);
 			a2 = add(a2, c);
@@ -43,7 +43,7 @@ const ops = {
 		context: { add, c },
 		setup:
 			"let a0 = 1, a1 = 2, a2 = 3, a3 = 4, a4 = 5, a5 = 6, a6 = 7, a7 = 8;",
-		body: `
+		loop: `
 			a0 = add(a0, c);
 			a1 = add(a1, c);
 			a2 = add(a2, c);
@@ -59,14 +59,14 @@ const ops = {
 	"Outer Fixture (Int32Array In-Place Mutation)": createRunner({
 		context: { add, c, r },
 		setup: "r[0] = 1;",
-		body: "r[0] = add(r[0], c);",
+		loop: "r[0] = add(r[0], c);",
 		teardown: "return r[0];",
 	}),
 
 	"Array Reduction (Int32Array Buffer Walk)": createRunner({
 		context: { add, buf },
 		setup: "let acc = 1, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) & 1023;
 		`,
@@ -76,7 +76,7 @@ const ops = {
 	"Inline Operator (((a|0) + c)|0 Baseline)": createRunner({
 		context: { c },
 		setup: "let acc = 1;",
-		body: "acc = ((acc | 0) + c) | 0;",
+		loop: "acc = ((acc | 0) + c) | 0;",
 		teardown: "return acc;",
 	}),
 };

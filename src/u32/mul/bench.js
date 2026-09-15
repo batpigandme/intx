@@ -11,7 +11,7 @@ const runner = createRunner({
 	name: "u32_mul",
 	context: { mul, r, a: 0xdeadbeef },
 	setup: "r[0] = 1;",
-	body: "r[0] = mul(r[0], a);",
+	loop: "r[0] = mul(r[0], a);",
 	teardown: "return r[0];",
 });
 

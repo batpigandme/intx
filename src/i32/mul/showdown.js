@@ -13,14 +13,14 @@ const ops = {
 	"1. Serialized (1x Latency Bound)": createRunner({
 		context: { mul, c },
 		setup: "let acc = 1;",
-		body: "acc = mul(acc, c);",
+		loop: "acc = mul(acc, c);",
 		teardown: "return acc;",
 	}),
 
 	"2. Parallel 2x (2 Independent Accumulators)": createRunner({
 		context: { mul, c },
 		setup: "let a0 = 1, a1 = 3;",
-		body: `
+		loop: `
 			a0 = mul(a0, c);
 			a1 = mul(a1, c);
 		`,
@@ -30,7 +30,7 @@ const ops = {
 	"3. Parallel 4x (4 Independent Accumulators)": createRunner({
 		context: { mul, c },
 		setup: "let a0 = 1, a1 = 3, a2 = 5, a3 = 7;",
-		body: `
+		loop: `
 			a0 = mul(a0, c);
 			a1 = mul(a1, c);
 			a2 = mul(a2, c);
@@ -43,7 +43,7 @@ const ops = {
 		context: { mul, c },
 		setup:
 			"let a0 = 1, a1 = 3, a2 = 5, a3 = 7, a4 = 9, a5 = 11, a6 = 13, a7 = 15;",
-		body: `
+		loop: `
 			a0 = mul(a0, c);
 			a1 = mul(a1, c);
 			a2 = mul(a2, c);
@@ -59,14 +59,14 @@ const ops = {
 	"5. Outer Fixture (Int32Array In-Place Mutation)": createRunner({
 		context: { mul, c, r },
 		setup: "r[0] = 1;",
-		body: "r[0] = mul(r[0], c);",
+		loop: "r[0] = mul(r[0], c);",
 		teardown: "return r[0];",
 	}),
 
 	"6. Array Reduction (Int32Array Buffer Walk)": createRunner({
 		context: { mul, buf },
 		setup: "let acc = 1, idx = 0;",
-		body: `
+		loop: `
 			acc = mul(acc, buf[idx]);
 			idx = (idx + 1) & 1023;
 		`,
@@ -76,7 +76,7 @@ const ops = {
 	"7. Inline Math.imul (Direct Builtin Baseline)": createRunner({
 		context: { c },
 		setup: "let acc = 1;",
-		body: "acc = Math.imul(acc, c);",
+		loop: "acc = Math.imul(acc, c);",
 		teardown: "return acc;",
 	}),
 };

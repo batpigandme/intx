@@ -7,7 +7,7 @@ const i32 = require("#i32");
  * EXPERIMENT 3: Context Variable Aliasing in Local Scope
  *
  * Objectives:
- * 1. Compare accessing closure variables directly (`context: { c }` -> `body: add(acc, c)`)
+ * 1. Compare accessing closure variables directly (`context: { c }` -> `loop: add(acc, c)`)
  *    vs aliasing them into local `setup` variables (`setup: "const localC = c;"`).
  * 2. Test across scalar constants, function references, and TypedArray buffers.
  * 3. Verify whether TurboFan Loop Invariant Code Motion (LICM) renders manual aliasing redundant.
@@ -21,42 +21,42 @@ const ops = {
 	"1. Scalar Constant: Direct Closure Access": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
-		body: "acc = add(acc, c);",
+		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
 	"2. Scalar Constant: Local 'const' Alias in setup": createRunner({
 		context: { add: i32.add, c },
 		setup: "const localC = c; let acc = 1;",
-		body: "acc = add(acc, localC);",
+		loop: "acc = add(acc, localC);",
 		teardown: "return acc;",
 	}),
 
 	"3. Scalar Constant: Local 'let' Alias in setup": createRunner({
 		context: { add: i32.add, c },
 		setup: "let localC = c, acc = 1;",
-		body: "acc = add(acc, localC);",
+		loop: "acc = add(acc, localC);",
 		teardown: "return acc;",
 	}),
 
 	"4. Function Ref: Direct Closure Access": createRunner({
 		context: { add: i32.add, c },
 		setup: "let acc = 1;",
-		body: "acc = add(acc, c);",
+		loop: "acc = add(acc, c);",
 		teardown: "return acc;",
 	}),
 
 	"5. Function Ref: Local 'const' Alias in setup": createRunner({
 		context: { add: i32.add, c },
 		setup: "const localAdd = add; let acc = 1;",
-		body: "acc = localAdd(acc, c);",
+		loop: "acc = localAdd(acc, c);",
 		teardown: "return acc;",
 	}),
 
 	"6. Buffer Ref: Direct Closure Access": createRunner({
 		context: { add: i32.add, buf },
 		setup: "let acc = 1, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -66,7 +66,7 @@ const ops = {
 	"7. Buffer Ref: Local 'const' Alias in setup": createRunner({
 		context: { add: i32.add, buf },
 		setup: "const localBuf = buf; let acc = 1, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, localBuf[idx]);
 			idx = (idx + 1) & 0xff;
 		`,

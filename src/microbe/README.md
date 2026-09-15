@@ -80,7 +80,7 @@ const runner = bench.createRunner({
     b: 0x87654321,
   },
   setup: 'let acc = 0;',
-  body: 'acc = mul(acc ^ a, b);',
+  loop: 'acc = mul(acc ^ a, b);',
   teardown: 'return acc;',
 });
 
@@ -100,12 +100,12 @@ const { bench } = require('#microbe');
 const ops = {
   '1. Serial': bench.createRunner({
     setup: 'let acc = 1;',
-    body: 'acc = (acc + 1) | 0;',
+    loop: 'acc = (acc + 1) | 0;',
     teardown: 'return acc;',
   }),
   '2. Parallel 2x': bench.createRunner({
     setup: 'let a0 = 1, a1 = 2;',
-    body: 'a0 = (a0 + 1) | 0; a1 = (a1 + 1) | 0;',
+    loop: 'a0 = (a0 + 1) | 0; a1 = (a1 + 1) | 0;',
     teardown: 'return a0 ^ a1;',
   }),
 };
@@ -153,12 +153,12 @@ const runners = {
   bitwise: bench.createRunner({
     name: 'bitwise',
     context: { fn: bitwiseMul },
-    body: 'fn(0x1234, 0x5678);',
+    loop: 'fn(0x1234, 0x5678);',
   }),
   native_imul: bench.createRunner({
     name: 'native_imul',
     context: { fn: nativeImul },
-    body: 'fn(0x1234, 0x5678);',
+    loop: 'fn(0x1234, 0x5678);',
   }),
 };
 
@@ -206,7 +206,7 @@ Generates an isolated closure `(iters, startClock, stopClock) => ...` with its o
 | `name` | `string` | `'kernel'` | Identifier used for function tagging. |
 | `context` | `object` | `{}` | Variables injected into the runner's closure scope. |
 | `setup` | `string` | `''` | JS executed before `startClock()`. |
-| `body` | `string` | `''` | JS executed inside the timed loop `for (let i = 0; i < iters; i++)`. |
+| `loop` | `string` | `''` | JS executed inside the timed loop `for (let i = 0; i < iters; i++)`. |
 | `teardown` | `string` | `''` | JS executed after `stopClock()` (e.g. `return out;`). |
 
 ---

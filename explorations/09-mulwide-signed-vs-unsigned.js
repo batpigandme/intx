@@ -33,21 +33,21 @@ const ops = {
 	"1. u32.mulwide: Pure Serial Recurrence (1x Latency Bound)": createRunner({
 		context: { mulwide: u32Mulwide, c: cUnsigned, r: outU32 },
 		setup: "r[0] = 0x12345678; r[1] = 0x87654321;",
-		body: "mulwide((r[0] ^ r[1]) >>> 0, c, r);",
+		loop: "mulwide((r[0] ^ r[1]) >>> 0, c, r);",
 		teardown: "return r[0] ^ r[1];",
 	}),
 
 	"2. i32.mulwide: Pure Serial Recurrence (1x Latency Bound)": createRunner({
 		context: { mulwide: i32Mulwide, c: cSigned, r: outI32 },
 		setup: "r[0] = 0x12345678; r[1] = 0x87654321;",
-		body: "mulwide((r[0] ^ r[1]) | 0, c, r);",
+		loop: "mulwide((r[0] ^ r[1]) | 0, c, r);",
 		teardown: "return r[0] ^ r[1];",
 	}),
 
 	"3. u32.mulwide: L1 Buffer Walk (Diverse Inputs)": createRunner({
 		context: { mulwide: u32Mulwide, c: cUnsigned, buf, r: outU32 },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mulwide(buf[idx] >>> 0, c, r);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -57,7 +57,7 @@ const ops = {
 	"4. i32.mulwide: L1 Buffer Walk (Diverse Inputs)": createRunner({
 		context: { mulwide: i32Mulwide, c: cSigned, buf, r: outI32 },
 		setup: "let idx = 0;",
-		body: `
+		loop: `
 			mulwide(buf[idx], c, r);
 			idx = (idx + 1) & 0xff;
 		`,

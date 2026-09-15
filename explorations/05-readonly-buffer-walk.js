@@ -29,7 +29,7 @@ const ops = {
 	"1. BCE: 1 KB (256 elements, mask & 0xff)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) & 0xff;
 		`,
@@ -39,7 +39,7 @@ const ops = {
 	"2. BCE: 4 KB (1024 elements, mask & 0x3ff)": createRunner({
 		context: { add: i32.add, buf: buf1024 },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) & 0x3ff;
 		`,
@@ -49,7 +49,7 @@ const ops = {
 	"3. BCE: 512 B (128 elements, mask & 0x7f)": createRunner({
 		context: { add: i32.add, buf: buf128 },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) & 0x7f;
 		`,
@@ -59,7 +59,7 @@ const ops = {
 	"4. Non-BCE: Modulo Indexing ((idx + 1) % 256)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) % 256;
 		`,
@@ -69,7 +69,7 @@ const ops = {
 	"5. Non-BCE: Modulo Non-Power-of-Two ((idx + 1) % 250)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) % 250;
 		`,
@@ -79,7 +79,7 @@ const ops = {
 	"6. Non-BCE: Branching Reset (idx >= 256 ? 0 : idx)": createRunner({
 		context: { add: i32.add, buf: buf256 },
 		setup: "let acc = 0, idx = 0;",
-		body: `
+		loop: `
 			acc = add(acc, buf[idx]);
 			idx = (idx + 1) | 0;
 			if (idx === 256) idx = 0;
