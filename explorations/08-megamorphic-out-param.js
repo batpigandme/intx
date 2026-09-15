@@ -130,4 +130,5 @@ const ops = {
 bench.suite("Exp 8: Megamorphic IC Degradation on 'out' Parameter", ops, {
 	rounds: 5,
 	iters: 1e8,
+	width: 120,
 });

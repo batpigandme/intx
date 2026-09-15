@@ -148,7 +148,29 @@ $$\text{Pure Kernel Execution Latency} = \text{Total Time per Iteration} - \text
 #### Key Architectural Findings:
 1. **Unboxed TypedArrays vs Generic Property Stores**: In a monomorphic `Int32Array` call, TurboFan emits a direct machine store instruction (`mov [r_backing_store + offset], reg`). For generic JavaScript arrays (`[0, 0]`), V8 must maintain JSArray capacity metadata and Smi/HeapNumber element boxing, adding ~33% overhead.
 2. **Megamorphic Deoptimization on Dynamic Array Types**: When a single call site passes varying array types (`Int32Array`, `Uint32Array`, `Float64Array`, `Array`), the keyed element store IC (`KEYED_STORE_IC`) transitions to **MEGAMORPHIC**. TurboFan de-optimizes the store, falling back to runtime dictionary/stub lookups.
-3. **Monomorphic Runner Protection in Microbe**: When a candidate function is inlined inside an isolated monomorphic runner (via `bench.createRunner()`), TurboFan specializes the inlined store to the specific `out` instance passed in `context`, shielding it from foreign-type contamination across different benchmark candidates.
+3. **Caller Context Specialization Overrides Callee Feedback Vector**: When a function is inlined inside an isolated monomorphic runner (via `bench.createRunner()`), TurboFan performs type specialization using the **caller's parameter types** rather than the callee's standalone FeedbackVector. Because `out` is known to be a single `Int32Array` instance in the caller's context, TurboFan specializes the inlined store instructions into direct raw memory writes, completely ignoring and erasing any upstream megamorphic pollution on the standalone function object.
+
+---
+
+### Deep Dive: How TurboFan Decides Whether to Inline a Function
+
+TurboFan's inlining subsystem (`JSInliningHeuristic`) uses a cost-benefit model to evaluate every call site in the compiler graph:
+
+1. **Call-Site Monomorphism (The Inlining Gatekeeper)**:
+   * TurboFan inspects the `CallIC` in the **caller's** FeedbackVector.
+   * If the call site is **Monomorphic** (always calls the same function object), TurboFan can inline it directly.
+   * If the call site is **Polymorphic** with a small degree ($\le 4$), TurboFan may emit a multi-branch polymorphic inlining dispatch (`if (f === f1) inline_f1() else if (f === f2) inline_f2()`).
+   * If the call site is **Megamorphic** (calls many distinct functions), TurboFan **refuses to inline** because the target cannot be determined at compile time.
+2. **Bytecode Size & Complexity Budgets**:
+   * `--max-inlined-bytecode-size` (default: **500 bytes**): Maximum bytecode length of a single function considered for inlining.
+   * `--max-inlined-bytecode-size-small` (default: **27–30 bytes**): "Tiny leaf" functions (like single-line math helpers `add`, `div`, `imul`) receive an automatic inlining priority bonus and are almost always inlined unconditionally.
+   * `--max-inlined-bytecode-size-cumulative` (default: **920 bytes**): Total cumulative inlined bytecode permitted within a single compiled caller. Once exceeded, TurboFan stops inlining to avoid code bloat.
+3. **Call Depth Limit (`--max-inlined-depth`)**:
+   * Traverses up to **3–7 nested call levels** (`fnA -> fnB -> fnC`). Beyond this threshold, TurboFan emits standard function calls.
+4. **Disqualifying Constructs**:
+   * Functions containing `eval()`, `with`, `debugger` statements, or exceeding maximum graph node thresholds (`--max-inlining-nodes`) are disqualified from inlining.
+5. **Execution Frequency (Hotness)**:
+   * Call sites situated inside tight loops with high execution frequency are given maximum priority in the inlining budget.
 
 ---
 
