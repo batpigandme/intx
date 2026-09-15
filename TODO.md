@@ -8,6 +8,21 @@
 - [x] **L1 Buffer Walk Benchmark Pattern**:
   - Replaced decaying serial recurrence in division / modulo benchmarks with 1,024-element L1 cached test vector buffer.
   - Utilized `(idx + 1) & 1023` to trigger TurboFan Bounds Check Elimination (BCE) and branch-free evaluation.
+- [ ] **JIT & Microbenchmarking Pattern Explorations**:
+  - [ ] **Observe DCE in a Bench Run**: Construct a benchmark demonstrator showing dead code elimination (DCE) when pure expressions or unused loop values fold into an empty loop.
+  - [ ] **Observe No DCE in Closure Constants**: Verify that constants injected via `context` are treated as runtime parameters preventing static folding/DCE while staying hoisted and monomorphic.
+  - [ ] **Theoretical Peak (Reg-to-Reg) & ILP Exploration for All Ops**:
+    - Formulate independent multi-accumulator strategies (1x latency-bound vs 2x, 4x, 8x instruction-level parallelism throughput bounds) across arithmetic and bitwise ops.
+  - [ ] **Read-Only Buffer Walk: BCE vs Non-BCE & Buffer Sizing**:
+    - Benchmark Bounds Check Elimination (BCE) vs non-BCE indexing (e.g., `& 0x3ff` vs dynamic modulo or unmasked indices).
+    - Test smaller L1 cache footprints (e.g., 1 KB / 256 elements with `& 0xff` hex mask vs 4 KB / 1024 elements with `& 0x3ff`).
+  - [ ] **Buffer Mutation: In-Place vs Separate Write Buffers vs Local Allocation**:
+    - Benchmark `context` (allocated once) vs local `setup` (allocated per round) buffers.
+    - Separate read inputs from write outputs (`inBuf` -> `outBuf`) and compare in-place mutation vs separate output buffer writes.
+  - [ ] **Observe Loop Producing Constant Value (DCE / DLE)**: Test whether loops that compute invariant or statically predictable values (e.g., identity operations or closed-form expressions) trigger Dead Loop Elimination.
+  - [ ] **Observe Aliasing a Context Variable in Local Scope**: Compare accessing closure context variables directly vs aliasing them into local `setup` bindings (`const localC = c;`) to analyze register allocation and context slot load hoisting.
+  - [ ] **Isolate Pure Loop Overhead**:
+    - Construct baseline empty loop runners (`for (let i = 0; i < iters; i++) {}`) to accurately measure and subtract loop control overhead.
 - [ ] **Build `testx` Tool**:
   - Implement a modular candidate validation and fuzz testing harness matching the design of `microbe`.
 - [ ] **Rebuild Browser Benchmarking UI**:
