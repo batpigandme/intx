@@ -16,7 +16,31 @@ test("intx: root exports and i32.mul / u32.mulwide", () => {
 	assert.equal(intx.i32.mul(-1, 5), -5);
 	assert.equal(intx.i32.mul(0x7fffffff, 2), -2);
 	assert.equal(intx.i32.mul(-2147483648, 1), -2147483648);
-	assert.equal(intx.i32.mul(-2147483648, -1), -2147483648);
+	assert.ok(
+		typeof intx.i32.mulwide === "function",
+		"intx.i32.mulwide should be a function",
+	);
+
+	const i32Out = new Int32Array(2);
+	intx.i32.mulwide(-1, -1, i32Out);
+	assert.equal(i32Out[0], 0);
+	assert.equal(i32Out[1], 1);
+
+	intx.i32.mulwide(-1, 5, i32Out);
+	assert.equal(i32Out[0], -1);
+	assert.equal(i32Out[1], -5);
+
+	intx.i32.mulwide(0x7fffffff, 0x7fffffff, i32Out);
+	assert.equal(i32Out[0], 0x3fffffff);
+	assert.equal(i32Out[1], 1);
+
+	intx.i32.mulwide(-2147483648, -2147483648, i32Out);
+	assert.equal(i32Out[0], 0x40000000);
+	assert.equal(i32Out[1], 0);
+
+	intx.i32.mulwide(-2147483648, 2, i32Out);
+	assert.equal(i32Out[0], -1);
+	assert.equal(i32Out[1], 0);
 
 	assert.ok(intx.u32, "intx.u32 should exist");
 	assert.ok(

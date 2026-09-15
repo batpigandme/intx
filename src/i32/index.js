@@ -7,6 +7,7 @@ module.exports = {
 	divmod: require("./divmod"),
 	mod: require("./mod"),
 	mul: require("./mul"),
+	mulwide: require("./mulwide"),
 	rotl: require("./rotl"),
 	rotr: require("./rotr"),
 	sub: require("./sub"),
