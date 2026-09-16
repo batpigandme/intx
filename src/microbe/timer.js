@@ -29,8 +29,13 @@ function stopClock() {
 function sample(runner, iters) {
 	startTime = 0;
 	stopTime = 0;
+	const wallStart = performance.now();
 	const value = runner(iters, startClock, stopClock);
-	const elapsed = (stopTime - startTime) / 1000;
+	const wallStop = performance.now();
+	const elapsed =
+		startTime > 0 && stopTime >= startTime
+			? (stopTime - startTime) / 1000
+			: (wallStop - wallStart) / 1000;
 	return {
 		value,
 		elapsed,
@@ -56,4 +61,3 @@ module.exports = {
 	sample,
 	sleep,
 };
-

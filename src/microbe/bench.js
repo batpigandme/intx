@@ -3,6 +3,7 @@
 const readline = require("node:readline");
 const { sample, sleep } = require("./timer");
 const { computeStats } = require("./stats");
+const { calibrate } = require("./calibrate");
 const { renderBench } = require("./render");
 
 /**
@@ -45,22 +46,17 @@ function showCursor() {
 }
 
 /**
- * Benchmarks a single kernel runner across multiple measurement rounds.
+ * Benchmarks a single kernel runner across multiple measurement rounds with dynamic calibration.
  *
  * @param {string} title - Benchmark title.
  * @param {Function} runner - Synchronous runner function `(iters: number, startClock: Function, stopClock: Function) => any`.
  * @param {object} [options={}] - Configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
- * @param {number} [options.iters=5e7] - Iteration count per round.
+ * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {object} Object containing statistical metrics for the run.
- *
- * @example
- * const { bench, createRunner } = require('#microbe');
- *
- * const runner = createRunner({ ... });
- * bench('u32.mul', runner, { iters: 1e8, rounds: 5, cooldown: 100 });
  */
 function bench(title, runner, options = {}) {
 	if (typeof runner !== "function") {
@@ -70,7 +66,8 @@ function bench(title, runner, options = {}) {
 	}
 
 	const rounds = options.rounds ?? 5;
-	const iters = options.iters ?? 5e7;
+	const isDynamic = options.iters === undefined;
+	const targetMs = options.time ?? 100;
 	const cooldown = options.cooldown ?? 0;
 	const silent = !!options.silent;
 
@@ -82,11 +79,16 @@ function bench(title, runner, options = {}) {
 
 	let result;
 	try {
-		// 1. Warmup Round (Round 0 for JIT tier-up, excluded from stats)
-		if (isInteractive) {
-			writeProgress(`🔥 Warming up '${title}'... `);
+		if (typeof global.gc === "function") {
+			global.gc();
 		}
 
+		if (isInteractive) {
+			writeProgress(`🔥 Warming up & calibrating '${title}'... `);
+		}
+
+		// 1. Calibrate & Warmup Round
+		const iters = isDynamic ? calibrate(runner, targetMs) : options.iters;
 		const warmupSample = sample(runner, iters);
 		const warmup = {
 			elapsed: warmupSample.elapsed,
@@ -106,6 +108,11 @@ function bench(title, runner, options = {}) {
 			if (isInteractive) {
 				writeProgress(`[Round ${r + 1}/${rounds}] Sampling '${title}'... `);
 			}
+
+			if (typeof global.gc === "function") {
+				global.gc();
+			}
+
 			const res = sample(runner, iters);
 			sampleTimes.push(res.elapsed);
 			samples.push({
@@ -131,11 +138,11 @@ function bench(title, runner, options = {}) {
 			title,
 			name: title,
 			value,
-			...stats, // TODO: remove spread operator
 			warmup,
 			samples,
 			rounds,
 			iters,
+			...stats,
 		};
 	} finally {
 		if (isInteractive) {

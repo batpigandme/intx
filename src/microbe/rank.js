@@ -39,25 +39,15 @@ function getComparator(order) {
  * @param {object} runners - Object map of target names to runner functions `(iters, startClock, stopClock) => any`.
  * @param {object} [options={}] - Comparison configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
- * @param {number} [options.iters=5e7] - Default iteration count per round.
+ * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
+ * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
+ * @param {boolean} [options.fork=false] - If true, executes each candidate in an isolated child process.
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
  * @param {number} [options.width=80] - Total table column width.
  * @returns {Array<object>} Sorted array of evaluated results.
- *
- * @example
- * const { bench } = require('#microbe');
- *
- * bench.suite.rank('u32.mulwide: Showdown', {
- *   'candidate-1': runner1,
- *   'candidate-2': runner2,
- * }, {
- *   rounds: 5,
- *   iters: 5e7,
- *   shuffled: true,
- *   order: 'median',
- * });
  */
 function rank(title, runners, options = {}) {
 	if (!runners || typeof runners !== "object" || Array.isArray(runners)) {
@@ -76,18 +66,30 @@ function rank(title, runners, options = {}) {
 
 	const silent = !!options.silent;
 	const rounds = options.rounds ?? 5;
-	const iters = options.iters ?? 5e7;
+	const isDynamic = options.iters === undefined;
+	const targetMs = options.time ?? 100;
+	const manualIters = options.iters;
+	const cooldown = options.cooldown ?? 0;
+	const shouldFork = !!options.fork;
 	const shuffled = options.shuffled ?? true;
 	const width = options.width ?? 80;
 
 	if (!silent) {
-		renderBanner(title, { rounds, iters, shuffled, width });
+		renderBanner(title, {
+			rounds,
+			iters: manualIters,
+			time: isDynamic ? targetMs : undefined,
+			shuffled,
+			cooldown,
+			fork: shouldFork,
+			width,
+		});
 	}
 
 	// 1. Run suite without individual block rendering
 	const results = suite(title, runners, {
 		...options,
-		silent,
+		silent: true,
 		render: false,
 	});
 

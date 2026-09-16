@@ -161,17 +161,29 @@ function getCpuModel() {
  */
 function renderBanner(title, config = {}) {
 	const rounds = config.rounds ?? 5;
-	const iters = config.iters ?? 5e7;
+	const isDynamic = config.iters === undefined;
+	const time = config.time ?? 100;
+	const iters = config.iters;
 	const shuffled = config.shuffled ?? true;
 	const cooldown = config.cooldown ?? 0;
+	const isForked = !!config.fork;
 
-	const orderLabel = shuffled ? "Order: Shuffled" : "Order: Round-Robin";
+	const timingLabel = isDynamic
+		? `${rounds} rounds × ~${time}ms/sample (dynamic)`
+		: `${rounds} rounds × ${Number(iters).toExponential()} iters/round`;
+
+	const modeLabel = isForked
+		? "Mode: Forked Subprocesses"
+		: shuffled
+			? "Order: Shuffled"
+			: "Order: Round-Robin";
+
 	const cooldownLabel = cooldown > 0 ? ` | Cooldown: ${cooldown}ms` : "";
 	const cpu = getCpuModel();
 	const rawTitle = title || "Benchmark Suite";
 
 	const headingLine = `\n### ${rawTitle}`;
-	const configLine = `> **Config:** ${rounds} rounds × ${iters.toExponential()} iters/round | ${orderLabel}${cooldownLabel}  `;
+	const configLine = `> **Config:** ${timingLabel} | ${modeLabel}${cooldownLabel}  `;
 	const platformLine = `> **Platform:** Node ${process.version} (${process.arch}) | ${cpu}`;
 
 	console.log(headingLine);
