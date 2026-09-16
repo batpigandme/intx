@@ -12,7 +12,7 @@
 		"./*": "./src/*"
 	},
 	"scripts": {
-		"test": "node --test 'src/**/test.js' 'src/test/*.test.js'",
+		"test": "node --test 'src/**/test.js' 'src/**/*.test.js'",
 		"i32:showdown": "node src/i32/showdown.js",
 		"i32:add:showdown": "node src/i32/add/showdown.js",
 		"i32:mul:showdown": "node src/i32/mul/showdown.js",
