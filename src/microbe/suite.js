@@ -1,7 +1,7 @@
 "use strict";
 
 const readline = require("node:readline");
-const { sample } = require("./timer");
+const { sample, sleep } = require("./timer");
 const { computeStats } = require("./stats");
 const { renderTable, renderBanner } = require("./render");
 
@@ -70,6 +70,7 @@ function showCursor() {
  * @param {object} [options={}] - Suite configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.iters=5e7] - Iteration count per round.
+ * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner execution order per round.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {boolean} [options.render=true] - If true and not silent, renders benchmark table.
@@ -84,6 +85,7 @@ function showCursor() {
  * }, {
  *   rounds: 5,
  *   iters: 2e7,
+ *   cooldown: 100, // 100ms pause between samples
  * });
  */
 function suite(title, runners, options = {}) {
@@ -100,6 +102,7 @@ function suite(title, runners, options = {}) {
 
 	const rounds = options.rounds ?? 5;
 	const iters = options.iters ?? 5e7;
+	const cooldown = options.cooldown ?? 0;
 	const shuffled = options.shuffled ?? true;
 	const silent = !!options.silent;
 	const render = options.render ?? true;
@@ -107,7 +110,7 @@ function suite(title, runners, options = {}) {
 	const width = options.width ?? 80;
 
 	if (!silent && render) {
-		renderBanner(title, { rounds, iters, shuffled, width });
+		renderBanner(title, { rounds, iters, shuffled, cooldown, width });
 	}
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
@@ -143,6 +146,10 @@ function suite(title, runners, options = {}) {
 			values[name] = warmupSample.value;
 			samples[name] = [];
 			sampleDetails[name] = [];
+
+			if (cooldown > 0) {
+				sleep(cooldown);
+			}
 		}
 
 		// 2. Interleaved Measurement Rounds
@@ -163,6 +170,10 @@ function suite(title, runners, options = {}) {
 					iters,
 					rate: iters / res.elapsed,
 				});
+
+				if (cooldown > 0) {
+					sleep(cooldown);
+				}
 			}
 		}
 

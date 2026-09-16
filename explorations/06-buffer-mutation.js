@@ -97,7 +97,7 @@ const ops = {
 			idx = (idx + 1) & 0xff;
 		`,
 		teardown: "return outFix[0] ^ outFix[1];",
-	}),
+	}), //*/,
 };
 
 bench.suite("Exp 6: Buffer Mutation Patterns", ops, {

@@ -56,6 +56,6 @@ const ops = {
 
 bench.suite("Exp 2: Constant & Invariant Loops (DLE / Fold Behavior)", ops, {
 	rounds: 5,
-	iters: 1e8,
+	iters: 2e8,
 	width: 100,
 });

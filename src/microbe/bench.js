@@ -1,7 +1,7 @@
 "use strict";
 
 const readline = require("node:readline");
-const { sample } = require("./timer");
+const { sample, sleep } = require("./timer");
 const { computeStats } = require("./stats");
 const { renderBench } = require("./render");
 
@@ -52,6 +52,7 @@ function showCursor() {
  * @param {object} [options={}] - Configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.iters=5e7] - Iteration count per round.
+ * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {object} Object containing statistical metrics for the run.
  *
@@ -59,7 +60,7 @@ function showCursor() {
  * const { bench, createRunner } = require('#microbe');
  *
  * const runner = createRunner({ ... });
- * bench('u32.mul', runner, { iters: 1e8, rounds: 5 });
+ * bench('u32.mul', runner, { iters: 1e8, rounds: 5, cooldown: 100 });
  */
 function bench(title, runner, options = {}) {
 	if (typeof runner !== "function") {
@@ -70,6 +71,7 @@ function bench(title, runner, options = {}) {
 
 	const rounds = options.rounds ?? 5;
 	const iters = options.iters ?? 5e7;
+	const cooldown = options.cooldown ?? 0;
 	const silent = !!options.silent;
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
@@ -92,6 +94,10 @@ function bench(title, runner, options = {}) {
 			rate: iters / warmupSample.elapsed,
 		};
 
+		if (cooldown > 0) {
+			sleep(cooldown);
+		}
+
 		// 2. Multi-round measurement
 		let value = warmupSample.value;
 		const sampleTimes = [];
@@ -109,6 +115,10 @@ function bench(title, runner, options = {}) {
 				rate: iters / res.elapsed,
 			});
 			value = res.value;
+
+			if (cooldown > 0) {
+				sleep(cooldown);
+			}
 		}
 
 		if (isInteractive) {

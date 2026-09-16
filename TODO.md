@@ -27,6 +27,12 @@
   - [x] **Signed vs Unsigned `mulwide` Latency & Throughput**:
     - Measure and compare max 1x serial throughput and Hacker's Delight correction latency between `i32.mulwide` and `u32.mulwide` (`explorations/09-mulwide-signed-vs-unsigned.js`).
 - [ ] **Cross-Engine & Compiler Deep-Dives**:
+  - [ ] **Investigate Dependent vs Out-of-Order (OoO) Friendly Indexing & Instruction Scheduling**:
+    - Profile the microarchitectural throughput differences between eagerly pre-computed index variables (`idx = (idx + 1) & 0xff`) vs loop induction-dependent indexing (`inBuf[i & 0xff]`).
+    - Measure Address Generation Unit (AGU) latency and register renaming pressure under 1x serial recurrence vs 4x/8x multi-accumulator ILP saturation.
+  - [ ] **Investigate Inlined Functions vs Raw Operators & TurboFan Partial Unrolling**:
+    - Deep-dive into why raw primitive leaf operators (`acc ^= inBuf[idx]`) trigger TurboFan 4x partial unrolling with multi-branch exit guards (~16% throughput penalty) while inlined functions (`add(...)`, `xor(...)`) preserve 1x compact loop structures without code bloat or register ping-pong.
+    - Measure and document the AST/compiler node budget thresholds governing 1x compact loops vs unrolled loops with remainder checks in TurboFan and Maglev.
   - [ ] **Investigate Signed (`| 0`) vs Unsigned (`>>> 0`) Performance Drop in Bun (JSC)**:
     - Deep-dive into why unsigned right shift intermediate expressions in multi-limb arithmetic (`mulwide`) trigger throughput drops (~51 M/s vs ~134 M/s) under JavaScriptCore NaN-boxing and DFG type feedback.
   - [ ] **Probe Loop Unrolling Thresholds in V8/TurboFan**:

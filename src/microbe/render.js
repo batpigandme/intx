@@ -163,13 +163,15 @@ function renderBanner(title, config = {}) {
 	const rounds = config.rounds ?? 5;
 	const iters = config.iters ?? 5e7;
 	const shuffled = config.shuffled ?? true;
+	const cooldown = config.cooldown ?? 0;
 
 	const orderLabel = shuffled ? "Order: Shuffled" : "Order: Round-Robin";
+	const cooldownLabel = cooldown > 0 ? ` | Cooldown: ${cooldown}ms` : "";
 	const cpu = getCpuModel();
 	const rawTitle = title || "Benchmark Suite";
 
 	const headingLine = `\n### ${rawTitle}`;
-	const configLine = `> **Config:** ${rounds} rounds × ${iters.toExponential()} iters/round | ${orderLabel}  `;
+	const configLine = `> **Config:** ${rounds} rounds × ${iters.toExponential()} iters/round | ${orderLabel}${cooldownLabel}  `;
 	const platformLine = `> **Platform:** Node ${process.version} (${process.arch}) | ${cpu}`;
 
 	console.log(headingLine);

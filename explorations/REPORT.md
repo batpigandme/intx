@@ -103,6 +103,18 @@ This report documents comprehensive empirical investigations into V8 TurboFan op
 1. **Bounds Check Elimination (BCE)**: Using a power-of-two bitmask matching buffer capacity (`(idx + 1) & 0xff` for 256 elements) allows TurboFan's range analysis to prove $0 \le idx < 256$, completely eliminating the bounds check branch (`cmp + jge`).
 2. **Modulo Penalty**: Unaligned modulo (`% 250`) forces a hardware integer division instruction on every iteration, destroying throughput.
 3. **L1D Cache Locality**: A 1 KB (256-element `Int32Array`) buffer fits tightly into L1D cache, yielding the highest throughput and lowest cache line conflict rate.
+4. **Why 256 Elements (`& 0xff`) Outperforms All Others**:
+   * **Byte Zero-Extension Optimization**: TurboFan recognizes `x & 0xff` as an 8-bit unsigned truncation and compiles it into a single machine instruction: `movzxbl r12, r15`.
+   * **Eliminated Register Move**: Because `movzxbl` writes directly to the destination index register (`r12`), it eliminates an explicit register-to-register copy (`movl r12, r15`) at the loop top, saving 1 $\mu\text{op}$ per iteration.
+5. **Why 128 Elements / 512 B (`& 0x7f`) Can Be Slower Than 1024 Elements / 4 KB (`& 0x3ff`)**:
+   * **Mask Instruction Encoding & Uop Cache (DSB) Alignment**: 
+     * `andl r15, 0x7f` uses an 8-bit sign-extended immediate (4 bytes: `41 83 e7 7f`).
+     * `andl r15, 0x3ff` uses a 32-bit immediate (7 bytes: `41 81 e7 ff 03 00 00`).
+     * This 3-byte difference shifts loop body alignment across 32-byte/64-byte instruction fetch windows and the CPU's Decoded Stream Buffer (DSB), altering loop decoder efficiency.
+   * **Wrap-Around Frequency & Hardware Prefetch**:
+     * In a 128-element buffer, the index resets (`127 -> 0`) **8x more frequently** than in a 1024-element buffer.
+     * High wrap-around frequency causes periodic stride resets that can disrupt L1D spatial stream prefetchers compared to longer continuous linear memory traversals.
+
 
 ---
 
@@ -119,6 +131,14 @@ This report documents comprehensive empirical investigations into V8 TurboFan op
 1. **Context vs Local Buffer Allocation**: Allocating the buffer in closure `context` vs in local `setup` yields identical loop execution speeds (~524 M/s). However, `context` allocation avoids heap garbage collection overhead across rounds.
 2. **Store Buffer Cost**: Writing to memory adds store buffer overhead and cache line dirtying compared to read-only buffer walks.
 3. **Separate Output Buffers**: Using `inBuf -> outBuf` provides clean separation of inputs and outputs with negligible throughput difference compared to in-place mutation, while completely preventing input test-vector corruption across rounds.
+4. **Inlined Functions vs Raw Operators (The TurboFan Unrolling Paradox)**:
+   * Calling an inlined function (`add(acc, inBuf[idx])` or `xorWrapper(acc, inBuf[idx])`) preserves a **compact 1x loop structure** (684 bytes machine code, single back-edge branch).
+   * Writing a bare primitive leaf operator (`acc ^= inBuf[idx]`) triggers TurboFan's **4x partial loop unrolling**.
+   * Because `iters` is dynamic, TurboFan emits an exit check after *every single unrolled step* (4 branches per loop body), forces accumulator register ping-pong (`r14` $\leftrightarrow$ `r8`), and expands binary size to 924 bytes, causing a **~16% throughput penalty** (~432 M/s vs ~515 M/s).
+5. **The Postfix Assignment Trap (`idx = (idx++) & 0xff`)**:
+   * `idx++` returns the pre-increment value (`0`), increments in-place to `1`, and then `idx = (0 & 0xff)` immediately overwrites the variable back to `0`, freezing `idx` at 0 forever.
+   * TurboFan constant-folds `idx` into a static scalar load of `inBuf[0]`, creating a false speedup by eliminating the buffer walk entirely.
+   * `idx = (idx + 1) & 0xff` and `idx = (++idx) & 0xff` produce **100% byte-for-byte identical machine code**.
 
 ---
 

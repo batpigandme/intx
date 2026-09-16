@@ -194,6 +194,7 @@ Runs a multi-round benchmark for a single runner function.
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
 | `iters` | `number` | `5e7` | Loop iterations per round. |
+| `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
 | `silent` | `boolean` | `false` | Suppress console output and return stats object. |
 
 ---
@@ -218,6 +219,7 @@ Runs an interleaved multi-target benchmark suite preserving declaration order in
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
 | `iters` | `number` | `5e7` | Iterations per round. |
+| `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
 | `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
 | `render` | `boolean` | `true` | If true and not silent, renders detailed benchmark blocks. |
@@ -232,6 +234,7 @@ Runs an interleaved multi-candidate showdown and outputs a ranked results table.
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
 | `iters` | `number` | `5e7` | Iterations per round. |
+| `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
 | `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
 | `order` | `string \| Function` | `'median'` | Metric to sort by (`"median"`, `"mean"`, `"max"`, `"min"`, `"warmup"`) or comparator. |
