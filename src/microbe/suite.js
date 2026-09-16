@@ -1,8 +1,11 @@
 "use strict";
 
 const readline = require("node:readline");
+const path = require("node:path");
+const childProcess = require("node:child_process");
 const { sample, sleep } = require("./timer");
 const { computeStats } = require("./stats");
+const { calibrate } = require("./calibrate");
 const { renderTable, renderBanner } = require("./render");
 
 /**
@@ -62,31 +65,71 @@ function showCursor() {
 }
 
 /**
- * Multi-target microbenchmark suite runner with thermal and ordering bias mitigation.
+ * Executes a runner inside an isolated child process via spawnSync.
+ *
+ * @param {string} name - Candidate name.
+ * @param {Function} runner - Runner function.
+ * @param {object} options - Execution options.
+ * @returns {object} Result payload from worker.
+ */
+function runForkedCandidate(name, runner, options) {
+	const workerPath = path.join(__dirname, "worker.js");
+	const config = runner._runnerConfig || {
+		name,
+		loop: "",
+	};
+
+	const payload = {
+		name,
+		config,
+		options: {
+			rounds: options.rounds,
+			iters: options.iters,
+			time: options.time,
+			cooldown: options.cooldown,
+		},
+	};
+
+	const child = childProcess.spawnSync(
+		process.execPath,
+		["--expose-gc", workerPath],
+		{
+			input: JSON.stringify(payload),
+			encoding: "utf-8",
+			maxBuffer: 10 * 1024 * 1024,
+		},
+	);
+
+	if (child.error) {
+		throw child.error;
+	}
+
+	if (child.status !== 0) {
+		throw new Error(
+			`Child process for '${name}' exited with code ${child.status}:\n${child.stderr}`,
+		);
+	}
+
+	return JSON.parse(child.stdout.trim());
+}
+
+/**
+ * Multi-target microbenchmark suite runner with dynamic calibration, statistical rigor, and isolation.
  * Executes targets in interleaved rounds while preserving declaration order in output and results.
  *
  * @param {string} title - Title of the benchmark suite.
  * @param {object} runners - Object map of target names to runner functions `(iters, startClock, stopClock) => any`.
  * @param {object} [options={}] - Suite configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
- * @param {number} [options.iters=5e7] - Iteration count per round.
+ * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
+ * @param {boolean} [options.fork=false] - If true, executes each candidate in an isolated child process.
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner execution order per round.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {boolean} [options.render=true] - If true and not silent, renders benchmark table.
+ * @param {number} [options.width=80] - Total table column width.
  * @returns {Array<object>} Array of evaluated results in original runner definition order.
- *
- * @example
- * const { suite, createRunner } = require('#microbe');
- *
- * suite('i32.add: Patterns', {
- *   '1. Serial': runner1,
- *   '2. Parallel': runner2,
- * }, {
- *   rounds: 5,
- *   iters: 2e7,
- *   cooldown: 100, // 100ms pause between samples
- * });
  */
 function suite(title, runners, options = {}) {
 	if (!runners || typeof runners !== "object" || Array.isArray(runners)) {
@@ -101,16 +144,26 @@ function suite(title, runners, options = {}) {
 	}
 
 	const rounds = options.rounds ?? 5;
-	const iters = options.iters ?? 5e7;
+	const isDynamic = options.iters === undefined;
+	const targetMs = options.time ?? 100;
+	const manualIters = options.iters;
 	const cooldown = options.cooldown ?? 0;
+	const shouldFork = !!options.fork;
 	const shuffled = options.shuffled ?? true;
 	const silent = !!options.silent;
 	const render = options.render ?? true;
-
 	const width = options.width ?? 80;
 
 	if (!silent && render) {
-		renderBanner(title, { rounds, iters, shuffled, cooldown, width });
+		renderBanner(title, {
+			rounds,
+			iters: manualIters,
+			time: isDynamic ? targetMs : undefined,
+			shuffled,
+			cooldown,
+			fork: shouldFork,
+			width,
+		});
 	}
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
@@ -121,80 +174,119 @@ function suite(title, runners, options = {}) {
 
 	let results;
 	try {
-		// 1. Warmup Phase (Round 0 for JIT tier-up across all candidates)
-		const samples = {};
-		const sampleDetails = {};
-		const values = {};
-		const warmup = {};
-
-		for (const name of names) {
-			const runner = runners[name];
-			if (typeof runner !== "function") {
-				throw new TypeError(
-					`suite expected runner function for '${name}', received: ${typeof runner}`,
-				);
-			}
-			if (isInteractive) {
-				writeProgress(`🔥 Warming up JIT compilers ('${name}')... `);
-			}
-			const warmupSample = sample(runner, iters);
-			warmup[name] = {
-				elapsed: warmupSample.elapsed,
-				iters,
-				rate: iters / warmupSample.elapsed,
-			};
-			values[name] = warmupSample.value;
-			samples[name] = [];
-			sampleDetails[name] = [];
-
-			if (cooldown > 0) {
-				sleep(cooldown);
-			}
-		}
-
-		// 2. Interleaved Measurement Rounds
-		for (let round = 1; round <= rounds; round++) {
-			const roundOrder = shuffled ? shuffle([...names]) : names;
-
-			for (const name of roundOrder) {
+		if (shouldFork) {
+			// Subprocess Forked Mode
+			results = names.map((name) => {
 				if (isInteractive) {
-					writeProgress(`[Round ${round}/${rounds}] Sampling '${name}'... `);
+					writeProgress(`⚡ Running '${name}' in isolated subprocess... `);
 				}
 				const runner = runners[name];
-				const res = sample(runner, iters);
-				values[name] = res.value;
-				samples[name].push(res.elapsed);
-				sampleDetails[name].push({
-					round,
-					elapsed: res.elapsed,
-					iters,
-					rate: iters / res.elapsed,
+				const forkedRes = runForkedCandidate(name, runner, {
+					rounds,
+					iters: manualIters,
+					time: targetMs,
+					cooldown,
 				});
+				return {
+					title: name,
+					name,
+					...forkedRes,
+				};
+			});
+		} else {
+			// In-Process Interleaved Mode
+			const itersMap = {};
+			const samples = {};
+			const sampleDetails = {};
+			const values = {};
+			const warmup = {};
+
+			// 1. Warmup & Calibration Phase
+			for (const name of names) {
+				const runner = runners[name];
+				if (typeof runner !== "function") {
+					throw new TypeError(
+						`suite expected runner function for '${name}', received: ${typeof runner}`,
+					);
+				}
+
+				if (typeof global.gc === "function") {
+					global.gc();
+				}
+
+				if (isInteractive) {
+					writeProgress(`🔥 Warming up & calibrating JIT ('${name}')... `);
+				}
+
+				const iters = isDynamic ? calibrate(runner, targetMs) : manualIters;
+				itersMap[name] = iters;
+
+				const warmupSample = sample(runner, iters);
+				warmup[name] = {
+					elapsed: warmupSample.elapsed,
+					iters,
+					rate: iters / warmupSample.elapsed,
+				};
+				values[name] = warmupSample.value;
+				samples[name] = [];
+				sampleDetails[name] = [];
 
 				if (cooldown > 0) {
 					sleep(cooldown);
 				}
 			}
+
+			// 2. Interleaved Measurement Rounds
+			for (let round = 1; round <= rounds; round++) {
+				const roundOrder = shuffled ? shuffle([...names]) : names;
+
+				for (const name of roundOrder) {
+					if (isInteractive) {
+						writeProgress(`[Round ${round}/${rounds}] Sampling '${name}'... `);
+					}
+
+					if (typeof global.gc === "function") {
+						global.gc();
+					}
+
+					const runner = runners[name];
+					const iters = itersMap[name];
+					const res = sample(runner, iters);
+					values[name] = res.value;
+					samples[name].push(res.elapsed);
+					sampleDetails[name].push({
+						round,
+						elapsed: res.elapsed,
+						iters,
+						rate: iters / res.elapsed,
+					});
+
+					if (cooldown > 0) {
+						sleep(cooldown);
+					}
+				}
+			}
+
+			// 3. Compute statistics for all targets in definition order
+			results = names.map((name) => {
+				const iters = itersMap[name];
+				const stats = computeStats(samples[name], iters);
+				return {
+					title: name,
+					name,
+					value: values[name],
+					warmup: warmup[name],
+					samples: sampleDetails[name],
+					rounds,
+					iters,
+					...stats,
+				};
+			});
 		}
 
 		if (isInteractive) {
 			clearProgress();
 		}
-
-		// 3. Compute statistics for all targets in definition order
-		results = names.map((name) => {
-			const stats = computeStats(samples[name], iters);
-			return {
-				title: name,
-				name,
-				value: values[name],
-				warmup: warmup[name],
-				samples: sampleDetails[name],
-				rounds,
-				iters,
-				...stats,
-			};
-		});
 	} finally {
 		if (isInteractive) {
 			showCursor();
