@@ -39,7 +39,4 @@ const presets = Object.freeze({
 
 module.exports = {
 	presets,
-	short,
-	medium,
-	long,
 };

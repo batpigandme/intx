@@ -3,7 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { bench, createRunner, presets, short, medium, long } = require("../index");
+const { bench, createRunner, presets } = require("../index");
 const { computeStats, getTCritical, getPercentile } = require("../stats");
 const { calibrate } = require("../calibrate");
 
@@ -163,29 +163,26 @@ test("microbe: suite.rank sorts results correctly", () => {
 
 test("microbe: presets export and configuration validation", () => {
 	assert.ok(presets && presets.short && presets.medium && presets.long);
-	assert.strictEqual(presets.short, short);
-	assert.strictEqual(presets.medium, medium);
-	assert.strictEqual(presets.long, long);
 
 	// Short preset assertions
-	assert.strictEqual(short.mode, "sequential");
-	assert.strictEqual(short.dur, 50);
-	assert.strictEqual(short.prime, false);
-	assert.strictEqual(short.cooldown, 0);
-	assert.ok(short.pause > 0);
+	assert.strictEqual(presets.short.mode, "sequential");
+	assert.strictEqual(presets.short.dur, 50);
+	assert.strictEqual(presets.short.prime, false);
+	assert.strictEqual(presets.short.cooldown, 0);
+	assert.ok(presets.short.pause > 0);
 
 	// Medium preset assertions
-	assert.strictEqual(medium.mode, "shuffled");
-	assert.strictEqual(medium.dur, 100);
-	assert.strictEqual(medium.cooldown, 0);
-	assert.ok(medium.pause > 0);
+	assert.strictEqual(presets.medium.mode, "shuffled");
+	assert.strictEqual(presets.medium.dur, 100);
+	assert.strictEqual(presets.medium.cooldown, 0);
+	assert.ok(presets.medium.pause > 0);
 
 	// Long preset assertions
-	assert.strictEqual(long.mode, "shuffled");
-	assert.strictEqual(long.dur, 200);
-	assert.strictEqual(long.prime, true);
-	assert.ok(long.cooldown > 0);
-	assert.ok(long.pause > 0);
+	assert.strictEqual(presets.long.mode, "shuffled");
+	assert.strictEqual(presets.long.dur, 200);
+	assert.strictEqual(presets.long.prime, true);
+	assert.ok(presets.long.cooldown > 0);
+	assert.ok(presets.long.pause > 0);
 });
 
 test("microbe: sequential mode runs runners consecutively without shuffling", () => {
@@ -205,7 +202,7 @@ test("microbe: sequential mode runs runners consecutively without shuffling", ()
 
 	// 1 warmup + 3 rounds each in sequential mode
 	bench.suite("test_sequential", ops, {
-		...short,
+		...presets.short,
 		rounds: 3,
 		iters: 10,
 		pause: 0,
@@ -240,7 +237,7 @@ test("microbe: suite and rank accept preset option objects", () => {
 	};
 
 	const suiteRes = bench.suite("test_preset_obj", ops, {
-		...short,
+		...presets.short,
 		rounds: 2,
 		dur: 10,
 		silent: true,
@@ -248,7 +245,7 @@ test("microbe: suite and rank accept preset option objects", () => {
 	assert.strictEqual(suiteRes.length, 2);
 
 	const rankRes = bench.suite.rank("test_rank_obj", ops, {
-		...short,
+		...presets.short,
 		rounds: 2,
 		dur: 10,
 		silent: true,
