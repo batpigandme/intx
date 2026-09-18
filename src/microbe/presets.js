@@ -31,7 +31,14 @@ const long = Object.freeze({
 	prime: true,
 });
 
+const presets = Object.freeze({
+	short,
+	medium,
+	long,
+});
+
 module.exports = {
+	presets,
 	short,
 	medium,
 	long,

@@ -2,6 +2,7 @@
 
 const { suite } = require("./suite");
 const { renderTable, renderBanner } = require("./render");
+const { presets } = require("./presets");
 
 /**
  * Returns a comparator function for sorting benchmark results based on order key.
@@ -37,12 +38,12 @@ function getComparator(order) {
  *
  * @param {string} title - Title of the comparison suite.
  * @param {object} runners - Object map of target names to runner functions `(iters, start, stop) => any`.
- * @param {object} [options={}] - Comparison configuration options.
- * @param {number} [options.rounds=5] - Number of measurement rounds.
+ * @param {object} [options=presets.medium] - Comparison configuration options.
+ * @param {number} [options.rounds=10] - Number of measurement rounds.
  * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
- * @param {number} [options.pause=0] - Pause (in ms) between runners or round cycles.
+ * @param {number} [options.pause=20] - Pause (in ms) between runners or round cycles.
  * @param {string} [options.mode="shuffled"] - Execution ordering ("shuffled", "sequential", "ordered").
  * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
@@ -50,7 +51,7 @@ function getComparator(order) {
  * @param {number} [options.width=80] - Total table column width.
  * @returns {Array<object>} Sorted array of evaluated results.
  */
-function rank(title, runners, options = {}) {
+function rank(title, runners, options = presets.medium) {
 	if (!runners || typeof runners !== "object" || Array.isArray(runners)) {
 		throw new TypeError(
 			"bench.suite.rank expected runners to be an object map of runner functions.",
@@ -69,13 +70,13 @@ function rank(title, runners, options = {}) {
 
 	if (!silent) {
 		renderBanner(title, {
-			rounds: options.rounds ?? 5,
+			rounds: options.rounds ?? presets.medium.rounds,
 			iters: options.iters,
-			dur: options.iters === undefined ? (options.dur ?? 100) : undefined,
-			mode: options.mode || "shuffled",
-			cooldown: options.cooldown ?? 0,
-			pause: options.pause ?? 0,
-			prime: !!options.prime,
+			dur: options.iters === undefined ? (options.dur ?? presets.medium.dur) : undefined,
+			mode: options.mode ?? presets.medium.mode,
+			cooldown: options.cooldown ?? presets.medium.cooldown,
+			pause: options.pause ?? presets.medium.pause,
+			prime: options.prime ?? presets.medium.prime,
 			width,
 		});
 	}

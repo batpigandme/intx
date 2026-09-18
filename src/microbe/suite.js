@@ -5,6 +5,7 @@ const { sample, sleep } = require("./timer");
 const { computeStats } = require("./stats");
 const { calibrate } = require("./calibrate");
 const { renderTable, renderBanner } = require("./render");
+const { presets } = require("./presets");
 
 /**
  * Fisher-Yates array shuffle.
@@ -67,12 +68,12 @@ function showCursor() {
  *
  * @param {string} title - Title of the benchmark suite.
  * @param {object} runners - Object map of target names to runner functions `(iters, start, stop) => any`.
- * @param {object} [options={}] - Suite configuration options.
- * @param {number} [options.rounds=5] - Number of measurement rounds.
+ * @param {object} [options=presets.medium] - Suite configuration options.
+ * @param {number} [options.rounds=10] - Number of measurement rounds.
  * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
- * @param {number} [options.pause=0] - Pause (in ms) between runners or round cycles.
+ * @param {number} [options.pause=20] - Pause (in ms) between runners or round cycles.
  * @param {string} [options.mode="shuffled"] - Execution ordering ("shuffled", "sequential", "ordered").
  * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
@@ -80,7 +81,7 @@ function showCursor() {
  * @param {number} [options.width=80] - Total table column width.
  * @returns {Array<object>} Array of evaluated results in original runner definition order.
  */
-function suite(title, runners, options = {}) {
+function suite(title, runners, options = presets.medium) {
 	if (!runners || typeof runners !== "object" || Array.isArray(runners)) {
 		throw new TypeError(
 			"suite expected runners to be an object map of runner functions.",
@@ -92,14 +93,14 @@ function suite(title, runners, options = {}) {
 		throw new Error("suite requires at least two runner functions.");
 	}
 
-	const rounds = options.rounds ?? 5;
-	const dur = options.dur ?? 100;
+	const rounds = options.rounds ?? presets.medium.rounds;
+	const dur = options.dur ?? presets.medium.dur;
 	const iters = options.iters;
 	const dynamic = iters === undefined;
-	const cooldown = options.cooldown ?? 0;
-	const pause = options.pause ?? 0;
-	const mode = options.mode || "shuffled";
-	const prime = !!options.prime;
+	const cooldown = options.cooldown ?? presets.medium.cooldown;
+	const pause = options.pause ?? presets.medium.pause;
+	const mode = options.mode ?? presets.medium.mode;
+	const prime = options.prime ?? presets.medium.prime;
 	const silent = !!options.silent;
 	const render = options.render ?? true;
 	const width = options.width ?? 80;

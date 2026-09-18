@@ -189,16 +189,19 @@ bench.suite.rank('Multiplication Showdown', runners, {
 Monomorphic, frozen configuration objects for standardized benchmarking:
 
 ```javascript
-const { bench, short, medium, long } = require('#microbe');
+const { bench, presets } = require('#microbe');
+
+// Default run (omitted options defaults to presets.medium):
+bench.suite('Default Run', runners);
 
 // Quick sequential run without thermal skew:
-bench.suite('Quick Check', runners, short);
+bench.suite('Quick Check', runners, presets.short);
 
 // Standard shuffled run:
-bench.suite.rank('Standard Showdown', runners, medium);
+bench.suite.rank('Standard Showdown', runners, presets.medium);
 
 // High-precision run with per-sample cooldown and cache priming:
-bench.suite.rank('Deep Analysis', runners, long);
+bench.suite.rank('Deep Analysis', runners, presets.long);
 ```
 
 | Preset | `mode` | `rounds` | `dur` | `pause` | `cooldown` | `prime` |

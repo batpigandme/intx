@@ -1,6 +1,7 @@
 "use strict";
 
 const os = require("node:os");
+const { presets } = require("./presets");
 
 /**
  * Formats throughput rate into human-readable engineering notation.
@@ -154,16 +155,16 @@ function getCpuModel() {
  * Renders the benchmark header in GitHub Markdown format.
  *
  * @param {string} title - Benchmark suite title.
- * @param {object} [options={}] - Configuration options (rounds, iters, dur, mode, cooldown, pause, prime).
+ * @param {object} [options=presets.medium] - Configuration options (rounds, iters, dur, mode, cooldown, pause, prime).
  */
-function renderBanner(title, options = {}) {
-	const rounds = options.rounds ?? 5;
-	const dur = options.dur ?? 100;
+function renderBanner(title, options = presets.medium) {
+	const rounds = options.rounds ?? presets.medium.rounds;
+	const dur = options.dur ?? presets.medium.dur;
 	const iters = options.iters;
-	const mode = options.mode || "shuffled";
-	const cooldown = options.cooldown ?? 0;
-	const pause = options.pause ?? 0;
-	const prime = !!options.prime;
+	const mode = options.mode ?? presets.medium.mode;
+	const cooldown = options.cooldown ?? presets.medium.cooldown;
+	const pause = options.pause ?? presets.medium.pause;
+	const prime = options.prime ?? presets.medium.prime;
 
 	const timingLabel =
 		iters === undefined

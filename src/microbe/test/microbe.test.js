@@ -3,7 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { bench, createRunner, short, medium, long } = require("../index");
+const { bench, createRunner, presets, short, medium, long } = require("../index");
 const { computeStats, getTCritical, getPercentile } = require("../stats");
 const { calibrate } = require("../calibrate");
 
@@ -162,7 +162,10 @@ test("microbe: suite.rank sorts results correctly", () => {
 });
 
 test("microbe: presets export and configuration validation", () => {
-	assert.ok(short && medium && long);
+	assert.ok(presets && presets.short && presets.medium && presets.long);
+	assert.strictEqual(presets.short, short);
+	assert.strictEqual(presets.medium, medium);
+	assert.strictEqual(presets.long, long);
 
 	// Short preset assertions
 	assert.strictEqual(short.mode, "sequential");
@@ -284,4 +287,23 @@ test("microbe: pre-sample priming executes untimed pass", () => {
 	});
 
 	assert.strictEqual(callCount, 10);
+});
+
+test("microbe: options parameter defaults to presets.medium when omitted", () => {
+	const ops = {
+		c1: createRunner({ loop: "let a = 1 + 1;" }),
+		c2: createRunner({ loop: "let b = 2 * 2;" }),
+	};
+
+	// bench.suite with options omitted
+	const suiteRes = bench.suite("test_omitted_suite", ops, { silent: true });
+	assert.strictEqual(suiteRes[0].rounds, presets.medium.rounds); // 10 rounds
+
+	// bench.suite.rank with options omitted
+	const rankRes = bench.suite.rank("test_omitted_rank", ops, { silent: true });
+	assert.strictEqual(rankRes[0].rounds, presets.medium.rounds); // 10 rounds
+
+	// single bench with options omitted
+	const benchRes = bench("test_omitted_bench", ops.c1, { silent: true });
+	assert.strictEqual(benchRes.rounds, presets.medium.rounds); // 10 rounds
 });

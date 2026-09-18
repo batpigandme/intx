@@ -5,6 +5,7 @@ const { sample, sleep } = require("./timer");
 const { computeStats } = require("./stats");
 const { calibrate } = require("./calibrate");
 const { renderBench } = require("./render");
+const { presets } = require("./presets");
 
 /**
  * Writes in-place live progress to stdout cross-platform.
@@ -50,8 +51,8 @@ function showCursor() {
  *
  * @param {string} title - Benchmark title.
  * @param {Function} runner - Synchronous runner function `(iters, start, stop) => any`.
- * @param {object} [options={}] - Configuration options.
- * @param {number} [options.rounds=5] - Number of measurement rounds.
+ * @param {object} [options=presets.medium] - Configuration options.
+ * @param {number} [options.rounds=10] - Number of measurement rounds.
  * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
@@ -59,19 +60,19 @@ function showCursor() {
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {object} Object containing statistical metrics for the run.
  */
-function bench(title, runner, options = {}) {
+function bench(title, runner, options = presets.medium) {
 	if (typeof runner !== "function") {
 		throw new TypeError(
 			`bench expected runner function as 2nd argument, received: ${typeof runner}`,
 		);
 	}
 
-	const rounds = options.rounds ?? 5;
-	const dur = options.dur ?? 100;
+	const rounds = options.rounds ?? presets.medium.rounds;
+	const dur = options.dur ?? presets.medium.dur;
 	const iters = options.iters;
 	const dynamic = iters === undefined;
-	const cooldown = options.cooldown ?? 0;
-	const prime = !!options.prime;
+	const cooldown = options.cooldown ?? presets.medium.cooldown;
+	const prime = options.prime ?? presets.medium.prime;
 	const silent = !!options.silent;
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
