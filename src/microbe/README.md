@@ -19,7 +19,7 @@ Measuring tight arithmetic loops in JavaScript (e.g. integer math, bitwise ops) 
 
 `microbe` solves these by:
 - Compiling **isolated monomorphic closures** per candidate via `createRunner()`, giving each candidate its own pristine feedback vector.
-- Timing **only the measurement loop** via `start()` / `stop()`, excluding setup and teardown overhead.
+- Timing **only the measurement loop** via `tic()` / `toc()`, excluding setup and teardown overhead.
 - Providing standardized execution modes (`"sequential"`, `"shuffled"`, `"ordered"`) to eliminate thermal and cache bias.
 - Providing automatic **Round 0 warmup** and adaptive rate-derivative calibration.
 
@@ -36,15 +36,15 @@ function mul(a, b) {
   return Math.imul(a, b) | 0;
 }
 
-// Runner contract: (iters: number, start: Function, stop: Function) => any
-bench('u32.mul', (iters, start, stop) => {
+// Runner contract: (iters: number, tic: Function, toc: Function) => any
+bench('u32.mul', (iters, tic, toc) => {
   let acc = 1; // un-timed setup
 
-  start();
+  tic();
   for (let i = 0; i < iters; i++) {
     acc = mul(acc, 0x12345678);
   }
-  stop();
+  toc();
 
   return acc; // un-timed teardown
 }, {
@@ -197,18 +197,18 @@ bench.suite('Default Run', runners);
 // Quick sequential run without thermal skew:
 bench.suite('Quick Check', runners, presets.short);
 
-// Standard shuffled run:
+// Standard sequential run:
 bench.suite.rank('Standard Showdown', runners, presets.medium);
 
-// High-precision run with per-sample cooldown and cache priming:
+// High-precision sequential run with priming pass:
 bench.suite.rank('Deep Analysis', runners, presets.long);
 ```
 
 | Preset | `mode` | `rounds` | `dur` | `pause` | `cooldown` | `prime` |
 |---|---|---|---|---|---|---|
-| `short` | `"sequential"` | `5` | `50` ms | `20` ms | `0` ms | `false` |
-| `medium` | `"shuffled"` | `10` | `100` ms | `20` ms | `0` ms | `false` |
-| `long` | `"shuffled"` | `20` | `200` ms | `50` ms | `20` ms | `true` |
+| `short` | `"sequential"` | `5` | `40` ms | `20` ms | `0` ms | `false` |
+| `medium` | `"sequential"` | `10` | `50` ms | `30` ms | `0` ms | `false` |
+| `long` | `"sequential"` | `20` | `50` ms | `50` ms | `0` ms | `true` |
 
 ---
 
@@ -231,15 +231,15 @@ Runs a multi-round benchmark for a single runner function.
 ---
 
 ### `createRunner(options)`
-Generates an isolated closure `(iters, start, stop) => ...` with its own `SharedFunctionInfo`.
+Generates an isolated closure `(iters, tic, toc) => ...` with its own `SharedFunctionInfo`.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `name` | `string` | `'kernel'` | Identifier used for function tagging. |
 | `context` | `object` | `{}` | Variables injected into the runner's closure scope. |
-| `setup` | `string` | `''` | JS executed before `start()`. |
+| `setup` | `string` | `''` | JS executed before `tic()`. |
 | `loop` | `string` | `''` | JS executed inside the timed loop `for (let i = 0; i < iters; i++)`. |
-| `teardown` | `string` | `''` | JS executed after `stop()` (e.g. `return out;`). |
+| `teardown` | `string` | `''` | JS executed after `toc()` (e.g. `return out;`). |
 
 ---
 

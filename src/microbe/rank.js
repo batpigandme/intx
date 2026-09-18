@@ -37,14 +37,14 @@ function getComparator(order) {
  * Multi-target benchmark showdown & ranking orchestrator.
  *
  * @param {string} title - Title of the comparison suite.
- * @param {object} runners - Object map of target names to runner functions `(iters, start, stop) => any`.
+ * @param {object} runners - Object map of target names to runner functions `(iters, tic, toc) => any`.
  * @param {object} [options=presets.medium] - Comparison configuration options.
  * @param {number} [options.rounds=10] - Number of measurement rounds.
- * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.dur=50] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
- * @param {number} [options.pause=20] - Pause (in ms) between runners or round cycles.
- * @param {string} [options.mode="shuffled"] - Execution ordering ("shuffled", "sequential", "ordered").
+ * @param {number} [options.pause=30] - Pause (in ms) between runners or round cycles.
+ * @param {string} [options.mode="sequential"] - Execution ordering ("sequential", "shuffled", "ordered").
  * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
@@ -72,7 +72,10 @@ function rank(title, runners, options = presets.medium) {
 		renderBanner(title, {
 			rounds: options.rounds ?? presets.medium.rounds,
 			iters: options.iters,
-			dur: options.iters === undefined ? (options.dur ?? presets.medium.dur) : undefined,
+			dur:
+				options.iters === undefined
+					? (options.dur ?? presets.medium.dur)
+					: undefined,
 			mode: options.mode ?? presets.medium.mode,
 			cooldown: options.cooldown ?? presets.medium.cooldown,
 			pause: options.pause ?? presets.medium.pause,

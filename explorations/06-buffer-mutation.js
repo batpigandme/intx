@@ -1,6 +1,6 @@
 "use strict";
 
-const { bench, createRunner } = require("#microbe");
+const { bench, createRunner, presets } = require("#microbe");
 const { randomI32 } = require("#utils");
 const i32 = require("#i32");
 
@@ -101,11 +101,15 @@ const ops = {
 };
 
 const res = bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
-	rounds: 100,
-	dur: 20,
-	// iters: 1e6,
-	// cooldown: 50,
-	width: 100,
+	mode: "sequential",
+	rounds: 50,
+	dur: 50,
+	pause: 20,
+	cooldown: 0,
+	prime: false,
 });
 
 console.log(res.map((x) => x.outlierCount));
+console.log(res.map((x) => x.minTime));
+console.log(res.map((x) => x.maxTime));
+console.log(res.map((x) => x.medianTime));

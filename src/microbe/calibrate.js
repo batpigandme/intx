@@ -6,14 +6,14 @@ const { sample } = require("./timer");
  * Dynamically calibrates the loop iteration count for a runner to fit within a target duration window.
  * Uses geometric ramp-up probing to prevent running slow functions for too long.
  *
- * @param {Function} runner - Runner function (iters, start, stop) => any.
+ * @param {Function} runner - Runner function (iters, tic, toc) => any.
  * @param {number} [dur=100] - Target duration in milliseconds per measurement sample.
  * @returns {number} Calibrated iteration count.
  */
 function calibrate(runner, dur = 100) {
 	const target = dur / 1000;
-	const minElapsed = Math.min(0.010, target * 0.5);
-	const maxElapsed = Math.min(0.080, Math.max(0.020, target * 0.6));
+	const minElapsed = Math.min(0.01, target * 0.5);
+	const maxElapsed = Math.min(0.08, Math.max(0.02, target * 0.6));
 
 	let iters = 100;
 	let prevRate = 0;
@@ -59,7 +59,7 @@ function calibrate(runner, dur = 100) {
 		}
 	}
 
-	const finalRate = res.elapsed > 0 ? iters / res.elapsed : (prevRate || 1e6);
+	const finalRate = res.elapsed > 0 ? iters / res.elapsed : prevRate || 1e6;
 	return Math.max(1, Math.round(finalRate * target));
 }
 

@@ -132,13 +132,13 @@ test("microbe: suite with dynamic calibration and definition order", () => {
 
 test("microbe: suite.rank sorts results correctly", () => {
 	const ops = {
-		slow: (iters, start, stop) => {
-			start();
+		slow: (iters, tic, toc) => {
+			tic();
 			let acc = 0;
 			for (let i = 0; i < iters; i++) {
 				for (let j = 0; j < 50; j++) acc = (acc + j) | 0;
 			}
-			stop();
+			toc();
 			return acc;
 		},
 		fast: createRunner({
@@ -162,41 +162,41 @@ test("microbe: suite.rank sorts results correctly", () => {
 });
 
 test("microbe: presets export and configuration validation", () => {
-	assert.ok(presets && presets.short && presets.medium && presets.long);
+	assert.ok(presets?.short && presets.medium && presets.long);
 
 	// Short preset assertions
 	assert.strictEqual(presets.short.mode, "sequential");
-	assert.strictEqual(presets.short.dur, 50);
+	assert.strictEqual(presets.short.dur, 40);
 	assert.strictEqual(presets.short.prime, false);
 	assert.strictEqual(presets.short.cooldown, 0);
 	assert.ok(presets.short.pause > 0);
 
 	// Medium preset assertions
-	assert.strictEqual(presets.medium.mode, "shuffled");
-	assert.strictEqual(presets.medium.dur, 100);
+	assert.strictEqual(presets.medium.mode, "sequential");
+	assert.strictEqual(presets.medium.dur, 50);
 	assert.strictEqual(presets.medium.cooldown, 0);
 	assert.ok(presets.medium.pause > 0);
 
 	// Long preset assertions
-	assert.strictEqual(presets.long.mode, "shuffled");
-	assert.strictEqual(presets.long.dur, 200);
+	assert.strictEqual(presets.long.mode, "sequential");
+	assert.strictEqual(presets.long.dur, 50);
 	assert.strictEqual(presets.long.prime, true);
-	assert.ok(presets.long.cooldown > 0);
+	assert.strictEqual(presets.long.cooldown, 0);
 	assert.ok(presets.long.pause > 0);
 });
 
 test("microbe: sequential mode runs runners consecutively without shuffling", () => {
 	const executionTrace = [];
 	const ops = {
-		candidate_1: (iters, start, stop) => {
+		candidate_1: (_iters, tic, toc) => {
 			executionTrace.push("candidate_1");
-			start();
-			stop();
+			tic();
+			toc();
 		},
-		candidate_2: (iters, start, stop) => {
+		candidate_2: (_iters, tic, toc) => {
 			executionTrace.push("candidate_2");
-			start();
-			stop();
+			tic();
+			toc();
 		},
 	};
 
@@ -256,15 +256,15 @@ test("microbe: suite and rank accept preset option objects", () => {
 test("microbe: pre-sample priming executes untimed pass", () => {
 	let callCount = 0;
 	const ops = {
-		primed_a: (iters, start, stop) => {
+		primed_a: (_iters, tic, toc) => {
 			callCount++;
-			start();
-			stop();
+			tic();
+			toc();
 		},
-		primed_b: (iters, start, stop) => {
+		primed_b: (_iters, tic, toc) => {
 			callCount++;
-			start();
-			stop();
+			tic();
+			toc();
 		},
 	};
 

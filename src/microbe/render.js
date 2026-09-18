@@ -1,6 +1,7 @@
 "use strict";
 
 const os = require("node:os");
+const readline = require("node:readline");
 const { presets } = require("./presets");
 
 /**
@@ -197,10 +198,53 @@ function renderBanner(title, options = presets.medium) {
 	console.log(`${platformLine}\n`);
 }
 
+/**
+ * Writes in-place live progress to stdout cross-platform.
+ *
+ * @param {string} text - Status text to write.
+ */
+function writeProgress(text) {
+	readline.clearLine(process.stdout, 0);
+	readline.cursorTo(process.stdout, 0);
+	process.stdout.write(text);
+}
+
+/**
+ * Clears the current terminal line cross-platform.
+ */
+function clearProgress() {
+	readline.clearLine(process.stdout, 0);
+	readline.cursorTo(process.stdout, 0);
+}
+
+/**
+ * Hides terminal cursor safely with exit cleanup.
+ */
+function hideCursor() {
+	if (process.stdout.isTTY) {
+		process.stdout.write("\x1b[?25l");
+		process.once("exit", showCursor);
+	}
+}
+
+/**
+ * Restores terminal cursor.
+ */
+function showCursor() {
+	if (process.stdout.isTTY) {
+		process.stdout.write("\x1b[?25h");
+		process.removeListener("exit", showCursor);
+	}
+}
+
 module.exports = {
 	formatRate,
 	formatTime,
 	renderBanner,
 	renderBench,
 	renderTable,
+	writeProgress,
+	clearProgress,
+	hideCursor,
+	showCursor,
 };

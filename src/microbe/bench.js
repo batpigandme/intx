@@ -1,63 +1,32 @@
 "use strict";
 
-const readline = require("node:readline");
-const { sample, sleep } = require("./timer");
+const { sample } = require("./timer");
+const { sleep } = require("#utils");
 const { computeStats } = require("./stats");
 const { calibrate } = require("./calibrate");
-const { renderBench } = require("./render");
+const {
+	renderBench,
+	writeProgress,
+	clearProgress,
+	hideCursor,
+	showCursor,
+} = require("./render");
 const { presets } = require("./presets");
-
-/**
- * Writes in-place live progress to stdout cross-platform.
- *
- * @param {string} text - Status text to write.
- */
-function writeProgress(text) {
-	readline.clearLine(process.stdout, 0);
-	readline.cursorTo(process.stdout, 0);
-	process.stdout.write(text);
-}
-
-/**
- * Clears the current terminal line cross-platform.
- */
-function clearProgress() {
-	readline.clearLine(process.stdout, 0);
-	readline.cursorTo(process.stdout, 0);
-}
-
-/**
- * Hides terminal cursor safely with exit cleanup.
- */
-function hideCursor() {
-	if (process.stdout.isTTY) {
-		process.stdout.write("\x1b[?25l");
-		process.once("exit", showCursor);
-	}
-}
-
-/**
- * Restores terminal cursor.
- */
-function showCursor() {
-	if (process.stdout.isTTY) {
-		process.stdout.write("\x1b[?25h");
-		process.removeListener("exit", showCursor);
-	}
-}
 
 /**
  * Benchmarks a single kernel runner across multiple measurement rounds with dynamic calibration.
  *
  * @param {string} title - Benchmark title.
- * @param {Function} runner - Synchronous runner function `(iters, start, stop) => any`.
+ * @param {Function} runner - Synchronous runner function `(iters, tic, toc) => any`.
  * @param {object} [options=presets.medium] - Configuration options.
  * @param {number} [options.rounds=10] - Number of measurement rounds.
- * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.dur=50] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
+ * @param {boolean} [options.render=true] - If true and not silent, renders benchmark summary block.
+ * @param {boolean} [options.cursor=true] - If true and interactive, manages terminal cursor visibility.
  * @returns {object} Object containing statistical metrics for the run.
  */
 function bench(title, runner, options = presets.medium) {
@@ -74,10 +43,12 @@ function bench(title, runner, options = presets.medium) {
 	const cooldown = options.cooldown ?? presets.medium.cooldown;
 	const prime = options.prime ?? presets.medium.prime;
 	const silent = !!options.silent;
+	const render = options.render ?? true;
+	const cursor = options.cursor ?? true;
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
 
-	if (isInteractive) {
+	if (isInteractive && cursor) {
 		hideCursor();
 	}
 
@@ -118,8 +89,15 @@ function bench(title, runner, options = presets.medium) {
 			}
 
 			if (prime) {
-				const primeIters = Math.min(10000, Math.max(100, (itersCount * 0.01) | 0));
-				runner(primeIters, () => {}, () => {});
+				const primeIters = Math.min(
+					10000,
+					Math.max(100, (itersCount * 0.01) | 0),
+				);
+				runner(
+					primeIters,
+					() => {},
+					() => {},
+				);
 			}
 
 			const res = sample(runner, itersCount);
@@ -154,13 +132,13 @@ function bench(title, runner, options = presets.medium) {
 			...stats,
 		};
 	} finally {
-		if (isInteractive) {
+		if (isInteractive && cursor) {
 			showCursor();
 		}
 	}
 
 	// 4. Output summary block
-	if (!silent) {
+	if (!silent && render) {
 		renderBench(result);
 	}
 
