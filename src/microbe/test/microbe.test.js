@@ -3,7 +3,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { bench, createRunner } = require("../index");
+const { bench, createRunner, short, medium, long } = require("../index");
 const { computeStats, getTCritical, getPercentile } = require("../stats");
 const { calibrate } = require("../calibrate");
 
@@ -159,4 +159,126 @@ test("microbe: suite.rank sorts results correctly", () => {
 	assert.strictEqual(ranked[0].name, "fast");
 	assert.strictEqual(ranked[1].name, "slow");
 	assert.ok(ranked[0].medianRate > ranked[1].medianRate);
+});
+
+test("microbe: presets export and configuration validation", () => {
+	assert.ok(short && medium && long);
+
+	// Short preset assertions
+	assert.strictEqual(short.mode, "sequential");
+	assert.strictEqual(short.prime, false);
+	assert.strictEqual(short.cooldown, 0);
+	assert.ok(short.pause > 0);
+
+	// Medium preset assertions
+	assert.strictEqual(medium.mode, "shuffled");
+	assert.strictEqual(medium.cooldown, 0);
+	assert.ok(medium.pause > 0);
+
+	// Long preset assertions
+	assert.strictEqual(long.mode, "shuffled");
+	assert.strictEqual(long.prime, true);
+	assert.ok(long.cooldown > 0);
+	assert.ok(long.pause > 0);
+});
+
+test("microbe: sequential mode runs runners consecutively without shuffling", () => {
+	const executionTrace = [];
+	const ops = {
+		candidate_1: (iters, start, stop) => {
+			executionTrace.push("candidate_1");
+			start();
+			stop();
+		},
+		candidate_2: (iters, start, stop) => {
+			executionTrace.push("candidate_2");
+			start();
+			stop();
+		},
+	};
+
+	// 1 warmup + 3 rounds each in sequential mode
+	bench.suite("test_sequential", ops, {
+		...short,
+		rounds: 3,
+		iters: 10,
+		pause: 0,
+		silent: true,
+	});
+
+	// candidate_1 should run 4 times before candidate_2 runs 4 times
+	assert.deepStrictEqual(executionTrace, [
+		"candidate_1",
+		"candidate_1",
+		"candidate_1",
+		"candidate_1",
+		"candidate_2",
+		"candidate_2",
+		"candidate_2",
+		"candidate_2",
+	]);
+});
+
+test("microbe: suite and rank accept preset option objects", () => {
+	const ops = {
+		a: createRunner({
+			setup: "let x = 0;",
+			loop: "x = (x + 1) | 0;",
+			teardown: "return x;",
+		}),
+		b: createRunner({
+			setup: "let y = 0;",
+			loop: "y = (y + 2) | 0;",
+			teardown: "return y;",
+		}),
+	};
+
+	const suiteRes = bench.suite("test_preset_obj", ops, {
+		...short,
+		rounds: 2,
+		time: 10,
+		silent: true,
+	});
+	assert.strictEqual(suiteRes.length, 2);
+
+	const rankRes = bench.suite.rank("test_rank_obj", ops, {
+		...short,
+		rounds: 2,
+		time: 10,
+		silent: true,
+	});
+	assert.strictEqual(rankRes.length, 2);
+});
+
+test("microbe: pre-sample priming executes untimed pass", () => {
+	let callCount = 0;
+	const ops = {
+		primed_a: (iters, start, stop) => {
+			callCount++;
+			start();
+			stop();
+		},
+		primed_b: (iters, start, stop) => {
+			callCount++;
+			start();
+			stop();
+		},
+	};
+
+	// 2 runners, 2 rounds each.
+	// With prime: true:
+	// Warmup: 1 call per runner (2 calls)
+	// Round 1: 1 prime + 1 sample per runner (4 calls)
+	// Round 2: 1 prime + 1 sample per runner (4 calls)
+	// Total = 2 + 4 + 4 = 10 calls
+	bench.suite("test_prime_calls", ops, {
+		mode: "sequential",
+		rounds: 2,
+		iters: 100,
+		prime: true,
+		pause: 0,
+		silent: true,
+	});
+
+	assert.strictEqual(callCount, 10);
 });

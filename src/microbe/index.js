@@ -5,10 +5,16 @@ const { suite } = require("./suite");
 const { rank } = require("./rank");
 const { createRunner } = require("./create-runner");
 
+const { short, medium, long } = require("./presets");
+
 suite.rank = rank;
 bench.suite = suite;
 
 module.exports = {
 	bench,
 	createRunner,
+	short,
+	medium,
+	long,
 };
+

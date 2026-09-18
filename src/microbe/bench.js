@@ -49,12 +49,13 @@ function showCursor() {
  * Benchmarks a single kernel runner across multiple measurement rounds with dynamic calibration.
  *
  * @param {string} title - Benchmark title.
- * @param {Function} runner - Synchronous runner function `(iters: number, startClock: Function, stopClock: Function) => any`.
+ * @param {Function} runner - Synchronous runner function `(iters, start, stop) => any`.
  * @param {object} [options={}] - Configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
+ * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @returns {object} Object containing statistical metrics for the run.
  */
@@ -66,9 +67,11 @@ function bench(title, runner, options = {}) {
 	}
 
 	const rounds = options.rounds ?? 5;
-	const isDynamic = options.iters === undefined;
-	const targetMs = options.time ?? 100;
+	const time = options.time ?? 100;
+	const iters = options.iters;
+	const dynamic = iters === undefined;
 	const cooldown = options.cooldown ?? 0;
+	const prime = !!options.prime;
 	const silent = !!options.silent;
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
@@ -88,12 +91,12 @@ function bench(title, runner, options = {}) {
 		}
 
 		// 1. Calibrate & Warmup Round
-		const iters = isDynamic ? calibrate(runner, targetMs) : options.iters;
-		const warmupSample = sample(runner, iters);
+		const itersCount = dynamic ? calibrate(runner, time) : iters;
+		const warmupSample = sample(runner, itersCount);
 		const warmup = {
 			elapsed: warmupSample.elapsed,
-			iters,
-			rate: iters / warmupSample.elapsed,
+			iters: itersCount,
+			rate: itersCount / warmupSample.elapsed,
 		};
 
 		if (cooldown > 0) {
@@ -113,13 +116,18 @@ function bench(title, runner, options = {}) {
 				global.gc();
 			}
 
-			const res = sample(runner, iters);
+			if (prime) {
+				const primeIters = Math.min(10000, Math.max(100, (itersCount * 0.01) | 0));
+				runner(primeIters, () => {}, () => {});
+			}
+
+			const res = sample(runner, itersCount);
 			sampleTimes.push(res.elapsed);
 			samples.push({
 				round: r + 1,
 				elapsed: res.elapsed,
-				iters,
-				rate: iters / res.elapsed,
+				iters: itersCount,
+				rate: itersCount / res.elapsed,
 			});
 			value = res.value;
 
@@ -133,7 +141,7 @@ function bench(title, runner, options = {}) {
 		}
 
 		// 3. Statistical analysis
-		const stats = computeStats(sampleTimes, iters);
+		const stats = computeStats(sampleTimes, itersCount);
 		result = {
 			title,
 			name: title,
@@ -141,7 +149,7 @@ function bench(title, runner, options = {}) {
 			warmup,
 			samples,
 			rounds,
-			iters,
+			iters: itersCount,
 			...stats,
 		};
 	} finally {

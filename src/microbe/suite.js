@@ -64,16 +64,17 @@ function showCursor() {
 
 /**
  * Multi-target microbenchmark suite runner with dynamic calibration, statistical rigor, and isolation.
- * Executes targets in interleaved rounds while preserving declaration order in output and results.
  *
  * @param {string} title - Title of the benchmark suite.
- * @param {object} runners - Object map of target names to runner functions `(iters, startClock, stopClock) => any`.
+ * @param {object} runners - Object map of target names to runner functions `(iters, start, stop) => any`.
  * @param {object} [options={}] - Suite configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
- * @param {boolean} [options.shuffled=true] - If true, randomizes runner execution order per round.
+ * @param {number} [options.pause=0] - Pause (in ms) between runners or round cycles.
+ * @param {string} [options.mode="shuffled"] - Execution ordering ("shuffled", "sequential", "ordered").
+ * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {boolean} [options.render=true] - If true and not silent, renders benchmark table.
  * @param {number} [options.width=80] - Total table column width.
@@ -92,11 +93,13 @@ function suite(title, runners, options = {}) {
 	}
 
 	const rounds = options.rounds ?? 5;
-	const isDynamic = options.iters === undefined;
-	const targetMs = options.time ?? 100;
-	const manualIters = options.iters;
+	const time = options.time ?? 100;
+	const iters = options.iters;
+	const dynamic = iters === undefined;
 	const cooldown = options.cooldown ?? 0;
-	const shuffled = options.shuffled ?? true;
+	const pause = options.pause ?? 0;
+	const mode = options.mode || "shuffled";
+	const prime = !!options.prime;
 	const silent = !!options.silent;
 	const render = options.render ?? true;
 	const width = options.width ?? 80;
@@ -104,10 +107,12 @@ function suite(title, runners, options = {}) {
 	if (!silent && render) {
 		renderBanner(title, {
 			rounds,
-			iters: manualIters,
-			time: isDynamic ? targetMs : undefined,
-			shuffled,
+			iters,
+			time: dynamic ? time : undefined,
+			mode,
 			cooldown,
+			pause,
+			prime,
 			width,
 		});
 	}
@@ -126,8 +131,12 @@ function suite(title, runners, options = {}) {
 		const values = {};
 		const warmup = {};
 
-		// 1. Warmup & Calibration Phase
 		for (const name of names) {
+			samples[name] = [];
+			sampleDetails[name] = [];
+		}
+
+		function calibrateRunner(name) {
 			const runner = runners[name];
 			if (typeof runner !== "function") {
 				throw new TypeError(
@@ -143,51 +152,76 @@ function suite(title, runners, options = {}) {
 				writeProgress(`🔥 Warming up & calibrating JIT ('${name}')... `);
 			}
 
-			const iters = isDynamic ? calibrate(runner, targetMs) : manualIters;
-			itersMap[name] = iters;
+			const itersCount = dynamic ? calibrate(runner, time) : iters;
+			itersMap[name] = itersCount;
 
-			const warmupSample = sample(runner, iters);
+			const warmupSample = sample(runner, itersCount);
 			warmup[name] = {
 				elapsed: warmupSample.elapsed,
-				iters,
-				rate: iters / warmupSample.elapsed,
+				iters: itersCount,
+				rate: itersCount / warmupSample.elapsed,
 			};
 			values[name] = warmupSample.value;
-			samples[name] = [];
-			sampleDetails[name] = [];
 
 			if (cooldown > 0) {
 				sleep(cooldown);
 			}
 		}
 
-		// 2. Interleaved Measurement Rounds
-		for (let round = 1; round <= rounds; round++) {
-			const roundOrder = shuffled ? shuffle([...names]) : names;
+		function sampleRunner(name, round) {
+			if (isInteractive) {
+				writeProgress(`[Round ${round}/${rounds}] Sampling '${name}'... `);
+			}
 
-			for (const name of roundOrder) {
-				if (isInteractive) {
-					writeProgress(`[Round ${round}/${rounds}] Sampling '${name}'... `);
+			if (typeof global.gc === "function") {
+				global.gc();
+			}
+
+			const runner = runners[name];
+			const itersCount = itersMap[name];
+
+			if (prime) {
+				const primeIters = Math.min(10000, Math.max(100, (itersCount * 0.01) | 0));
+				runner(primeIters, () => {}, () => {});
+			}
+
+			const res = sample(runner, itersCount);
+			values[name] = res.value;
+			samples[name].push(res.elapsed);
+			sampleDetails[name].push({
+				round,
+				elapsed: res.elapsed,
+				iters: itersCount,
+				rate: itersCount / res.elapsed,
+			});
+
+			if (cooldown > 0) {
+				sleep(cooldown);
+			}
+		}
+
+		if (mode === "sequential") {
+			for (let i = 0; i < names.length; i++) {
+				const name = names[i];
+				calibrateRunner(name);
+				for (let round = 1; round <= rounds; round++) {
+					sampleRunner(name, round);
 				}
-
-				if (typeof global.gc === "function") {
-					global.gc();
+				if (pause > 0 && i < names.length - 1) {
+					sleep(pause);
 				}
-
-				const runner = runners[name];
-				const iters = itersMap[name];
-				const res = sample(runner, iters);
-				values[name] = res.value;
-				samples[name].push(res.elapsed);
-				sampleDetails[name].push({
-					round,
-					elapsed: res.elapsed,
-					iters,
-					rate: iters / res.elapsed,
-				});
-
-				if (cooldown > 0) {
-					sleep(cooldown);
+			}
+		} else {
+			for (const name of names) {
+				calibrateRunner(name);
+			}
+			for (let round = 1; round <= rounds; round++) {
+				const roundOrder = mode === "ordered" ? names : shuffle([...names]);
+				for (const name of roundOrder) {
+					sampleRunner(name, round);
+				}
+				if (pause > 0 && round < rounds) {
+					sleep(pause);
 				}
 			}
 		}

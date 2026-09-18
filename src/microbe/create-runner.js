@@ -3,9 +3,9 @@
 /**
  * Runner Contract:
  * A runner function is any synchronous function with the signature:
- *   (iters: number, startClock: Function, stopClock: Function) => any
+ *   (iters: number, start: Function, stop: Function) => any
  *
- * @typedef {(iters: number, startClock: Function, stopClock: Function) => any} RunnerFunction
+ * @typedef {(iters: number, start: Function, stop: Function) => any} RunnerFunction
  */
 
 /**
@@ -25,7 +25,7 @@
  * @param {string} [options.setup=""] - JavaScript code string executed before the loop (un-timed).
  * @param {string} [options.loop=""] - JavaScript code string executed inside the timed `for (let i = 0; i < iters; i++)` loop.
  * @param {string} [options.teardown=""] - JavaScript code string executed after the loop (un-timed, e.g. return value).
- * @returns {RunnerFunction} Generated monomorphic runner function `(iters, startClock, stopClock) => ...`.
+ * @returns {RunnerFunction} Generated monomorphic runner function `(iters, start, stop) => ...`.
  *
  * @example
  * const runner = createRunner({
@@ -50,13 +50,13 @@ function createRunner(options = {}) {
 
 	const functionSource = `
     /* [Microbe Monomorphic Unit: ${uniqueId}] */
-    return function bench_${cleanName}(iters, startClock, stopClock) {
+    return function bench_${cleanName}(iters, start, stop) {
       ${setup}
-      startClock();
+      start();
       for (let i = 0; i < iters; i++) {
         ${loop}
       }
-      stopClock();
+      stop();
       ${teardown}
     };
   `;

@@ -36,13 +36,15 @@ function getComparator(order) {
  * Multi-target benchmark showdown & ranking orchestrator.
  *
  * @param {string} title - Title of the comparison suite.
- * @param {object} runners - Object map of target names to runner functions `(iters, startClock, stopClock) => any`.
+ * @param {object} runners - Object map of target names to runner functions `(iters, start, stop) => any`.
  * @param {object} [options={}] - Comparison configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
  * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
- * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
+ * @param {number} [options.pause=0] - Pause (in ms) between runners or round cycles.
+ * @param {string} [options.mode="shuffled"] - Execution ordering ("shuffled", "sequential", "ordered").
+ * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
  * @param {number} [options.width=80] - Total table column width.
@@ -62,23 +64,18 @@ function rank(title, runners, options = {}) {
 
 	const order = options.order ?? "median";
 	const comparator = getComparator(order);
-
 	const silent = !!options.silent;
-	const rounds = options.rounds ?? 5;
-	const isDynamic = options.iters === undefined;
-	const targetMs = options.time ?? 100;
-	const manualIters = options.iters;
-	const cooldown = options.cooldown ?? 0;
-	const shuffled = options.shuffled ?? true;
 	const width = options.width ?? 80;
 
 	if (!silent) {
 		renderBanner(title, {
-			rounds,
-			iters: manualIters,
-			time: isDynamic ? targetMs : undefined,
-			shuffled,
-			cooldown,
+			rounds: options.rounds ?? 5,
+			iters: options.iters,
+			time: options.iters === undefined ? (options.time ?? 100) : undefined,
+			mode: options.mode || "shuffled",
+			cooldown: options.cooldown ?? 0,
+			pause: options.pause ?? 0,
+			prime: !!options.prime,
 			width,
 		});
 	}
@@ -95,7 +92,7 @@ function rank(title, runners, options = {}) {
 
 	// 3. Render comparison showdown table
 	if (!silent) {
-		renderTable(results, { isRanked: true, width });
+		renderTable(results, { ranked: true, width });
 	}
 
 	return results;

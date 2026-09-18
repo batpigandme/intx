@@ -82,10 +82,10 @@ function getPercentile(sorted, p) {
  * Computes descriptive and robust statistics from round duration samples.
  *
  * @param {number[]} samples - Array of round durations in seconds.
- * @param {number} itersPerRound - Number of iterations executed per round.
+ * @param {number} iters - Number of iterations executed per round.
  * @returns {object} Object containing statistical metrics.
  */
-function computeStats(samples, itersPerRound) {
+function computeStats(samples, iters) {
 	const n = samples.length;
 	if (n === 0) {
 		throw new Error("computeStats requires at least one sample.");
@@ -120,10 +120,10 @@ function computeStats(samples, itersPerRound) {
 	const upperFence = q3 + 1.5 * iqr;
 	const outliers = sortedTimes.filter((t) => t < lowerFence || t > upperFence);
 
-	const minRate = itersPerRound / maxTime;
-	const maxRate = itersPerRound / minTime;
-	const medianRate = itersPerRound / medianTime;
-	const meanRate = itersPerRound / meanTime;
+	const minRate = iters / maxTime;
+	const maxRate = iters / minTime;
+	const medianRate = iters / medianTime;
+	const meanRate = iters / meanTime;
 
 	return {
 		minTime,

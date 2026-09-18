@@ -18,10 +18,10 @@ Measuring tight arithmetic loops in JavaScript (e.g. integer math, bitwise ops) 
 4. **Warmup Tier-Up**: Functions need initial execution to tier up through Ignition → Sparkplug → Maglev → TurboFan before timing starts.
 
 `microbe` solves these by:
-- Compiling **isolated monomorphic closures** per candidate via `bench.createRunner()`, giving each candidate its own pristine feedback vector.
-- Timing **only the measurement loop** via `startClock()` / `stopClock()`, excluding setup and teardown overhead.
-- **Interleaving and shuffling** measurement rounds across candidates so thermal fluctuations affect all targets equally.
-- Providing an automatic **Round 0 warmup** round for JIT tier-up and robust statistics (Median, Peak, Margin of Error).
+- Compiling **isolated monomorphic closures** per candidate via `createRunner()`, giving each candidate its own pristine feedback vector.
+- Timing **only the measurement loop** via `start()` / `stop()`, excluding setup and teardown overhead.
+- Providing standardized execution modes (`"sequential"`, `"shuffled"`, `"ordered"`) to eliminate thermal and cache bias.
+- Providing automatic **Round 0 warmup** and adaptive rate-derivative calibration.
 
 ---
 
@@ -33,18 +33,18 @@ Measuring tight arithmetic loops in JavaScript (e.g. integer math, bitwise ops) 
 const { bench } = require('#microbe');
 
 function mul(a, b) {
-  return Math.imul(a, b) >>> 0;
+  return Math.imul(a, b) | 0;
 }
 
-// Runner contract: (iters: number, startClock: Function, stopClock: Function) => any
-bench('u32.mul', (iters, startClock, stopClock) => {
+// Runner contract: (iters: number, start: Function, stop: Function) => any
+bench('u32.mul', (iters, start, stop) => {
   let acc = 1; // un-timed setup
 
-  startClock();
+  start();
   for (let i = 0; i < iters; i++) {
     acc = mul(acc, 0x12345678);
   }
-  stopClock();
+  stop();
 
   return acc; // un-timed teardown
 }, {
@@ -150,31 +150,30 @@ const nativeImul = (a, b) => Math.imul(a, b) >>> 0;
 
 // Build monomorphic runners
 const runners = {
-  bitwise: bench.createRunner({
+  bitwise: createRunner({
     name: 'bitwise',
     context: { fn: bitwiseMul },
     loop: 'fn(0x1234, 0x5678);',
   }),
-  native_imul: bench.createRunner({
+  native_imul: createRunner({
     name: 'native_imul',
     context: { fn: nativeImul },
     loop: 'fn(0x1234, 0x5678);',
   }),
 };
 
-// Run showdown
+// Run showdown with preset or custom options
 bench.suite.rank('Multiplication Showdown', runners, {
-  rounds: 5,
-  iters: 1e7,
-  shuffled: true,
+  ...short,
   order: 'median', // 'median' | 'mean' | 'max' | 'min' | 'warmup' | comparator fn
+  width: 100,
 });
 ```
 
 #### Output:
 ```markdown
 ### Multiplication Showdown
-> **Config:** 5 rounds × 1e+7 iters/round | Order: Shuffled  
+> **Config:** 5 rounds × ~50ms/sample (dynamic) | Order: Sequential | Pause: 20ms  
 > **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
 
 | Rank | Title                 | Median (/s) | Peak (/s) | MoE (±%) | Relative |
@@ -185,7 +184,34 @@ bench.suite.rank('Multiplication Showdown', runners, {
 
 ---
 
+## Presets
+
+Monomorphic, frozen configuration objects for standardized benchmarking:
+
+```javascript
+const { bench, short, medium, long } = require('#microbe');
+
+// Quick sequential run without thermal skew:
+bench.suite('Quick Check', runners, short);
+
+// Standard shuffled run:
+bench.suite.rank('Standard Showdown', runners, medium);
+
+// High-precision run with per-sample cooldown and cache priming:
+bench.suite.rank('Deep Analysis', runners, long);
+```
+
+| Preset | `mode` | `rounds` | `time` | `pause` | `cooldown` | `prime` |
+|---|---|---|---|---|---|---|
+| `short` | `"sequential"` | `5` | `50` ms | `20` ms | `0` ms | `false` |
+| `medium` | `"shuffled"` | `10` | `100` ms | `20` ms | `0` ms | `false` |
+| `long` | `"shuffled"` | `20` | `200` ms | `50` ms | `20` ms | `true` |
+
+---
+
 ## API Reference
+
+All options and parameter names are strictly monomorphic and single words.
 
 ### `bench(title, runner, options)`
 Runs a multi-round benchmark for a single runner function.
@@ -193,49 +219,57 @@ Runs a multi-round benchmark for a single runner function.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
-| `iters` | `number` | `5e7` | Loop iterations per round. |
+| `time` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
+| `iters` | `number` | `undefined` | Manual loop iterations per round (disables dynamic calibration). |
 | `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
+| `prime` | `boolean` | `false` | Untimed cache/CPU priming pass before each timed sample. |
 | `silent` | `boolean` | `false` | Suppress console output and return stats object. |
 
 ---
 
-### `bench.createRunner(options)`
-Generates an isolated closure `(iters, startClock, stopClock) => ...` with its own `SharedFunctionInfo`.
+### `createRunner(options)`
+Generates an isolated closure `(iters, start, stop) => ...` with its own `SharedFunctionInfo`.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `name` | `string` | `'kernel'` | Identifier used for function tagging. |
 | `context` | `object` | `{}` | Variables injected into the runner's closure scope. |
-| `setup` | `string` | `''` | JS executed before `startClock()`. |
+| `setup` | `string` | `''` | JS executed before `start()`. |
 | `loop` | `string` | `''` | JS executed inside the timed loop `for (let i = 0; i < iters; i++)`. |
-| `teardown` | `string` | `''` | JS executed after `stopClock()` (e.g. `return out;`). |
+| `teardown` | `string` | `''` | JS executed after `stop()` (e.g. `return out;`). |
 
 ---
 
 ### `bench.suite(title, runners, options)`
-Runs an interleaved multi-target benchmark suite preserving declaration order in output and results.
+Runs a multi-target benchmark suite preserving declaration order in output and results.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
+| `mode` | `string` | `'shuffled'` | Execution mode: `'sequential'`, `'shuffled'`, or `'ordered'`. |
 | `rounds` | `number` | `5` | Number of measurement rounds. |
-| `iters` | `number` | `5e7` | Iterations per round. |
+| `time` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
+| `iters` | `number` | `undefined` | Iterations per round (disables dynamic calibration). |
+| `pause` | `number` | `0` | Pause (in ms) between runners (sequential) or round cycles (shuffled). |
 | `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
-| `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
+| `prime` | `boolean` | `false` | Untimed cache/CPU priming pass before each timed sample. |
 | `silent` | `boolean` | `false` | Suppress console output and return results array. |
-| `render` | `boolean` | `true` | If true and not silent, renders detailed benchmark blocks. |
+| `render` | `boolean` | `true` | If true and not silent, renders table. |
 | `width` | `number` | `80` | Total table column width. |
 
 ---
 
 ### `bench.suite.rank(title, runners, options)`
-Runs an interleaved multi-candidate showdown and outputs a ranked results table.
+Runs a multi-candidate showdown and outputs a ranked results table.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `rounds` | `number` | `5` | Number of measurement rounds. |
-| `iters` | `number` | `5e7` | Iterations per round. |
-| `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
-| `shuffled` | `boolean` | `true` | Randomize candidate execution order per round. |
-| `silent` | `boolean` | `false` | Suppress console output and return results array. |
 | `order` | `string \| Function` | `'median'` | Metric to sort by (`"median"`, `"mean"`, `"max"`, `"min"`, `"warmup"`) or comparator. |
+| `mode` | `string` | `'shuffled'` | Execution mode: `'sequential'`, `'shuffled'`, or `'ordered'`. |
+| `rounds` | `number` | `5` | Number of measurement rounds. |
+| `time` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
+| `iters` | `number` | `undefined` | Iterations per round (disables dynamic calibration). |
+| `pause` | `number` | `0` | Pause (in ms) between runners (sequential) or round cycles (shuffled). |
+| `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
+| `prime` | `boolean` | `false` | Untimed cache/CPU priming pass before each timed sample. |
+| `silent` | `boolean` | `false` | Suppress console output and return results array. |
 | `width` | `number` | `80` | Total table column width. |

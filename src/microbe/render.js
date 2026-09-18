@@ -79,16 +79,16 @@ function renderBench(result) {
  *
  * @param {Array<object>} results - Evaluated result objects.
  * @param {object} [options={}] - Table render options.
- * @param {boolean} [options.isRanked=false] - If true, displays "Rank" header; otherwise "#".
+ * @param {boolean} [options.ranked=false] - If true, displays "Rank" header; otherwise "#".
  * @param {number} [options.width=80] - Total table column width.
  */
 function renderTable(results, options = {}) {
-	const isRanked = options.isRanked ?? false;
+	const ranked = options.ranked ?? options.isRanked ?? false;
 	const width = options.width ?? 80;
 	const titleWidth = Math.max(10, width - 59);
 	const baselineMedian = results[0]?.medianRate ?? 1;
 
-	const indexHeader = isRanked ? "Rank" : " #  ";
+	const indexHeader = ranked ? "Rank" : " #  ";
 	const titleHeader = "Title".padEnd(titleWidth);
 	const medianHeader = "Median (/s)";
 	const peakHeader = "Peak (/s)";
@@ -154,31 +154,41 @@ function getCpuModel() {
  * Renders the benchmark header in GitHub Markdown format.
  *
  * @param {string} title - Benchmark suite title.
- * @param {object} [config={}] - Configuration options (rounds, iters, shuffled).
- * @param {number} [config.rounds=5] - Measurement rounds.
- * @param {number} [config.iters=5e7] - Iterations per round.
- * @param {boolean} [config.shuffled=true] - Execution ordering flag.
+ * @param {object} [options={}] - Configuration options (rounds, iters, time, mode, cooldown, pause, prime).
  */
-function renderBanner(title, config = {}) {
-	const rounds = config.rounds ?? 5;
-	const isDynamic = config.iters === undefined;
-	const time = config.time ?? 100;
-	const iters = config.iters;
-	const shuffled = config.shuffled ?? true;
-	const cooldown = config.cooldown ?? 0;
+function renderBanner(title, options = {}) {
+	const rounds = options.rounds ?? 5;
+	const time = options.time ?? 100;
+	const iters = options.iters;
+	const mode = options.mode || "shuffled";
+	const cooldown = options.cooldown ?? 0;
+	const pause = options.pause ?? 0;
+	const prime = !!options.prime;
 
-	const timingLabel = isDynamic
-		? `${rounds} rounds × ~${time}ms/sample (dynamic)`
-		: `${rounds} rounds × ${Number(iters).toExponential()} iters/round`;
+	const timingLabel =
+		iters === undefined
+			? `${rounds} rounds × ~${time}ms/sample (dynamic)`
+			: `${rounds} rounds × ${Number(iters).toExponential()} iters/round`;
 
-	const modeLabel = shuffled ? "Order: Shuffled" : "Order: Round-Robin";
+	let modeLabel;
+	if (mode === "sequential") {
+		modeLabel = "Order: Sequential";
+	} else if (mode === "ordered") {
+		modeLabel = "Order: Round-Robin";
+	} else {
+		modeLabel = "Order: Shuffled";
+	}
 
-	const cooldownLabel = cooldown > 0 ? ` | Cooldown: ${cooldown}ms` : "";
+	let extra = "";
+	if (cooldown > 0) extra += ` | Cooldown: ${cooldown}ms`;
+	if (pause > 0) extra += ` | Pause: ${pause}ms`;
+	if (prime) extra += ` | Primed`;
+
 	const cpu = getCpuModel();
 	const rawTitle = title || "Benchmark Suite";
 
 	const headingLine = `\n### ${rawTitle}`;
-	const configLine = `> **Config:** ${timingLabel} | ${modeLabel}${cooldownLabel}  `;
+	const configLine = `> **Config:** ${timingLabel} | ${modeLabel}${extra}  `;
 	const platformLine = `> **Platform:** Node ${process.version} (${process.arch}) | ${cpu}`;
 
 	console.log(headingLine);
