@@ -174,7 +174,7 @@ $$\text{Pure Kernel Execution Latency} = \text{Total Time per Iteration} - \text
 | **`i32.mulwide`**| ~199 B| **136.0 M/s** (7.35 ns) | 114.0 M/s (8.77 ns) | 94.7 M/s (10.56 ns) | 100.7 M/s (9.93 ns) | **136.8 M/s** (100%) |
 
 #### Key Architectural Findings:
-1. **Higher Kernel Complexity Does NOT Disable Inlining**: Even though `i32.mulwide` is over 3x larger (~199 bytes bytecode, 5 `Math.imul` operations, limb decomposition) than `divmod` (~61 bytes), it remains well within TurboFan's 500-byte single-function inlining budget (`--max-inlined-bytecode-size`).
+1. **Higher Kernel Complexity Does NOT Disable Inlining**: Even though `i32.mulwide` is over 3x larger (~199 bytes bytecode, 5 `Math.imul` operations, limb decomposition) than `divmod` (~61 bytes), it remains well within TurboFan's 460-byte single-function inlining budget (`--max-inlined-bytecode-size`).
 2. **Consistent 100% Contamination Immunity via Inlining**: In both `divmod` and `mulwide`, calling the pre-polluted kernel with an `Int32Array` inside an isolated monomorphic runner achieves **100% identical performance to the pristine kernel** (136.8 M/s vs 136.0 M/s).
 3. **Generic Array Overhead is Additive**: Storing into a generic JS array (`[0, 0]`) adds a fixed ~3.2 ns penalty per operation regardless of whether the kernel is `divmod` (+2.05 ns) or `mulwide` (+3.21 ns), stemming from JSArray element boxing and capacity checks.
 
@@ -182,23 +182,43 @@ $$\text{Pure Kernel Execution Latency} = \text{Total Time per Iteration} - \text
 
 ### Deep Dive: How TurboFan Decides Whether to Inline a Function
 
-TurboFan's inlining subsystem (`JSInliningHeuristic`) uses a cost-benefit model to evaluate every call site in the compiler graph:
+TurboFan's inlining subsystem (`JSInliningHeuristic`) uses a cost-benefit priority model to evaluate every candidate call site in the compiler graph:
 
 1. **Call-Site Monomorphism (The Inlining Gatekeeper)**:
    * TurboFan inspects the `CallIC` in the **caller's** FeedbackVector.
    * If the call site is **Monomorphic** (always calls the same function object), TurboFan can inline it directly.
    * If the call site is **Polymorphic** with a small degree ($\le 4$), TurboFan may emit a multi-branch polymorphic inlining dispatch (`if (f === f1) inline_f1() else if (f === f2) inline_f2()`).
    * If the call site is **Megamorphic** (calls many distinct functions), TurboFan **refuses to inline** because the target cannot be determined at compile time.
+
 2. **Bytecode Size & Complexity Budgets**:
-   * `--max-inlined-bytecode-size` (default: **500 bytes**): Maximum bytecode length of a single function considered for inlining.
-   * `--max-inlined-bytecode-size-small` (default: **27–30 bytes**): "Tiny leaf" functions (like single-line math helpers `add`, `div`, `imul`) receive an automatic inlining priority bonus and are almost always inlined unconditionally.
-   * `--max-inlined-bytecode-size-cumulative` (default: **920 bytes**): Total cumulative inlined bytecode permitted within a single compiled caller. Once exceeded, TurboFan stops inlining to avoid code bloat.
-3. **Call Depth Limit (`--max-inlined-depth`)**:
-   * Traverses up to **3–7 nested call levels** (`fnA -> fnB -> fnC`). Beyond this threshold, TurboFan emits standard function calls.
-4. **Disqualifying Constructs**:
-   * Functions containing `eval()`, `with`, `debugger` statements, or exceeding maximum graph node thresholds (`--max-inlining-nodes`) are disqualified from inlining.
-5. **Execution Frequency (Hotness)**:
-   * Call sites situated inside tight loops with high execution frequency are given maximum priority in the inlining budget.
+   * `--max-inlined-bytecode-size` (default: **460 bytes**): Maximum bytecode length of a single function considered for inlining.
+   * `--max-inlined-bytecode-size-small` (default: **27 bytes**): "Tiny leaf" functions (like single-line math helpers `add`, `div`, `imul`) receive an automatic inlining priority bonus.
+   * `--max-inlined-bytecode-size-cumulative` (default: **920 bytes**): Total cumulative inlined bytecode permitted within a single compiled caller before standard inlining is halted.
+   * `--max-inlined-bytecode-size-absolute` (default: **4600 bytes**): Hard ceiling for absolute inlined graph expansion.
+
+3. **The Small Leaf Function Exemption Mechanism**:
+   * Standard functions (28 to 460 bytes) are strictly blocked once cumulative inlined bytecode reaches **920 bytes**.
+   * **Small leaf functions ($\le 27$ bytes) bypass the 920-byte cumulative cap**: TurboFan continues inlining tiny leaf functions until hitting the absolute **4,600-byte ceiling**.
+   * **Why Leaf Functions are "Free"**: Setting up an x86 machine `CALL` (pushing arguments, allocating stack frames, jump, return, and exception stubs) consumes **~15 to 30 bytes of machine assembly**. Inlining a 7-byte leaf function (`add(a, b)`) emits a single 3-byte machine instruction (`addl %eax, %edx`). Inlining tiny leaf functions *reduces* total binary size and eliminates call overhead.
+
+4. **Hotness-to-Size Candidate Priority Scoring**:
+   * V8 prevents small functions from starving larger routines using a Priority Queue scored by:
+     $$\text{Score} = \left(\frac{\text{Call Frequency (Hotness)}}{\text{Bytecode Size}}\right) \times \text{Priority Multiplier}$$
+   * A hot 200-byte arithmetic kernel inside a loop has a massive execution frequency score, ensuring TurboFan inlines it **first** (consuming 200 of the 920-byte budget). Remaining budget is then filled by smaller helpers.
+
+5. **Hardware & Compiler Limits Against Larger Inlining Budgets**:
+   * **Quadratic $O(N^2)$ Compiler Explosion**: Sea-of-Nodes graph reduction passes (Escape Analysis, Global Value Numbering, Register Allocation) scale non-linearly. Inlining multiple 200+ byte functions explodes compilation latency and JIT memory usage.
+   * **CPU L1 Instruction Cache (L1i) Thrashing**: Modern x86 CPUs feature **32 KB of L1 Instruction Cache**. Inlining multiple heavy routines balloons generated machine code beyond 32 KB, triggering continuous L1i cache line misses during execution loops.
+
+6. **Cross-Engine Inlining Budgets Comparison**:
+
+| Inlining Metric | **V8 / TurboFan** (Node / Deno) | **JavaScriptCore / DFG & FTL** (Bun / Safari) | **SpiderMonkey / Warp** (Firefox) |
+| :--- | :---: | :---: | :---: |
+| **Single Function Limit** | **460 bytes** (`--max-inlined-bytecode-size`) | **~120–130 opcode cost** (`maximumFunctionForCallInlineCandidateBytecodeCost`) | **~300 bytes** (`ion.inlining.max-bytecode-length`) |
+| **Small Leaf Function Bonus** | **27 bytes** (`--max-inlined-bytecode-size-small`) | **~25 opcode cost** (unconditional leaf bonus) | **~25–30 bytes** (`small-function-threshold`) |
+| **Cumulative Caller Limit** | **920 bytes** (`--max-inlined-bytecode-size-cumulative`) | **~300–400 cost units** in DFG (`maximumCumulativeInlinedCost`) | **~1,600 bytes** (`max-caller-bytecode-length`) |
+| **Absolute Hard Ceiling** | **4,600 bytes** (`--max-inlined-bytecode-size-absolute`) | Dynamic FTL node quota | Graph node quota limit |
+| **Max Inlining Depth** | **3 to 7 levels** (`--max-inlined-depth`) | **5 levels** (`maximumInliningDepth`) | **3 to 5 levels** (`max-depth`) |
 
 ---
 
@@ -287,7 +307,13 @@ When benchmarking with dynamic time auto-calibration (`time: 2000` or `time: 200
    * At this initial probe stage, V8 is executing bytecode in the **Ignition interpreter** or early **Sparkplug** baseline JIT (~60–100 M iters/s).
    * As a result, `calibrate` estimates an iteration count based on this cold throughput rate (e.g. choosing 17M iters for 200 ms).
 
-2. **JIT Tier-Up Occurring Mid-Measurement**:
+2. **The Software Interrupt Budget (`InterruptBudget`)**:
+   * In V8, loop tier-ups and On-Stack Replacement (OSR) transitions are governed by an internal software counter (`BytecodeArray::interrupt_budget()`, default ~130 KB).
+   * Every loop backedge (`JumpLoop`) decrements this budget by the bytecode length of the loop body.
+   * When the budget exhausts ($\le 0$), V8 triggers a software interrupt (`BytecodeBudgetInterrupt`) to mature feedback vectors and enqueue concurrent background compilation to Maglev and TurboFan.
+   * Larger loop bodies exhaust the interrupt budget in fewer loop iterations than tiny leaf loops, but both require sufficient elapsed runtime (~5–20 ms) for background TurboFan worker threads to build the Sea-of-Nodes graph and install the optimized machine code.
+
+3. **JIT Tier-Up Occurring Mid-Measurement**:
    * In fixed large runs (`iters: 1e8`), the 100M-iteration warmup forces V8 to compile through all intermediate tiers (Ignition $\to$ Sparkplug $\to$ Maglev $\to$ TurboFan) and stabilize at peak throughput *before Round 1 starts*.
    * In short dynamic runs, the initial warmup is too brief. Tier-up occurs *during* the measurement rounds:
      * **Round 1 (268 ms / 65 M/s)**: Function undergoes on-stack replacement (OSR) / TurboFan background compilation pause.
@@ -295,13 +321,22 @@ When benchmarking with dynamic time auto-calibration (`time: 2000` or `time: 200
      * **Round 4 (67 ms / 262 M/s)**: TurboFan baseline optimization active.
      * **Round 5 (44 ms / 396 M/s)**: TurboFan aggressive loop unrolling and escape analysis fully active.
 
-3. **Why Candidates 1, 3, and 5 Were Disproportionately Affected**:
+4. **Why Candidates 1, 3, and 5 Were Disproportionately Affected**:
    * **Candidate 1 (Read-Only Buffer Walk)**: TurboFan applies aggressive vectorized loop unrolling and BCE range analysis to pure read loops, a top-tier optimization that triggers later in the invocation count lifecycle.
    * **Candidates 3 & 5 (Local Setup Buffers)**: Allocating `new Int32Array(256)` inside per-sample `setup` requires V8 Escape Analysis and allocation folding heuristics to stabilize.
    * **Candidates 2, 4, 6 (Global Context Buffers)**: Static pre-allocated buffers in closure context have fixed heap addresses, allowing TurboFan to tier up almost immediately.
 
-4. **Statistical Confirmation via Student's $t$**:
+5. **Statistical Confirmation via Student's $t$**:
    Because the measured throughput accelerated by **$6\times$** across the 5 rounds ($65\text{ M/s} \to 396\text{ M/s}$), the sample standard deviation $\sigma$ was massive ($\approx 0.089\text{ s}$ on a $0.110\text{ s}$ mean). The Student's $t$ confidence interval correctly identified this instability by reporting $\pm 101\%$ to $\pm 117\%$ MoE.
+
+6. **The Deoptimization Exponential Backoff Trap**:
+   * When an optimized TurboFan function encounters an unpredicted type or branch bailout (e.g. passing a mixed float or generic array into a monomorphic integer kernel, or exceeding integer range), V8 triggers a bail-out deopt back to Ignition bytecode.
+   * V8 does not immediately re-optimize. It resets the function invocation counter to `0` and **doubles the tier-up threshold** (e.g. $30,000 \to 60,000 \to 120,000$ loop ticks).
+   * **General JavaScript & Systems Significance**:
+     1. **Severe P99 / Tail Latency Blowups**: In production services (servers, crypto, game engines, parsers), a single unexpected input type causes an immediate deopt bailout. Because the re-optimization threshold doubles exponentially, the function remains stranded in slow interpreter/Maglev execution for thousands of subsequent requests, destroying tail latency.
+     2. **Permanent Optimization Blacklisting (`kDontOptimize`)**: If a function deopts repeatedly (~5–10 times), V8 gives up on speculative optimization entirely and permanently blacklists the function (`kDontOptimize`). The function is permanently barred from TurboFan for the remainder of the process lifetime, suffering an irreversible ~5x–10x throughput penalty.
+     3. **Importance of Type Invariance**: In numerical and extended-precision integer routines, ensuring strict input homogeneity and defensive integer coercion (`| 0`) prevents speculative bailouts and ensures TurboFan machine code remains permanently hot and stable.
+   * **Significance for Microbenchmarks**: If a test harness triggers a single inadvertent deopt during early rounds (such as un-coerced NaN or index bounds excursions), the candidate is penalized with an exponentially higher warmup threshold, leaving it stranded in slower interpreter/Maglev execution during active measurement rounds and producing massive variance/MoE spikes.
 
 ---
 

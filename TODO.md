@@ -41,6 +41,14 @@
     - Document Dead Loop Elimination behavior across runtimes: JavaScriptCore / B3 (Bun, Safari), SpiderMonkey (Firefox), and V8 (Node, Chrome).
   - [ ] **Cross-Check Microbenchmark Findings Across Node Versions & Engines**:
     - Run the exploration benchmark matrix across multiple Node versions (Node 16/18 Crankshaft/TurboFan transition -> Node 20/22/24 Maglev/Concurrent Sparkplug) and alternate engines (Bun/JSC, Deno/V8).
+  - [ ] **Automated Cross-Runtime No-Inlining Benchmark Runner**:
+    - Implement a child-process spawning runner in `microbe` using `process.execPath` that automatically configures native non-inlining flags (`--no-turbo-inlining --no-maglev-inlining` on Node, `--v8-flags` on Deno, `JSC_maximumInliningDepth=0` on Bun) to measure 100% pure call overhead without code padding.
+  - [ ] **Inlining Budget Exhaustion & Nested Call Demonstrator**:
+    - Profile the cumulative bytecode budget limit (`--max-inlined-bytecode-size-cumulative=920`) in multi-tier compound routines (e.g. 64-bit/128-bit/256-bit operations calling 32-bit kernels).
+    - Construct an exploration demonstrator showing the asymmetric performance cliff where initial calls are inlined while subsequent calls drop into dynamic machine `CALL`s.
+  - [ ] **No-Op Coercion & Bytecode Budget Inflation**:
+    - Profile the inlining budget impact of redundant input coercions (e.g., `a |= 0; b |= 0;` or `a >>>= 0; b >>>= 0;`) when operands are immediately split via masking (`& 0xffff`) or logical shift (`>>> 16`).
+    - Measure bytecode bloat and engine penalties from ubiquitous `>>> 0` conversions in unsigned kernels where intermediate signed arithmetic (`| 0`) preserves 32-bit ALU registers, eliminates Double conversions in JavaScriptCore (JSC), and saves bytecode budget across nested caller hierarchies.
 - [ ] **Build `testx` Tool**:
   - Implement a modular candidate validation and fuzz testing harness matching the design of `microbe`.
 - [ ] **Rebuild Browser Benchmarking UI**:
