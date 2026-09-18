@@ -102,7 +102,7 @@ const ops = {
 
 const res = bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
 	rounds: 100,
-	time: 20,
+	dur: 20,
 	// iters: 1e6,
 	// cooldown: 50,
 	width: 100,

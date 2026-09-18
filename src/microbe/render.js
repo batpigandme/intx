@@ -154,11 +154,11 @@ function getCpuModel() {
  * Renders the benchmark header in GitHub Markdown format.
  *
  * @param {string} title - Benchmark suite title.
- * @param {object} [options={}] - Configuration options (rounds, iters, time, mode, cooldown, pause, prime).
+ * @param {object} [options={}] - Configuration options (rounds, iters, dur, mode, cooldown, pause, prime).
  */
 function renderBanner(title, options = {}) {
 	const rounds = options.rounds ?? 5;
-	const time = options.time ?? 100;
+	const dur = options.dur ?? 100;
 	const iters = options.iters;
 	const mode = options.mode || "shuffled";
 	const cooldown = options.cooldown ?? 0;
@@ -167,7 +167,7 @@ function renderBanner(title, options = {}) {
 
 	const timingLabel =
 		iters === undefined
-			? `${rounds} rounds × ~${time}ms/sample (dynamic)`
+			? `${rounds} rounds × ~${dur}ms/sample (dynamic)`
 			: `${rounds} rounds × ${Number(iters).toExponential()} iters/round`;
 
 	let modeLabel;

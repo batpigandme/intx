@@ -7,11 +7,11 @@ const { sample } = require("./timer");
  * Uses geometric ramp-up probing to prevent running slow functions for too long.
  *
  * @param {Function} runner - Runner function (iters, start, stop) => any.
- * @param {number} [time=100] - Target duration in milliseconds per measurement sample.
+ * @param {number} [dur=100] - Target duration in milliseconds per measurement sample.
  * @returns {number} Calibrated iteration count.
  */
-function calibrate(runner, time = 100) {
-	const target = time / 1000;
+function calibrate(runner, dur = 100) {
+	const target = dur / 1000;
 	const minElapsed = Math.min(0.010, target * 0.5);
 	const maxElapsed = Math.min(0.080, Math.max(0.020, target * 0.6));
 

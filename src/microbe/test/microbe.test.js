@@ -84,7 +84,7 @@ test("microbe: single bench with dynamic timing and manual iters", () => {
 	// Dynamic timing
 	const resDynamic = bench("fast_kernel_dynamic", runner, {
 		rounds: 3,
-		time: 20,
+		dur: 20,
 		silent: true,
 	});
 
@@ -119,7 +119,7 @@ test("microbe: suite with dynamic calibration and definition order", () => {
 
 	const results = bench.suite("test_suite", ops, {
 		rounds: 3,
-		time: 20,
+		dur: 20,
 		silent: true,
 	});
 
@@ -166,17 +166,20 @@ test("microbe: presets export and configuration validation", () => {
 
 	// Short preset assertions
 	assert.strictEqual(short.mode, "sequential");
+	assert.strictEqual(short.dur, 50);
 	assert.strictEqual(short.prime, false);
 	assert.strictEqual(short.cooldown, 0);
 	assert.ok(short.pause > 0);
 
 	// Medium preset assertions
 	assert.strictEqual(medium.mode, "shuffled");
+	assert.strictEqual(medium.dur, 100);
 	assert.strictEqual(medium.cooldown, 0);
 	assert.ok(medium.pause > 0);
 
 	// Long preset assertions
 	assert.strictEqual(long.mode, "shuffled");
+	assert.strictEqual(long.dur, 200);
 	assert.strictEqual(long.prime, true);
 	assert.ok(long.cooldown > 0);
 	assert.ok(long.pause > 0);
@@ -236,7 +239,7 @@ test("microbe: suite and rank accept preset option objects", () => {
 	const suiteRes = bench.suite("test_preset_obj", ops, {
 		...short,
 		rounds: 2,
-		time: 10,
+		dur: 10,
 		silent: true,
 	});
 	assert.strictEqual(suiteRes.length, 2);
@@ -244,7 +247,7 @@ test("microbe: suite and rank accept preset option objects", () => {
 	const rankRes = bench.suite.rank("test_rank_obj", ops, {
 		...short,
 		rounds: 2,
-		time: 10,
+		dur: 10,
 		silent: true,
 	});
 	assert.strictEqual(rankRes.length, 2);

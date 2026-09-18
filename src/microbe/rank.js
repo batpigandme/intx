@@ -39,7 +39,7 @@ function getComparator(order) {
  * @param {object} runners - Object map of target names to runner functions `(iters, start, stop) => any`.
  * @param {object} [options={}] - Comparison configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
- * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {number} [options.pause=0] - Pause (in ms) between runners or round cycles.
@@ -71,7 +71,7 @@ function rank(title, runners, options = {}) {
 		renderBanner(title, {
 			rounds: options.rounds ?? 5,
 			iters: options.iters,
-			time: options.iters === undefined ? (options.time ?? 100) : undefined,
+			dur: options.iters === undefined ? (options.dur ?? 100) : undefined,
 			mode: options.mode || "shuffled",
 			cooldown: options.cooldown ?? 0,
 			pause: options.pause ?? 0,

@@ -52,7 +52,7 @@ function showCursor() {
  * @param {Function} runner - Synchronous runner function `(iters, start, stop) => any`.
  * @param {object} [options={}] - Configuration options.
  * @param {number} [options.rounds=5] - Number of measurement rounds.
- * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
+ * @param {number} [options.dur=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
@@ -67,7 +67,7 @@ function bench(title, runner, options = {}) {
 	}
 
 	const rounds = options.rounds ?? 5;
-	const time = options.time ?? 100;
+	const dur = options.dur ?? 100;
 	const iters = options.iters;
 	const dynamic = iters === undefined;
 	const cooldown = options.cooldown ?? 0;
@@ -91,7 +91,7 @@ function bench(title, runner, options = {}) {
 		}
 
 		// 1. Calibrate & Warmup Round
-		const itersCount = dynamic ? calibrate(runner, time) : iters;
+		const itersCount = dynamic ? calibrate(runner, dur) : iters;
 		const warmupSample = sample(runner, itersCount);
 		const warmup = {
 			elapsed: warmupSample.elapsed,

@@ -201,7 +201,7 @@ bench.suite.rank('Standard Showdown', runners, medium);
 bench.suite.rank('Deep Analysis', runners, long);
 ```
 
-| Preset | `mode` | `rounds` | `time` | `pause` | `cooldown` | `prime` |
+| Preset | `mode` | `rounds` | `dur` | `pause` | `cooldown` | `prime` |
 |---|---|---|---|---|---|---|
 | `short` | `"sequential"` | `5` | `50` ms | `20` ms | `0` ms | `false` |
 | `medium` | `"shuffled"` | `10` | `100` ms | `20` ms | `0` ms | `false` |
@@ -219,7 +219,7 @@ Runs a multi-round benchmark for a single runner function.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `rounds` | `number` | `5` | Number of measurement rounds. |
-| `time` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
+| `dur` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
 | `iters` | `number` | `undefined` | Manual loop iterations per round (disables dynamic calibration). |
 | `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
 | `prime` | `boolean` | `false` | Untimed cache/CPU priming pass before each timed sample. |
@@ -247,7 +247,7 @@ Runs a multi-target benchmark suite preserving declaration order in output and r
 |---|---|---|---|
 | `mode` | `string` | `'shuffled'` | Execution mode: `'sequential'`, `'shuffled'`, or `'ordered'`. |
 | `rounds` | `number` | `5` | Number of measurement rounds. |
-| `time` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
+| `dur` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
 | `iters` | `number` | `undefined` | Iterations per round (disables dynamic calibration). |
 | `pause` | `number` | `0` | Pause (in ms) between runners (sequential) or round cycles (shuffled). |
 | `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |
@@ -266,7 +266,7 @@ Runs a multi-candidate showdown and outputs a ranked results table.
 | `order` | `string \| Function` | `'median'` | Metric to sort by (`"median"`, `"mean"`, `"max"`, `"min"`, `"warmup"`) or comparator. |
 | `mode` | `string` | `'shuffled'` | Execution mode: `'sequential'`, `'shuffled'`, or `'ordered'`. |
 | `rounds` | `number` | `5` | Number of measurement rounds. |
-| `time` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
+| `dur` | `number` | `100` | Target duration in milliseconds per sample (dynamic calibration). |
 | `iters` | `number` | `undefined` | Iterations per round (disables dynamic calibration). |
 | `pause` | `number` | `0` | Pause (in ms) between runners (sequential) or round cycles (shuffled). |
 | `cooldown` | `number` | `0` | Cooldown pause (in ms) between samples to allow CPU cooling (0% CPU futex sleep). |

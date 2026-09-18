@@ -7,7 +7,7 @@
 const short = Object.freeze({
 	mode: "sequential",
 	rounds: 5,
-	time: 50,
+	dur: 50,
 	pause: 20,
 	cooldown: 0,
 	prime: false,
@@ -16,7 +16,7 @@ const short = Object.freeze({
 const medium = Object.freeze({
 	mode: "shuffled",
 	rounds: 10,
-	time: 100,
+	dur: 100,
 	pause: 20,
 	cooldown: 0,
 	prime: false,
@@ -25,7 +25,7 @@ const medium = Object.freeze({
 const long = Object.freeze({
 	mode: "shuffled",
 	rounds: 20,
-	time: 200,
+	dur: 200,
 	pause: 50,
 	cooldown: 20,
 	prime: true,
