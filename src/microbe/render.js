@@ -166,17 +166,12 @@ function renderBanner(title, config = {}) {
 	const iters = config.iters;
 	const shuffled = config.shuffled ?? true;
 	const cooldown = config.cooldown ?? 0;
-	const isForked = !!config.fork;
 
 	const timingLabel = isDynamic
 		? `${rounds} rounds × ~${time}ms/sample (dynamic)`
 		: `${rounds} rounds × ${Number(iters).toExponential()} iters/round`;
 
-	const modeLabel = isForked
-		? "Mode: Forked Subprocesses"
-		: shuffled
-			? "Order: Shuffled"
-			: "Order: Round-Robin";
+	const modeLabel = shuffled ? "Order: Shuffled" : "Order: Round-Robin";
 
 	const cooldownLabel = cooldown > 0 ? ` | Cooldown: ${cooldown}ms` : "";
 	const cpu = getCpuModel();

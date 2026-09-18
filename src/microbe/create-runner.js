@@ -62,17 +62,7 @@ function createRunner(options = {}) {
   `;
 
 	const factory = new Function(...contextKeys, functionSource);
-	const runner = factory(...contextValues);
-
-	runner._runnerConfig = {
-		name,
-		context,
-		setup,
-		loop,
-		teardown,
-	};
-
-	return runner;
+	return factory(...contextValues);
 }
 
 module.exports = {

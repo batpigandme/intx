@@ -160,33 +160,3 @@ test("microbe: suite.rank sorts results correctly", () => {
 	assert.strictEqual(ranked[1].name, "slow");
 	assert.ok(ranked[0].medianRate > ranked[1].medianRate);
 });
-
-test("microbe: suite with isolated subprocess forking (fork: true)", () => {
-	const ops = {
-		fork_a: createRunner({
-			setup: "let a = 1;",
-			loop: "a = (a + 1) | 0;",
-			teardown: "return a;",
-		}),
-		fork_b: createRunner({
-			setup: "let b = 2;",
-			loop: "b = (b ^ 3) | 0;",
-			teardown: "return b;",
-		}),
-	};
-
-	const results = bench.suite("fork_test_suite", ops, {
-		rounds: 2,
-		time: 20,
-		fork: true,
-		silent: true,
-	});
-
-	assert.strictEqual(results.length, 2);
-	assert.strictEqual(results[0].name, "fork_a");
-	assert.strictEqual(results[1].name, "fork_b");
-	assert.strictEqual(results[0].samples.length, 2);
-	assert.strictEqual(results[1].samples.length, 2);
-	assert.ok(results[0].medianRate > 0);
-	assert.ok(results[1].medianRate > 0);
-});

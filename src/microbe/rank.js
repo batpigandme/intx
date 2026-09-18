@@ -42,7 +42,6 @@ function getComparator(order) {
  * @param {number} [options.time=100] - Target duration in milliseconds per sample (dynamic auto-calibration).
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
- * @param {boolean} [options.fork=false] - If true, executes each candidate in an isolated child process.
  * @param {boolean} [options.shuffled=true] - If true, randomizes runner order per round; otherwise round-robin.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
@@ -70,7 +69,6 @@ function rank(title, runners, options = {}) {
 	const targetMs = options.time ?? 100;
 	const manualIters = options.iters;
 	const cooldown = options.cooldown ?? 0;
-	const shouldFork = !!options.fork;
 	const shuffled = options.shuffled ?? true;
 	const width = options.width ?? 80;
 
@@ -81,7 +79,6 @@ function rank(title, runners, options = {}) {
 			time: isDynamic ? targetMs : undefined,
 			shuffled,
 			cooldown,
-			fork: shouldFork,
 			width,
 		});
 	}

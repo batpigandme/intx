@@ -18,6 +18,7 @@ This report documents comprehensive empirical investigations into V8 TurboFan op
 | **Exp 7** | Loop Overhead Isolation | Baseline loop: ~0.61 ns/iter; Kernel delta: ~0.20 ns | Pure loop control overhead can be cleanly isolated and subtracted to obtain true kernel latencies. |
 | **Exp 8** | Megamorphic `out` Parameter | Mono Int32: **235 M/s** vs Generic Array: **158 M/s** vs Mega: **168 M/s** | Passing mixed array types into `out` triggers Megamorphic IC deopts (~30-40% degradation); unboxed TypedArrays avoid V8 property access stubs. |
 | **Exp 9** | Signed vs Unsigned `mulwide` | u32: **139.5 M/s** (7.17 ns) vs i32: **125.8 M/s** (7.95 ns) | Signed correction adds a small ~0.78 ns ALU overhead in 1x serial recurrence (~10% throughput delta). |
+| **Calibration** | JIT Tier-Up Artifact & MoE | Dynamic: **±70% to ±117% MoE** vs Fixed: **±0.5% to ±3.2%** | Small cold calibration probes underestimate peak TurboFan speed, causing active JIT compilation during measurement rounds. |
 
 ---
 
@@ -217,6 +218,93 @@ TurboFan's inlining subsystem (`JSInliningHeuristic`) uses a cost-benefit model 
 
 ---
 
+### Experiment 10 / Calibration Deep Dive: JIT Tier-Up Mid-Flight Artifact & Margin of Error (MoE)
+
+When benchmarking with dynamic time auto-calibration (`time: 2000` or `time: 200`), initial empirical runs exhibited severe Margin of Error anomalies (up to $\pm 117.2\%$), whereas manual fixed-iteration runs (`iters: 1e7` or `iters: 1e8`) remained rock-solid ($\pm 0.5\%$ to $\pm 3.2\%$).
+
+#### Empirical Benchmark Data Across Modes:
+
+##### 1. Dynamic Calibration (`time: 2000ms`, Dynamic Target):
+
+> **Config:** 5 rounds × ~2000ms/sample (dynamic) | Order: Shuffled  
+> **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Read-Only Baseline (Walk Only)            |    527.25 M |  530.50 M |  ±117.2% | baseline |
+|    2 | In-Place Mutation (Context Buffer)        |    479.33 M |  488.26 M |    ±1.5% |    0.91x |
+|    3 | In-Place Mutation (Local Setup Buffer)    |    474.12 M |  478.90 M |   ±71.2% |    0.90x |
+|    4 | Separate Write Buffer (inBuf -> outBuf, … |    472.35 M |  486.39 M |    ±1.8% |    0.90x |
+|    5 | Separate Write Buffer (Local Setup Buffe… |    472.03 M |  485.85 M |   ±75.0% |    0.90x |
+|    6 | Fixed Fixture Mutation (out[0] = ... lik… |    411.16 M |  415.14 M |    ±2.4% |    0.78x |
+
+##### 2. Dynamic Calibration (`time: 200ms`, Dynamic Target):
+
+> **Config:** 5 rounds × ~200ms/sample (dynamic) | Order: Shuffled  
+> **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Read-Only Baseline (Walk Only)            |    512.77 M |  545.84 M |  ±113.6% | baseline |
+|    2 | In-Place Mutation (Context Buffer)        |    448.65 M |  459.31 M |    ±3.8% |    0.87x |
+|    3 | In-Place Mutation (Local Setup Buffer)    |    487.88 M |  506.87 M |   ±99.7% |    0.95x |
+|    4 | Separate Write Buffer (inBuf -> outBuf, … |    453.75 M |  467.84 M |    ±3.2% |    0.88x |
+|    5 | Separate Write Buffer (Local Setup Buffe… |    466.77 M |  475.23 M |   ±79.7% |    0.91x |
+|    6 | Fixed Fixture Mutation (out[0] = ... lik… |    380.50 M |  400.16 M |    ±8.9% |    0.74x |
+
+##### 3. Fixed Iterations (`iters: 1e8`, Manual Target):
+
+> **Config:** 5 rounds × 1e+8 iters/round | Order: Shuffled  
+> **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Read-Only Baseline (Walk Only)            |    558.14 M |  560.25 M |    ±1.4% | baseline |
+|    2 | In-Place Mutation (Context Buffer)        |    493.80 M |  495.51 M |    ±0.5% |    0.88x |
+|    3 | In-Place Mutation (Local Setup Buffer)    |    485.38 M |  497.12 M |    ±3.2% |    0.87x |
+|    4 | Separate Write Buffer (inBuf -> outBuf, … |    461.72 M |  466.28 M |    ±0.7% |    0.83x |
+|    5 | Separate Write Buffer (Local Setup Buffe… |    436.37 M |  443.49 M |   ±14.7% |    0.78x |
+|    6 | Fixed Fixture Mutation (out[0] = ... lik… |    379.69 M |  386.21 M |    ±1.2% |    0.68x |
+
+##### 4. Fixed Iterations (`iters: 1e7`, Manual Target):
+
+> **Config:** 5 rounds × 1e+7 iters/round | Order: Shuffled  
+> **Platform:** Node v24.19.0 (x64) | Intel Core i5-8350U @ 1.70GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Read-Only Baseline (Walk Only)            |    523.74 M |  541.63 M |    ±2.0% | baseline |
+|    2 | In-Place Mutation (Context Buffer)        |    462.46 M |  474.77 M |    ±5.1% |    0.88x |
+|    3 | In-Place Mutation (Local Setup Buffer)    |    458.70 M |  473.09 M |    ±2.5% |    0.88x |
+|    4 | Separate Write Buffer (inBuf -> outBuf, … |    437.01 M |  443.68 M |    ±2.5% |    0.83x |
+|    5 | Separate Write Buffer (Local Setup Buffe… |    399.07 M |  411.83 M |    ±5.4% |    0.76x |
+|    6 | Fixed Fixture Mutation (out[0] = ... lik… |    343.17 M |  348.49 M |    ±1.5% |    0.66x |
+
+#### Detailed Architectural Breakdown:
+
+1. **Cold Calibration Rate Underestimating Steady-State Throughput**:
+   * Geometric ramp-up probing in `calibrate` stops as soon as a sample reaches $\ge 2\text{ ms}$.
+   * At this initial probe stage, V8 is executing bytecode in the **Ignition interpreter** or early **Sparkplug** baseline JIT (~60–100 M iters/s).
+   * As a result, `calibrate` estimates an iteration count based on this cold throughput rate (e.g. choosing 17M iters for 200 ms).
+
+2. **JIT Tier-Up Occurring Mid-Measurement**:
+   * In fixed large runs (`iters: 1e8`), the 100M-iteration warmup forces V8 to compile through all intermediate tiers (Ignition $\to$ Sparkplug $\to$ Maglev $\to$ TurboFan) and stabilize at peak throughput *before Round 1 starts*.
+   * In short dynamic runs, the initial warmup is too brief. Tier-up occurs *during* the measurement rounds:
+     * **Round 1 (268 ms / 65 M/s)**: Function undergoes on-stack replacement (OSR) / TurboFan background compilation pause.
+     * **Round 2 & 3 (86 ms / 204 M/s)**: Maglev compiled tier active.
+     * **Round 4 (67 ms / 262 M/s)**: TurboFan baseline optimization active.
+     * **Round 5 (44 ms / 396 M/s)**: TurboFan aggressive loop unrolling and escape analysis fully active.
+
+3. **Why Candidates 1, 3, and 5 Were Disproportionately Affected**:
+   * **Candidate 1 (Read-Only Buffer Walk)**: TurboFan applies aggressive vectorized loop unrolling and BCE range analysis to pure read loops, a top-tier optimization that triggers later in the invocation count lifecycle.
+   * **Candidates 3 & 5 (Local Setup Buffers)**: Allocating `new Int32Array(256)` inside per-sample `setup` requires V8 Escape Analysis and allocation folding heuristics to stabilize.
+   * **Candidates 2, 4, 6 (Global Context Buffers)**: Static pre-allocated buffers in closure context have fixed heap addresses, allowing TurboFan to tier up almost immediately.
+
+4. **Statistical Confirmation via Student's $t$**:
+   Because the measured throughput accelerated by **$6\times$** across the 5 rounds ($65\text{ M/s} \to 396\text{ M/s}$), the sample standard deviation $\sigma$ was massive ($\approx 0.089\text{ s}$ on a $0.110\text{ s}$ mean). The Student's $t$ confidence interval correctly identified this instability by reporting $\pm 101\%$ to $\pm 117\%$ MoE.
+
+---
+
 ## Best Practices Checklist for High-Performance JS Microbenchmarks
 
 1. [x] **Pass Constants via `context`**: Injects values as dynamic closure parameters, preventing compile-time dead code elimination and constant-folding.
@@ -225,3 +313,4 @@ TurboFan's inlining subsystem (`JSInliningHeuristic`) uses a cost-benefit model 
 4. [x] **Use Separate Write Buffers for Mutations**: Always write outputs to a dedicated `outBuf` instead of mutating the input test vector to prevent input decay across benchmark rounds.
 5. [x] **Use Multi-Accumulator Streams (4x/8x) for Peak Throughput**: When measuring the theoretical execution port limits of a kernel, use 4x or 8x independent accumulators to break the 1x serialization latency bound.
 6. [x] **Keep `out` Destination Buffers Monomorphic**: Pass fixed typed arrays (`Int32Array` or `Uint32Array`) rather than generic `Array` objects to keep store ICs monomorphic and avoid 30-40% megamorphic stub dispatch penalties.
+7. [x] **Ensure Steady-State JIT Warmup Before Measurement**: Ensure warmup loops execute sufficient iterations to trigger top-tier optimizing compiler pipelines (TurboFan / DFG / FTL) to prevent JIT tier-up acceleration artifacts during active sampling rounds.
