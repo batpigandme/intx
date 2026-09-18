@@ -100,9 +100,12 @@ const ops = {
 	}), //*/,
 };
 
-bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
-	rounds: 5,
-	iters: 1e7,
-	// time: 200,
+const res = bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
+	rounds: 100,
+	time: 20,
+	// iters: 1e6,
+	// cooldown: 50,
 	width: 100,
 });
+
+console.log(res.map((x) => x.outlierCount));
