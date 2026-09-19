@@ -102,14 +102,13 @@ const ops = {
 };
 
 const res = cycles.bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
-	mode: "sequential",
-	// mode: "shuffled",
-	rounds: 50,
+	// mode: "sequential",
+	mode: "shuffled",
+	rounds: 1e3,
+	cycles: 1e7,
 	details: true,
 	// dur: 50,
-	// pause: 0,
-	// metric: "cycles",
-
+	pause: 0,
 	// cooldown: 0,
 	// prime: true,
 });

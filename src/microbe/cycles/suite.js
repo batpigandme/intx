@@ -65,6 +65,8 @@ function suite(title, runners, options = {}) {
 			pause,
 			prime,
 			width,
+			metric: options.metric,
+			order: options.order,
 		});
 	}
 
@@ -172,7 +174,12 @@ function suite(title, runners, options = {}) {
 	}
 
 	if (!silent && render) {
-		renderTable(results, { width: options.width, details: options.details });
+		renderTable(results, {
+			width: options.width,
+			details: options.details,
+			metric: options.metric,
+			order: options.order,
+		});
 	}
 
 	return results;

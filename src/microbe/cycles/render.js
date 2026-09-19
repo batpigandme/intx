@@ -37,27 +37,34 @@ function renderBench(result) {
 	const medianStr = `${formatCycles(result.medianCycles)} cyc/op`;
 	const bestStr = `${formatCycles(result.minCycles)} cyc/op`;
 	const meanStr = `${formatCycles(result.meanCycles)} cyc/op`;
-	const ipcStr = `${result.ipc.toFixed(2)} IPC`;
+	const insStr = `${(result.bestInsPerOp ?? result.insPerOp).toFixed(2)} ins/op`;
+	const ipcStr = `${(result.bestIpc ?? result.ipc).toFixed(2)} IPC`;
 	const moeStr = `±${result.moePercent.toFixed(1)}%`;
 
 	console.log(
-		`  ── Summary: Median ${medianStr} | Best ${bestStr} | Mean ${meanStr} | ${ipcStr} (${moeStr})\n`,
+		`  ── Summary: Median ${medianStr} | Best ${bestStr} | Mean ${meanStr} | ${insStr} | ${ipcStr} (${moeStr})\n`,
 	);
 }
 
 function renderTable(results, options = {}) {
 	const ranked = options.ranked ?? options.isRanked ?? false;
 	const details = options.details === true;
-	const defaultWidth = details ? 115 : 90;
+	const defaultWidth = details ? 130 : 105;
 	const width = options.width ?? defaultWidth;
-	const overhead = details ? 95 : 69;
+	const overhead = details ? 109 : 81;
 	const titleWidth = Math.max(10, width - overhead);
-	const baselineMedian = results[0]?.medianCycles ?? 1;
+	const metric =
+		options.metric ??
+		(options.order === "best" || options.order === "min" ? "best" : "median");
+	const useBest = metric === "best" || metric === "min";
+	const baselineVal =
+		(useBest ? results[0]?.minCycles : results[0]?.medianCycles) || 1;
 
 	const indexHeader = ranked ? "Rank" : " #  ";
 	const titleHeader = "Title".padEnd(titleWidth);
 	const medianHeader = "Median (/op)";
 	const peakHeader = "Best (/op)";
+	const insHeader = "Ins (/op)";
 	const ipcHeader = " IPC ";
 	const moeHeader = "MoE (±%)";
 	const inlierMoeHeader = "Inlier MoE";
@@ -71,6 +78,7 @@ function renderTable(results, options = {}) {
 	const sepTitle = `:${"-".repeat(titleWidth + 1)}`;
 	const sepMedian = `${"-".repeat(13)}:`;
 	const sepPeak = `${"-".repeat(11)}:`;
+	const sepIns = `${"-".repeat(10)}:`;
 	const sepIpc = `${"-".repeat(6)}:`;
 	const sepMoe = `${"-".repeat(9)}:`;
 	const sepInlierMoe = `${"-".repeat(11)}:`;
@@ -78,11 +86,11 @@ function renderTable(results, options = {}) {
 	const sepRelative = `${"-".repeat(9)}:`;
 
 	if (details) {
-		headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${ipcHeader} | ${moeHeader} | ${inlierMoeHeader} | ${outlierHeader} | ${relativeHeader} |`;
-		separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIpc}|${sepMoe}|${sepInlierMoe}|${sepOutlier}|${sepRelative}|`;
+		headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${insHeader} | ${ipcHeader} | ${moeHeader} | ${inlierMoeHeader} | ${outlierHeader} | ${relativeHeader} |`;
+		separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIns}|${sepIpc}|${sepMoe}|${sepInlierMoe}|${sepOutlier}|${sepRelative}|`;
 	} else {
-		headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${ipcHeader} | ${moeHeader} | ${relativeHeader} |`;
-		separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIpc}|${sepMoe}|${sepRelative}|`;
+		headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${insHeader} | ${ipcHeader} | ${moeHeader} | ${relativeHeader} |`;
+		separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIns}|${sepIpc}|${sepMoe}|${sepRelative}|`;
 	}
 
 	console.log(headerLine);
@@ -99,12 +107,20 @@ function renderTable(results, options = {}) {
 		const rowTitle = displayTitle.padEnd(titleWidth);
 		const medianVal = formatCycles(res.medianCycles).padStart(12);
 		const peakVal = formatCycles(res.minCycles).padStart(10);
-		const ipcVal = res.ipc.toFixed(2).padStart(5);
+		const targetIns = useBest
+			? (res.bestInsPerOp ?? res.insPerOp)
+			: (res.medianInsPerOp ?? res.insPerOp);
+		const insVal = (targetIns ?? 0).toFixed(2).padStart(9);
+		const targetIpc = useBest
+			? (res.bestIpc ?? res.ipc)
+			: (res.medianIpc ?? res.ipc);
+		const ipcVal = (targetIpc ?? 0).toFixed(2).padStart(5);
 		const moe = `±${res.moePercent.toFixed(1)}%`.padStart(8);
+		const targetVal = useBest ? res.minCycles : res.medianCycles;
 		const relative =
 			idx === 0
 				? "baseline".padStart(8)
-				: `${(res.medianCycles / baselineMedian).toFixed(2)}x`.padStart(8);
+				: `${(targetVal / baselineVal).toFixed(2)}x`.padStart(8);
 
 		if (details) {
 			const inlierMoeVal = res.inliers
@@ -114,11 +130,11 @@ function renderTable(results, options = {}) {
 				? `${res.outliers.percent.toFixed(1)}%`.padStart(12)
 				: "0.0%".padStart(12);
 			console.log(
-				`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${ipcVal} | ${moe} | ${inlierMoeVal} | ${outlierVal} | ${relative} |`,
+				`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${insVal} | ${ipcVal} | ${moe} | ${inlierMoeVal} | ${outlierVal} | ${relative} |`,
 			);
 		} else {
 			console.log(
-				`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${ipcVal} | ${moe} | ${relative} |`,
+				`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${insVal} | ${ipcVal} | ${moe} | ${relative} |`,
 			);
 		}
 	});
@@ -169,8 +185,16 @@ function renderBanner(title, options = {}) {
 	const cpu = getCpuModel();
 	const rawTitle = title || "Hardware PMU Benchmark";
 
+	const metricLabel =
+		options.metric === "best" ||
+		options.metric === "min" ||
+		options.order === "best" ||
+		options.order === "min"
+			? "Hardware PMU (Best / Peak Cycles)"
+			: "Hardware PMU (Cycles & IPC)";
+
 	const headingLine = `\n### ${rawTitle}`;
-	const configLine = `> **Config:** ${timingLabel} | Metric: Hardware PMU (Cycles & IPC) | ${modeLabel}${extra}  `;
+	const configLine = `> **Config:** ${timingLabel} | Metric: ${metricLabel} | ${modeLabel}${extra}  `;
 	const platformLine = `> **Platform:** Node ${process.version} (${process.arch}) | ${cpu}`;
 
 	console.log(headingLine);

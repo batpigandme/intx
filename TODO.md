@@ -49,10 +49,34 @@
   - [ ] **No-Op Coercion & Bytecode Budget Inflation**:
     - Profile the inlining budget impact of redundant input coercions (e.g., `a |= 0; b |= 0;` or `a >>>= 0; b >>>= 0;`) when operands are immediately split via masking (`& 0xffff`) or logical shift (`>>> 16`).
     - Measure bytecode bloat and engine penalties from ubiquitous `>>> 0` conversions in unsigned kernels where intermediate signed arithmetic (`| 0`) preserves 32-bit ALU registers, eliminates Double conversions in JavaScriptCore (JSC), and saves bytecode budget across nested caller hierarchies.
+  - [ ] **The Maglev Tiering Usurpation Trap (Demonstrator & Analysis)**:
+    - Construct `explorations/11-maglev-osr-usurpation.js` demonstrating how Maglev entry compilation usurps TurboFan OSR loops at ~500 invocations, demoting inlined closure calls into machine `CALL`s.
+    - Measure the AST node complexity thresholds where Maglev abandons inlining vs where TurboFan succeeds.
 - [ ] **Build `testx` Tool**:
   - Implement a modular candidate validation and fuzz testing harness matching the design of `microbe`.
 - [ ] **Rebuild Browser Benchmarking UI**:
   - Re-integrate the browser-based benchmark harness (`tmp/benchx/browser`) to work with the declarative `microbe` runner.
+- [ ] **Hardware PMU Extensions in `microbe/cycles`**:
+  - [ ] **Hardware Branch Predictor Profiling**:
+    - Add `PERF_COUNT_HW_BRANCH_INSTRUCTIONS` and `PERF_COUNT_HW_BRANCH_MISSES` to PMU event group read.
+    - Expose `branchMisses` and `branchMissPercent` in detailed table view.
+  - [x] **CPU Thread Affinity / Core Pinning**:
+    - Add `sched_setaffinity` and `sched_getcpu` in `pmu.cc` to auto-pin benchmark threads to an isolated physical core (Core 2), preventing OS thread migration cache flushes.
+    - Expose `pinCore(coreId)` and `getCore()` via `#microbe/cycles`.
+  - [ ] **L1 Data Cache Miss Profiling**:
+    - Track `PERF_COUNT_HW_CACHE_REFERENCES` and `PERF_COUNT_HW_CACHE_MISSES` to isolate memory-bound vs compute-bound kernels.
+  - [ ] **Automated V8 Flag Injection CLI Wrapper**:
+    - Implement a runner script (`npx microbe` / `npm run bench:cycles`) that automatically launches Node with `--predictable --expose-gc --no-incremental-marking --no-maglev --min-semi-space-size=128 --max-semi-space-size=256`.
+  - [ ] **Minimum Cycle / Duration Guardrail in `calibrate.js`**:
+    - Clamp target cycles to `min: 1e6` (or warn on `< 1e6`) in calibration so sub-microsecond budgets do not trigger N-API boundary tax and cold loop amortization distortion.
+  - [ ] **Declarative `core` Option in `bench` and `suite`**:
+    - Support `bench(name, fn, { core: 3 })` and `suite(name, ops, { core: 3 })` to declaratively specify target CPU core affinity directly in benchmark configs.
+  - [ ] **Instruction Count Delta Alert in `render.js`**:
+    - Add a visual flag/warning in the table when `medianInsPerOp !== bestInsPerOp` to alert users of in-flight JIT tier changes, deoptimizations, or dropped inlining.
+  - [ ] **Investigate Linux Scheduler Timer Ticks vs Benchmark Duration/Cycles**:
+    - Profile the relationship between kernel preemption ticks (`CONFIG_HZ` at 250 Hz / 1000 Hz) and sample durations.
+    - Measure cycle inflation, L1 cache invalidation, and bimodal outlier generation across sample sizes (1 K, 100 K, 1 M, 10 M, 50 M cycles).
+    - Explore `CONFIG_NO_HZ_FULL` / `nohz_full` core isolation for zero-jitter PMU benchmarks.
 
 ---
 

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 #include <linux/perf_event.h>
+#include <sched.h>
 #include <errno.h>
 
 struct perf_group_data {
@@ -25,10 +26,25 @@ static thread_local uint64_t g_end_instructions = 0;
 static thread_local bool g_tic_called = false;
 static thread_local bool g_toc_called = false;
 
+static bool pin_thread(int core_id = -1) {
+  long nprocs = sysconf(_SC_NPROCESSORS_ONLN);
+  if (nprocs <= 0) nprocs = 1;
+  int target = core_id;
+  if (target < 0 || target >= nprocs) {
+    target = (nprocs >= 4) ? 2 : (nprocs >= 2 ? 1 : 0);
+  }
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(target, &cpuset);
+  return sched_setaffinity(0, sizeof(cpuset), &cpuset) == 0;
+}
+
 static bool init_thread_pmu() {
   if (g_fd_leader >= 0) {
     return true;
   }
+
+  pin_thread();
 
   struct perf_event_attr pe_cycles;
   memset(&pe_cycles, 0, sizeof(pe_cycles));
@@ -131,6 +147,30 @@ static napi_value Elapsed(napi_env env, napi_callback_info info) {
   return obj;
 }
 
+static napi_value PinCore(napi_env env, napi_callback_info info) {
+  size_t argc = 1;
+  napi_value args[1];
+  napi_get_cb_info(env, info, &argc, args, nullptr, nullptr);
+  int core = -1;
+  if (argc >= 1) {
+    int32_t val;
+    if (napi_get_value_int32(env, args[0], &val) == napi_ok) {
+      core = val;
+    }
+  }
+  bool ok = pin_thread(core);
+  napi_value res;
+  napi_get_boolean(env, ok, &res);
+  return res;
+}
+
+static napi_value GetCore(napi_env env, napi_callback_info info) {
+  int core = sched_getcpu();
+  napi_value res;
+  napi_create_int32(env, core, &res);
+  return res;
+}
+
 #else
 
 static napi_value IsSupported(napi_env env, napi_callback_info info) {
@@ -152,6 +192,18 @@ static napi_value Elapsed(napi_env env, napi_callback_info info) {
   return obj;
 }
 
+static napi_value PinCore(napi_env env, napi_callback_info info) {
+  napi_value res;
+  napi_get_boolean(env, false, &res);
+  return res;
+}
+
+static napi_value GetCore(napi_env env, napi_callback_info info) {
+  napi_value res;
+  napi_create_int32(env, -1, &res);
+  return res;
+}
+
 #endif
 
 static napi_value Init(napi_env env, napi_value exports) {
@@ -160,6 +212,8 @@ static napi_value Init(napi_env env, napi_value exports) {
     { "tic", nullptr, Tic, nullptr, nullptr, nullptr, napi_default, nullptr },
     { "toc", nullptr, Toc, nullptr, nullptr, nullptr, napi_default, nullptr },
     { "elapsed", nullptr, Elapsed, nullptr, nullptr, nullptr, napi_default, nullptr },
+    { "pinCore", nullptr, PinCore, nullptr, nullptr, nullptr, napi_default, nullptr },
+    { "getCore", nullptr, GetCore, nullptr, nullptr, nullptr, napi_default, nullptr },
   };
   napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
   return exports;

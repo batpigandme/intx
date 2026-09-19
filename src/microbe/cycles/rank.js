@@ -29,7 +29,7 @@ function getComparator(order) {
 }
 
 function rank(title, runners, options = {}) {
-	const order = options.order ?? "median";
+	const order = options.order ?? options.metric ?? "best";
 	const comparator = getComparator(order);
 	const silent = !!options.silent;
 
@@ -45,6 +45,8 @@ function rank(title, runners, options = {}) {
 			ranked: true,
 			width: options.width,
 			details: options.details,
+			metric: options.metric,
+			order,
 		});
 	}
 

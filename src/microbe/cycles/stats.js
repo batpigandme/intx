@@ -91,12 +91,22 @@ function computePmuStats(samples, iters) {
 		values: outliers.map((c) => c / iters),
 	};
 
+	let bestSample = samples[0];
+	for (let i = 1; i < n; i++) {
+		if (samples[i].cycles < bestSample.cycles) {
+			bestSample = samples[i];
+		}
+	}
+
 	const minCycles = minRawCycles / iters;
 	const maxCycles = maxRawCycles / iters;
 	const medianCycles = medianRawCycles / iters;
 	const meanCycles = meanRawCycles / iters;
-	const insPerOp = medianRawIns / iters;
-	const ipc = medianCycles > 0 ? insPerOp / medianCycles : 0.0;
+	const medianInsPerOp = medianRawIns / iters;
+	const bestInsPerOp = bestSample.instructions / iters;
+	const medianIpc = medianCycles > 0 ? medianInsPerOp / medianCycles : 0.0;
+	const bestIpc =
+		bestSample.cycles > 0 ? bestSample.instructions / bestSample.cycles : 0.0;
 
 	return {
 		metric: "cycles",
@@ -104,8 +114,12 @@ function computePmuStats(samples, iters) {
 		maxCycles,
 		medianCycles,
 		meanCycles,
-		insPerOp,
-		ipc,
+		insPerOp: medianInsPerOp,
+		medianInsPerOp,
+		bestInsPerOp,
+		ipc: medianIpc,
+		medianIpc,
+		bestIpc,
 		minRawCycles,
 		maxRawCycles,
 		medianRawCycles,
