@@ -468,3 +468,20 @@ test("microbe/cycles: suite.rank sorts by medianCycles ascending (lower is bette
 		`fast (${ranked[0].medianCycles}) should have fewer cycles than slow (${ranked[1].medianCycles})`,
 	);
 });
+
+test("microbe/cycles: dynamic cycle-based calibration", () => {
+	const { calibrate, resolveTargetCycles } = require("../cycles/calibrate");
+	assert.strictEqual(resolveTargetCycles(1e7), 1e7);
+	assert.strictEqual(resolveTargetCycles({ cycles: 2e7 }), 2e7);
+	assert.strictEqual(resolveTargetCycles({ dur: 10 }), 2e7);
+	assert.strictEqual(resolveTargetCycles(), 5e7);
+
+	const runner = createRunner({
+		setup: "let a = 0;",
+		loop: "a = (a + 1) | 0;",
+		teardown: "return a;",
+	});
+
+	const iters = calibrate(runner, { cycles: 1e6 });
+	assert.ok(typeof iters === "number" && iters > 0);
+});

@@ -32,7 +32,6 @@ function rank(title, runners, options = {}) {
 	const order = options.order ?? "median";
 	const comparator = getComparator(order);
 	const silent = !!options.silent;
-	const width = options.width ?? 90;
 
 	const results = suite(title, runners, {
 		...options,
@@ -42,7 +41,11 @@ function rank(title, runners, options = {}) {
 	results.sort(comparator);
 
 	if (!silent) {
-		renderTable(results, { ranked: true, width });
+		renderTable(results, {
+			ranked: true,
+			width: options.width,
+			details: options.details,
+		});
 	}
 
 	return results;

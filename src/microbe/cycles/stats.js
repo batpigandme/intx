@@ -46,6 +46,50 @@ function computePmuStats(samples, iters) {
 	const lowerFence = q1 - 1.5 * iqr;
 	const upperFence = q3 + 1.5 * iqr;
 	const outliers = sortedCycles.filter((c) => c < lowerFence || c > upperFence);
+	const inlierCycles = sortedCycles.filter(
+		(c) => c >= lowerFence && c <= upperFence,
+	);
+
+	const inlierN = inlierCycles.length;
+	let inlierMeanRaw = meanRawCycles;
+	let inlierMedianRaw = medianRawCycles;
+	let inlierStddev = stddev;
+	let inlierMoe = moe;
+	let inlierMoePercent = moePercent;
+
+	if (inlierN > 0) {
+		const inlierSum = inlierCycles.reduce((acc, v) => acc + v, 0);
+		inlierMeanRaw = inlierSum / inlierN;
+		inlierMedianRaw = getPercentile(inlierCycles, 0.5);
+
+		const inlierVariance =
+			inlierN > 1
+				? inlierCycles.reduce((acc, v) => acc + (v - inlierMeanRaw) ** 2, 0) /
+					(inlierN - 1)
+				: 0;
+		inlierStddev = Math.sqrt(inlierVariance);
+		const inlierDf = inlierN - 1;
+		const inlierTCrit = getTCritical(inlierDf);
+		const inlierSem = inlierN > 1 ? inlierStddev / Math.sqrt(inlierN) : 0;
+		inlierMoe = inlierTCrit * inlierSem;
+		inlierMoePercent =
+			inlierMeanRaw > 0 ? (inlierMoe / inlierMeanRaw) * 100 : 0;
+	}
+
+	const inliers = {
+		count: inlierN,
+		moe: inlierMoe,
+		moePercent: inlierMoePercent,
+		medianCycles: inlierMedianRaw / iters,
+		meanCycles: inlierMeanRaw / iters,
+		stddev: inlierStddev,
+	};
+
+	const outliersInfo = {
+		count: outliers.length,
+		percent: n > 0 ? (outliers.length / n) * 100 : 0,
+		values: outliers.map((c) => c / iters),
+	};
 
 	const minCycles = minRawCycles / iters;
 	const maxCycles = maxRawCycles / iters;
@@ -74,6 +118,8 @@ function computePmuStats(samples, iters) {
 		q3,
 		iqr,
 		outlierCount: outliers.length,
+		inliers,
+		outliers: outliersInfo,
 	};
 }
 

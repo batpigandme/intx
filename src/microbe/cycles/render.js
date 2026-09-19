@@ -47,8 +47,11 @@ function renderBench(result) {
 
 function renderTable(results, options = {}) {
 	const ranked = options.ranked ?? options.isRanked ?? false;
-	const width = options.width ?? 90;
-	const titleWidth = Math.max(10, width - 69);
+	const details = options.details === true;
+	const defaultWidth = details ? 115 : 90;
+	const width = options.width ?? defaultWidth;
+	const overhead = details ? 95 : 69;
+	const titleWidth = Math.max(10, width - overhead);
 	const baselineMedian = results[0]?.medianCycles ?? 1;
 
 	const indexHeader = ranked ? "Rank" : " #  ";
@@ -57,19 +60,30 @@ function renderTable(results, options = {}) {
 	const peakHeader = "Best (/op)";
 	const ipcHeader = " IPC ";
 	const moeHeader = "MoE (±%)";
+	const inlierMoeHeader = "Inlier MoE";
+	const outlierHeader = "Outliers (%)";
 	const relativeHeader = "Relative";
 
-	const headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${ipcHeader} | ${moeHeader} | ${relativeHeader} |`;
+	let headerLine;
+	let separatorLine;
 
 	const sepIndex = ":----:";
 	const sepTitle = `:${"-".repeat(titleWidth + 1)}`;
-	const sepMedian = `${"-".repeat(12)}:`;
-	const sepPeak = `${"-".repeat(10)}:`;
+	const sepMedian = `${"-".repeat(13)}:`;
+	const sepPeak = `${"-".repeat(11)}:`;
 	const sepIpc = `${"-".repeat(6)}:`;
 	const sepMoe = `${"-".repeat(9)}:`;
+	const sepInlierMoe = `${"-".repeat(11)}:`;
+	const sepOutlier = `${"-".repeat(13)}:`;
 	const sepRelative = `${"-".repeat(9)}:`;
 
-	const separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIpc}|${sepMoe}|${sepRelative}|`;
+	if (details) {
+		headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${ipcHeader} | ${moeHeader} | ${inlierMoeHeader} | ${outlierHeader} | ${relativeHeader} |`;
+		separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIpc}|${sepMoe}|${sepInlierMoe}|${sepOutlier}|${sepRelative}|`;
+	} else {
+		headerLine = `| ${indexHeader} | ${titleHeader} | ${medianHeader} | ${peakHeader} | ${ipcHeader} | ${moeHeader} | ${relativeHeader} |`;
+		separatorLine = `|${sepIndex}|${sepTitle}|${sepMedian}|${sepPeak}|${sepIpc}|${sepMoe}|${sepRelative}|`;
+	}
 
 	console.log(headerLine);
 	console.log(separatorLine);
@@ -83,8 +97,8 @@ function renderTable(results, options = {}) {
 
 		const indexStr = `${idx + 1}`.padStart(4);
 		const rowTitle = displayTitle.padEnd(titleWidth);
-		const medianVal = formatCycles(res.medianCycles).padStart(11);
-		const peakVal = formatCycles(res.minCycles).padStart(9);
+		const medianVal = formatCycles(res.medianCycles).padStart(12);
+		const peakVal = formatCycles(res.minCycles).padStart(10);
 		const ipcVal = res.ipc.toFixed(2).padStart(5);
 		const moe = `±${res.moePercent.toFixed(1)}%`.padStart(8);
 		const relative =
@@ -92,9 +106,21 @@ function renderTable(results, options = {}) {
 				? "baseline".padStart(8)
 				: `${(res.medianCycles / baselineMedian).toFixed(2)}x`.padStart(8);
 
-		console.log(
-			`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${ipcVal} | ${moe} | ${relative} |`,
-		);
+		if (details) {
+			const inlierMoeVal = res.inliers
+				? `±${res.inliers.moePercent.toFixed(1)}%`.padStart(10)
+				: "N/A".padStart(10);
+			const outlierVal = res.outliers
+				? `${res.outliers.percent.toFixed(1)}%`.padStart(12)
+				: "0.0%".padStart(12);
+			console.log(
+				`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${ipcVal} | ${moe} | ${inlierMoeVal} | ${outlierVal} | ${relative} |`,
+			);
+		} else {
+			console.log(
+				`| ${indexStr} | ${rowTitle} | ${medianVal} | ${peakVal} | ${ipcVal} | ${moe} | ${relative} |`,
+			);
+		}
 	});
 
 	console.log();
@@ -113,16 +139,17 @@ function getCpuModel() {
 
 function renderBanner(title, options = {}) {
 	const rounds = options.rounds ?? 30;
-	const dur = options.dur ?? 20;
 	const iters = options.iters;
-	const mode = options.mode ?? "shuffled";
+	const mode = options.mode ?? "sequential";
 	const cooldown = options.cooldown ?? 0;
 	const pause = options.pause ?? 20;
 	const prime = options.prime ?? true;
 
+	const cyclesTarget =
+		options.cycles ?? (options.dur !== undefined ? options.dur * 2e6 : 5e7);
 	const timingLabel =
 		iters === undefined
-			? `${rounds} rounds × ~${dur}ms/sample (dynamic)`
+			? `${rounds} rounds × ~${formatCycles(cyclesTarget)} cyc/sample (dynamic)`
 			: `${rounds} rounds × ${Number(iters).toExponential()} iters/round`;
 
 	let modeLabel;

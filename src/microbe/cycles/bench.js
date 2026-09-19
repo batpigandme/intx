@@ -1,9 +1,9 @@
 "use strict";
 
-const { sample } = require("./timer");
+const { sample, loadPmu } = require("./timer");
 const { sleep } = require("#utils");
 const { computePmuStats } = require("./stats");
-const { calibrate } = require("../calibrate");
+const { calibrate } = require("./calibrate");
 const {
 	renderBench,
 	writeProgress,
@@ -17,12 +17,11 @@ function warmupRunner(runner, options = {}) {
 		global.gc();
 	}
 
-	const dur = options.dur ?? 20;
 	const iters = options.iters;
 	const dynamic = iters === undefined;
 	const cooldown = options.cooldown ?? 0;
 
-	const itersCount = dynamic ? calibrate(runner, dur) : iters;
+	const itersCount = dynamic ? calibrate(runner, options) : iters;
 	const warmupSample = sample(runner, itersCount);
 
 	if (cooldown > 0) {
@@ -46,16 +45,13 @@ function sampleRound(runner, itersCount, options = {}) {
 		global.gc();
 	}
 
-	const prime = options.prime ?? true;
+	const prime = options.prime ?? false;
 	const cooldown = options.cooldown ?? 0;
 
 	if (prime) {
+		const pmu = loadPmu();
 		const primeIters = Math.min(10000, Math.max(100, (itersCount * 0.01) | 0));
-		runner(
-			primeIters,
-			() => {},
-			() => {},
-		);
+		runner(primeIters, pmu.tic, pmu.toc);
 	}
 
 	const res = sample(runner, itersCount);

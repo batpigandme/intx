@@ -45,13 +45,11 @@ function suite(title, runners, options = {}) {
 	}
 
 	const rounds = options.rounds ?? 30;
-	const dur = options.dur ?? 20;
 	const iters = options.iters;
-	const dynamic = iters === undefined;
 	const cooldown = options.cooldown ?? 0;
 	const pause = options.pause ?? 20;
-	const mode = options.mode ?? "shuffled";
-	const prime = options.prime ?? true;
+	const mode = options.mode ?? "sequential";
+	const prime = options.prime ?? mode === "shuffled";
 	const silent = !!options.silent;
 	const render = options.render ?? true;
 	const width = options.width ?? 90;
@@ -60,7 +58,8 @@ function suite(title, runners, options = {}) {
 		renderBanner(title, {
 			rounds,
 			iters,
-			dur: dynamic ? dur : undefined,
+			cycles: options.cycles,
+			dur: options.dur,
 			mode,
 			cooldown,
 			pause,
@@ -173,7 +172,7 @@ function suite(title, runners, options = {}) {
 	}
 
 	if (!silent && render) {
-		renderTable(results, { width });
+		renderTable(results, { width: options.width, details: options.details });
 	}
 
 	return results;
