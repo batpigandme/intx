@@ -1,7 +1,7 @@
 "use strict";
 
 const { sample, loadPmu } = require("./timer");
-const { sleep } = require("#utils");
+const { sleep, gc } = require("#utils");
 const { computePmuStats } = require("./stats");
 const { calibrate } = require("./calibrate");
 const {
@@ -13,9 +13,7 @@ const {
 } = require("./render");
 
 function warmupRunner(runner, options = {}) {
-	if (typeof global.gc === "function") {
-		global.gc();
-	}
+	gc(50);
 
 	const iters = options.iters;
 	const dynamic = iters === undefined;
@@ -41,9 +39,7 @@ function warmupRunner(runner, options = {}) {
 }
 
 function sampleRound(runner, itersCount, options = {}) {
-	if (typeof global.gc === "function") {
-		global.gc();
-	}
+	// gc();
 
 	const prime = options.prime ?? false;
 	const cooldown = options.cooldown ?? 0;
@@ -139,4 +135,5 @@ module.exports = {
 	bench,
 	warmupRunner,
 	sampleRound,
+	gc,
 };

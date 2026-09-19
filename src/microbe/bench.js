@@ -1,7 +1,7 @@
 "use strict";
 
 const { sample } = require("./timer");
-const { sleep } = require("#utils");
+const { sleep, gc } = require("#utils");
 const { computeStats } = require("./stats");
 const { calibrate } = require("./calibrate");
 const {
@@ -21,9 +21,7 @@ const { presets } = require("./presets");
  * @returns {{ iters: number, warmup: object, value: any }}
  */
 function warmupRunner(runner, options = {}) {
-	if (typeof global.gc === "function") {
-		global.gc();
-	}
+	gc(50);
 
 	const dur = options.dur ?? presets.medium.dur;
 	const iters = options.iters;
@@ -66,9 +64,7 @@ function warmupRunner(runner, options = {}) {
  * @returns {{ elapsed: number, value: any }}
  */
 function sampleRound(runner, itersCount, options = {}) {
-	if (typeof global.gc === "function") {
-		global.gc();
-	}
+	// gc();
 
 	const prime = options.prime ?? presets.medium.prime;
 	const cooldown = options.cooldown ?? presets.medium.cooldown;

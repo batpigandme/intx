@@ -105,6 +105,7 @@ const res = cycles.bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
 	mode: "sequential",
 	// mode: "shuffled",
 	rounds: 50,
+	details: true,
 	// dur: 50,
 	// pause: 0,
 	// metric: "cycles",
