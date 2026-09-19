@@ -1,6 +1,7 @@
 "use strict";
 
-const { bench, createRunner, presets } = require("#microbe");
+const { bench, createRunner } = require("#microbe");
+const cycles = require("#microbe/cycles");
 const { randomI32 } = require("#utils");
 const i32 = require("#i32");
 
@@ -100,21 +101,22 @@ const ops = {
 	}), //*/,
 };
 
-const res = bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
-	// mode: "sequential",
-	mode: "shuffled",
+const res = cycles.bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
+	mode: "sequential",
+	// mode: "shuffled",
 	rounds: 50,
 	dur: 50,
 	pause: 0,
+	// metric: "cycles",
 
 	// cooldown: 0,
 	// prime: true,
 });
 
 console.log(res.map((x) => x.outlierCount));
-console.log(res.map((x) => toMs(x.minTime)));
-console.log(res.map((x) => toMs(x.maxTime)));
-console.log(res.map((x) => toMs(x.medianTime)));
+// console.log(res.map((x) => toMs(x.minTime)));
+// console.log(res.map((x) => toMs(x.maxTime)));
+// console.log(res.map((x) => toMs(x.medianTime)));
 
 function toMs(t) {
 	return `${(t * 1000).toFixed(2)}ms`;

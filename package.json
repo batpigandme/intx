@@ -18,7 +18,8 @@
 		"i32:mul:showdown": "node src/i32/mul/showdown.js",
 		"u32:mul:bench": "node src/u32/mul/bench.js",
 		"u32:mulhi:showdown": "node src/u32/mulhi/candidates/showdown.js",
-		"u32:mulwide:showdown": "node src/u32/mulwide/candidates/showdown.js"
+		"u32:mulwide:showdown": "node src/u32/mulwide/candidates/showdown.js",
+		"build:native": "node-gyp rebuild -C src/microbe/cycles"
 	},
 	"imports": {
 		"#*": "./src/*/index.js"

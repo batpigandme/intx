@@ -347,3 +347,124 @@ test("microbe: shuffled mode defaults prime to true when unspecified", () => {
 	// Warmup: 2 calls, Round 1: 2 calls, Round 2: 2 calls = 6 calls total
 	assert.strictEqual(callCount, 6);
 });
+
+test("microbe/cycles: subpath import and complete separation from base microbe", () => {
+	assert.strictEqual(
+		bench.cycles,
+		undefined,
+		"Base bench should not re-export cycles",
+	);
+
+	const { bench: cyclesBench } = require("#microbe/cycles");
+	assert.strictEqual(typeof cyclesBench, "function");
+	assert.strictEqual(typeof cyclesBench.suite, "function");
+	assert.strictEqual(typeof cyclesBench.suite.rank, "function");
+});
+
+test("microbe/cycles: runner must call tic() and toc() or throw", () => {
+	const { bench: cyclesBench } = require("#microbe/cycles");
+	const noTicRunner = (iters) => {
+		let acc = 0;
+		for (let i = 0; i < iters; i++) acc += i;
+		return acc;
+	};
+
+	assert.throws(
+		() =>
+			cyclesBench("no_tic_kernel", noTicRunner, {
+				rounds: 1,
+				iters: 100,
+				silent: true,
+			}),
+		/Runner must call tic\(\) and toc\(\)/,
+	);
+});
+
+test("microbe/cycles: single bench measurement with hardware PMU", () => {
+	const { bench: cyclesBench } = require("#microbe/cycles");
+	const runner = createRunner({
+		setup: "let acc = 0;",
+		loop: "acc = (acc + 1) | 0;",
+		teardown: "return acc;",
+	});
+
+	const res = cyclesBench("single_pmu_kernel", runner, {
+		rounds: 3,
+		iters: 10000,
+		silent: true,
+	});
+
+	assert.strictEqual(res.metric, "cycles");
+	assert.ok(
+		res.medianCycles > 0,
+		`Expected medianCycles > 0, got ${res.medianCycles}`,
+	);
+	assert.ok(res.minCycles > 0, `Expected minCycles > 0, got ${res.minCycles}`);
+	assert.ok(res.insPerOp > 0, `Expected insPerOp > 0, got ${res.insPerOp}`);
+	assert.ok(res.ipc > 0, `Expected ipc > 0, got ${res.ipc}`);
+	assert.strictEqual(res.samples.length, 3);
+});
+
+test("microbe/cycles: suite multi-target execution in definition order", () => {
+	const { bench: cyclesBench } = require("#microbe/cycles");
+	const ops = {
+		candidate_a: createRunner({
+			setup: "let a = 1;",
+			loop: "a = (a + 2) | 0;",
+			teardown: "return a;",
+		}),
+		candidate_b: createRunner({
+			setup: "let b = 1;",
+			loop: "b = (b * 3) | 0;",
+			teardown: "return b;",
+		}),
+	};
+
+	const results = cyclesBench.suite("pmu_suite_test", ops, {
+		rounds: 3,
+		dur: 10,
+		silent: true,
+	});
+
+	assert.strictEqual(results.length, 2);
+	assert.strictEqual(results[0].name, "candidate_a");
+	assert.strictEqual(results[1].name, "candidate_b");
+	assert.ok(results[0].medianCycles > 0);
+	assert.ok(results[1].medianCycles > 0);
+	assert.ok(results[0].ipc > 0);
+	assert.ok(results[1].ipc > 0);
+});
+
+test("microbe/cycles: suite.rank sorts by medianCycles ascending (lower is better)", () => {
+	const { bench: cyclesBench } = require("#microbe/cycles");
+	const ops = {
+		slow: (iters, tic, toc) => {
+			tic();
+			let acc = 0;
+			for (let i = 0; i < iters; i++) {
+				for (let j = 0; j < 50; j++) acc = (acc + j) | 0;
+			}
+			toc();
+			return acc;
+		},
+		fast: createRunner({
+			setup: "let a = 0;",
+			loop: "a = (a + 1) | 0;",
+			teardown: "return a;",
+		}),
+	};
+
+	const ranked = cyclesBench.suite.rank("pmu_rank_test", ops, {
+		rounds: 3,
+		iters: 10000,
+		silent: true,
+	});
+
+	assert.strictEqual(ranked.length, 2);
+	assert.strictEqual(ranked[0].name, "fast");
+	assert.strictEqual(ranked[1].name, "slow");
+	assert.ok(
+		ranked[0].medianCycles < ranked[1].medianCycles,
+		`fast (${ranked[0].medianCycles}) should have fewer cycles than slow (${ranked[1].medianCycles})`,
+	);
+});
