@@ -14,6 +14,84 @@ const {
 const { presets } = require("./presets");
 
 /**
+ * Warms up and calibrates a runner, adapting iteration count if JIT tier-up occurs during warmup.
+ *
+ * @param {Function} runner - Target runner function `(iters, tic, toc) => any`.
+ * @param {object} [options={}] - Configuration options (dur, iters, cooldown).
+ * @returns {{ iters: number, warmup: object, value: any }}
+ */
+function warmupRunner(runner, options = {}) {
+	if (typeof global.gc === "function") {
+		global.gc();
+	}
+
+	const dur = options.dur ?? presets.medium.dur;
+	const iters = options.iters;
+	const dynamic = iters === undefined;
+	const cooldown = options.cooldown ?? presets.medium.cooldown;
+
+	let itersCount = dynamic ? calibrate(runner, dur) : iters;
+	let warmupSample = sample(runner, itersCount);
+
+	if (dynamic && warmupSample.elapsed > 0) {
+		const target = dur / 1000;
+		const warmupRate = itersCount / warmupSample.elapsed;
+		if (Math.abs(warmupSample.elapsed - target) / target > 0.15) {
+			itersCount = Math.max(1, Math.round(warmupRate * target));
+			warmupSample = sample(runner, itersCount);
+		}
+	}
+
+	if (cooldown > 0) {
+		sleep(cooldown);
+	}
+
+	return {
+		iters: itersCount,
+		warmup: {
+			elapsed: warmupSample.elapsed,
+			iters: itersCount,
+			rate: itersCount / warmupSample.elapsed,
+		},
+		value: warmupSample.value,
+	};
+}
+
+/**
+ * Executes a single measurement round sample with optional priming and cooldown.
+ *
+ * @param {Function} runner - Target runner function `(iters, tic, toc) => any`.
+ * @param {number} itersCount - Iteration count for this sample.
+ * @param {object} [options={}] - Configuration options (prime, cooldown).
+ * @returns {{ elapsed: number, value: any }}
+ */
+function sampleRound(runner, itersCount, options = {}) {
+	if (typeof global.gc === "function") {
+		global.gc();
+	}
+
+	const prime = options.prime ?? presets.medium.prime;
+	const cooldown = options.cooldown ?? presets.medium.cooldown;
+
+	if (prime) {
+		const primeIters = Math.min(10000, Math.max(100, (itersCount * 0.01) | 0));
+		runner(
+			primeIters,
+			() => {},
+			() => {},
+		);
+	}
+
+	const res = sample(runner, itersCount);
+
+	if (cooldown > 0) {
+		sleep(cooldown);
+	}
+
+	return res;
+}
+
+/**
  * Benchmarks a single kernel runner across multiple measurement rounds with dynamic calibration.
  *
  * @param {string} title - Benchmark title.
@@ -37,11 +115,6 @@ function bench(title, runner, options = presets.medium) {
 	}
 
 	const rounds = options.rounds ?? presets.medium.rounds;
-	const dur = options.dur ?? presets.medium.dur;
-	const iters = options.iters;
-	const dynamic = iters === undefined;
-	const cooldown = options.cooldown ?? presets.medium.cooldown;
-	const prime = options.prime ?? presets.medium.prime;
 	const silent = !!options.silent;
 	const render = options.render ?? true;
 	const cursor = options.cursor ?? true;
@@ -54,29 +127,15 @@ function bench(title, runner, options = presets.medium) {
 
 	let result;
 	try {
-		if (typeof global.gc === "function") {
-			global.gc();
-		}
-
 		if (isInteractive) {
 			writeProgress(`🔥 Warming up & calibrating '${title}'... `);
 		}
 
 		// 1. Calibrate & Warmup Round
-		const itersCount = dynamic ? calibrate(runner, dur) : iters;
-		const warmupSample = sample(runner, itersCount);
-		const warmup = {
-			elapsed: warmupSample.elapsed,
-			iters: itersCount,
-			rate: itersCount / warmupSample.elapsed,
-		};
-
-		if (cooldown > 0) {
-			sleep(cooldown);
-		}
+		const { iters, warmup, value: initValue } = warmupRunner(runner, options);
 
 		// 2. Multi-round measurement
-		let value = warmupSample.value;
+		let value = initValue;
 		const sampleTimes = [];
 		const samples = [];
 		for (let r = 0; r < rounds; r++) {
@@ -84,35 +143,15 @@ function bench(title, runner, options = presets.medium) {
 				writeProgress(`[Round ${r + 1}/${rounds}] Sampling '${title}'... `);
 			}
 
-			if (typeof global.gc === "function") {
-				global.gc();
-			}
-
-			if (prime) {
-				const primeIters = Math.min(
-					10000,
-					Math.max(100, (itersCount * 0.01) | 0),
-				);
-				runner(
-					primeIters,
-					() => {},
-					() => {},
-				);
-			}
-
-			const res = sample(runner, itersCount);
+			const res = sampleRound(runner, iters, options);
 			sampleTimes.push(res.elapsed);
 			samples.push({
 				round: r + 1,
 				elapsed: res.elapsed,
-				iters: itersCount,
-				rate: itersCount / res.elapsed,
+				iters,
+				rate: iters / res.elapsed,
 			});
 			value = res.value;
-
-			if (cooldown > 0) {
-				sleep(cooldown);
-			}
 		}
 
 		if (isInteractive) {
@@ -120,7 +159,7 @@ function bench(title, runner, options = presets.medium) {
 		}
 
 		// 3. Statistical analysis
-		const stats = computeStats(sampleTimes, itersCount);
+		const stats = computeStats(sampleTimes, iters);
 		result = {
 			title,
 			name: title,
@@ -128,7 +167,7 @@ function bench(title, runner, options = presets.medium) {
 			warmup,
 			samples,
 			rounds,
-			iters: itersCount,
+			iters,
 			...stats,
 		};
 	} finally {
@@ -147,4 +186,6 @@ function bench(title, runner, options = presets.medium) {
 
 module.exports = {
 	bench,
+	warmupRunner,
+	sampleRound,
 };

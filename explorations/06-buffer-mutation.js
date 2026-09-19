@@ -101,15 +101,21 @@ const ops = {
 };
 
 const res = bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
-	mode: "sequential",
+	// mode: "sequential",
+	mode: "shuffled",
 	rounds: 50,
 	dur: 50,
-	pause: 20,
-	cooldown: 0,
-	prime: false,
+	pause: 0,
+
+	// cooldown: 0,
+	// prime: true,
 });
 
 console.log(res.map((x) => x.outlierCount));
-console.log(res.map((x) => x.minTime));
-console.log(res.map((x) => x.maxTime));
-console.log(res.map((x) => x.medianTime));
+console.log(res.map((x) => toMs(x.minTime)));
+console.log(res.map((x) => toMs(x.maxTime)));
+console.log(res.map((x) => toMs(x.medianTime)));
+
+function toMs(t) {
+	return `${(t * 1000).toFixed(2)}ms`;
+}

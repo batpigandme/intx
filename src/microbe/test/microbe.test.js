@@ -304,3 +304,46 @@ test("microbe: options parameter defaults to presets.medium when omitted", () =>
 	const benchRes = bench("test_omitted_bench", ops.c1, { silent: true });
 	assert.strictEqual(benchRes.rounds, presets.medium.rounds); // 10 rounds
 });
+
+test("microbe: shuffled mode defaults prime to true when unspecified", () => {
+	let callCount = 0;
+	const ops = {
+		s1: (_iters, tic, toc) => {
+			callCount++;
+			tic();
+			toc();
+		},
+		s2: (_iters, tic, toc) => {
+			callCount++;
+			tic();
+			toc();
+		},
+	};
+
+	// 2 runners, 2 rounds each in shuffled mode with prime unspecified:
+	// Warmup: 1 call per runner (2 calls)
+	// Round 1: 1 prime + 1 sample per runner (4 calls)
+	// Round 2: 1 prime + 1 sample per runner (4 calls)
+	// Total = 10 calls
+	bench.suite("test_shuffled_default_prime", ops, {
+		mode: "shuffled",
+		rounds: 2,
+		iters: 100,
+		pause: 0,
+		silent: true,
+	});
+	assert.strictEqual(callCount, 10);
+
+	// Explicit prime: false should be respected
+	callCount = 0;
+	bench.suite("test_shuffled_explicit_no_prime", ops, {
+		mode: "shuffled",
+		rounds: 2,
+		iters: 100,
+		prime: false,
+		pause: 0,
+		silent: true,
+	});
+	// Warmup: 2 calls, Round 1: 2 calls, Round 2: 2 calls = 6 calls total
+	assert.strictEqual(callCount, 6);
+});

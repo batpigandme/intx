@@ -1,7 +1,7 @@
 "use strict";
 
 const { suite } = require("./suite");
-const { renderTable, renderBanner } = require("./render");
+const { renderTable } = require("./render");
 const { presets } = require("./presets");
 
 /**
@@ -44,7 +44,7 @@ function getComparator(order) {
  * @param {number} [options.iters] - Manual iteration count (disables dynamic calibration).
  * @param {number} [options.cooldown=0] - Cooldown pause (in ms) between samples to allow CPU cooling.
  * @param {number} [options.pause=30] - Pause (in ms) between runners or round cycles.
- * @param {string} [options.mode="sequential"] - Execution ordering ("sequential", "shuffled", "ordered").
+ * @param {string} [options.mode="sequential"] - Execution ordering ("sequential").
  * @param {boolean} [options.prime=false] - If true, executes an untimed priming pass before each timed sample.
  * @param {boolean} [options.silent=false] - If true, suppresses console output.
  * @param {string|Function} [options.order="median"] - Metric to sort by ("median", "mean", "max", "min", "warmup") or comparator.
@@ -52,42 +52,14 @@ function getComparator(order) {
  * @returns {Array<object>} Sorted array of evaluated results.
  */
 function rank(title, runners, options = presets.medium) {
-	if (!runners || typeof runners !== "object" || Array.isArray(runners)) {
-		throw new TypeError(
-			"bench.suite.rank expected runners to be an object map of runner functions.",
-		);
-	}
-
-	const names = Object.keys(runners);
-	if (names.length < 2) {
-		throw new Error("bench.suite.rank requires at least two runner functions.");
-	}
-
 	const order = options.order ?? "median";
 	const comparator = getComparator(order);
 	const silent = !!options.silent;
 	const width = options.width ?? 80;
 
-	if (!silent) {
-		renderBanner(title, {
-			rounds: options.rounds ?? presets.medium.rounds,
-			iters: options.iters,
-			dur:
-				options.iters === undefined
-					? (options.dur ?? presets.medium.dur)
-					: undefined,
-			mode: options.mode ?? presets.medium.mode,
-			cooldown: options.cooldown ?? presets.medium.cooldown,
-			pause: options.pause ?? presets.medium.pause,
-			prime: options.prime ?? presets.medium.prime,
-			width,
-		});
-	}
-
-	// 1. Run suite without individual block rendering
+	// 1. Run suite (renders banner and live progress, suppresses unsorted table)
 	const results = suite(title, runners, {
 		...options,
-		silent: true,
 		render: false,
 	});
 

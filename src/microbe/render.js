@@ -165,7 +165,8 @@ function renderBanner(title, options = presets.medium) {
 	const mode = options.mode ?? presets.medium.mode;
 	const cooldown = options.cooldown ?? presets.medium.cooldown;
 	const pause = options.pause ?? presets.medium.pause;
-	const prime = options.prime ?? presets.medium.prime;
+	const prime =
+		options.prime ?? (mode === "shuffled" ? true : presets.medium.prime);
 
 	const timingLabel =
 		iters === undefined

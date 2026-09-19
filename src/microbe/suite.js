@@ -1,10 +1,8 @@
 "use strict";
 
-const { bench } = require("./bench");
-const { sample } = require("./timer");
+const { bench, warmupRunner, sampleRound } = require("./bench");
 const { sleep } = require("#utils");
 const { computeStats } = require("./stats");
-const { calibrate } = require("./calibrate");
 const {
 	renderTable,
 	renderBanner,
@@ -62,6 +60,14 @@ function suite(title, runners, options = presets.medium) {
 		throw new Error("suite requires at least two runner functions.");
 	}
 
+	for (const name of names) {
+		if (typeof runners[name] !== "function") {
+			throw new TypeError(
+				`suite expected runner function for '${name}', received: ${typeof runners[name]}`,
+			);
+		}
+	}
+
 	const rounds = options.rounds ?? presets.medium.rounds;
 	const dur = options.dur ?? presets.medium.dur;
 	const iters = options.iters;
@@ -69,7 +75,8 @@ function suite(title, runners, options = presets.medium) {
 	const cooldown = options.cooldown ?? presets.medium.cooldown;
 	const pause = options.pause ?? presets.medium.pause;
 	const mode = options.mode ?? presets.medium.mode;
-	const prime = options.prime ?? presets.medium.prime;
+	const prime =
+		options.prime ?? (mode === "shuffled" ? true : presets.medium.prime);
 	const silent = !!options.silent;
 	const render = options.render ?? true;
 	const width = options.width ?? 80;
@@ -88,7 +95,6 @@ function suite(title, runners, options = presets.medium) {
 	}
 
 	const isInteractive = !silent && !!process.stdout.isTTY;
-
 	if (isInteractive) {
 		hideCursor();
 	}
@@ -99,16 +105,10 @@ function suite(title, runners, options = presets.medium) {
 			results = [];
 			for (let i = 0; i < names.length; i++) {
 				const name = names[i];
-				const runner = runners[name];
-				if (typeof runner !== "function") {
-					throw new TypeError(
-						`suite expected runner function for '${name}', received: ${typeof runner}`,
-					);
-				}
-
 				results.push(
-					bench(name, runner, {
+					bench(name, runners[name], {
 						...options,
+						prime,
 						render: false,
 						cursor: false,
 					}),
@@ -119,47 +119,27 @@ function suite(title, runners, options = presets.medium) {
 				}
 			}
 		} else {
+			// Interleaved: "shuffled" or "ordered"
 			const itersMap = {};
+			const warmupMap = {};
+			const values = {};
 			const samples = {};
 			const sampleDetails = {};
-			const values = {};
-			const warmup = {};
 
 			for (const name of names) {
 				samples[name] = [];
 				sampleDetails[name] = [];
-			}
-
-			for (const name of names) {
-				const runner = runners[name];
-				if (typeof runner !== "function") {
-					throw new TypeError(
-						`suite expected runner function for '${name}', received: ${typeof runner}`,
-					);
-				}
-
-				if (typeof global.gc === "function") {
-					global.gc();
-				}
-
 				if (isInteractive) {
 					writeProgress(`🔥 Warming up & calibrating JIT ('${name}')... `);
 				}
-
-				const itersCount = dynamic ? calibrate(runner, dur) : iters;
-				itersMap[name] = itersCount;
-
-				const warmupSample = sample(runner, itersCount);
-				warmup[name] = {
-					elapsed: warmupSample.elapsed,
+				const {
 					iters: itersCount,
-					rate: itersCount / warmupSample.elapsed,
-				};
-				values[name] = warmupSample.value;
-
-				if (cooldown > 0) {
-					sleep(cooldown);
-				}
+					warmup,
+					value,
+				} = warmupRunner(runners[name], { ...options, prime });
+				itersMap[name] = itersCount;
+				warmupMap[name] = warmup;
+				values[name] = value;
 			}
 
 			for (let round = 1; round <= rounds; round++) {
@@ -168,27 +148,11 @@ function suite(title, runners, options = presets.medium) {
 					if (isInteractive) {
 						writeProgress(`[Round ${round}/${rounds}] Sampling '${name}'... `);
 					}
-
-					if (typeof global.gc === "function") {
-						global.gc();
-					}
-
-					const runner = runners[name];
 					const itersCount = itersMap[name];
-
-					if (prime) {
-						const primeIters = Math.min(
-							10000,
-							Math.max(100, (itersCount * 0.01) | 0),
-						);
-						runner(
-							primeIters,
-							() => {},
-							() => {},
-						);
-					}
-
-					const res = sample(runner, itersCount);
+					const res = sampleRound(runners[name], itersCount, {
+						...options,
+						prime,
+					});
 					values[name] = res.value;
 					samples[name].push(res.elapsed);
 					sampleDetails[name].push({
@@ -197,10 +161,6 @@ function suite(title, runners, options = presets.medium) {
 						iters: itersCount,
 						rate: itersCount / res.elapsed,
 					});
-
-					if (cooldown > 0) {
-						sleep(cooldown);
-					}
 				}
 
 				if (pause > 0 && round < rounds) {
@@ -208,18 +168,17 @@ function suite(title, runners, options = presets.medium) {
 				}
 			}
 
-			// 3. Compute statistics for all targets in definition order
 			results = names.map((name) => {
-				const iters = itersMap[name];
-				const stats = computeStats(samples[name], iters);
+				const itersCount = itersMap[name];
+				const stats = computeStats(samples[name], itersCount);
 				return {
 					title: name,
 					name,
 					value: values[name],
-					warmup: warmup[name],
+					warmup: warmupMap[name],
 					samples: sampleDetails[name],
 					rounds,
-					iters,
+					iters: itersCount,
 					...stats,
 				};
 			});
@@ -234,7 +193,6 @@ function suite(title, runners, options = presets.medium) {
 		}
 	}
 
-	// 4. Render benchmark table in definition order
 	if (!silent && render) {
 		renderTable(results, { width });
 	}

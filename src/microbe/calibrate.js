@@ -12,23 +12,29 @@ const { sample } = require("./timer");
  */
 function calibrate(runner, dur = 100) {
 	const target = dur / 1000;
-	const minElapsed = Math.min(0.01, target * 0.5);
-	const maxElapsed = Math.min(0.08, Math.max(0.02, target * 0.6));
+	const tierUpFloor = Math.max(0.05, target);
+	const minElapsed = Math.max(tierUpFloor, target * 0.8);
+	const maxElapsed = Math.max(0.25, target * 3.0);
 
 	let iters = 100;
 	let prevRate = 0;
 	let total = 0;
 	let stable = 0;
+	let tieredUp = false;
 	let res = sample(runner, iters);
 	total += res.elapsed;
 
-	for (let step = 0; step < 12; step++) {
+	for (let step = 0; step < 16; step++) {
 		const rate = res.elapsed > 0 ? iters / res.elapsed : 0;
 
-		// Check rate stability if sample duration is measurable (>= 2ms)
-		if (prevRate > 0 && res.elapsed >= 0.002) {
+		if (res.elapsed >= tierUpFloor * 0.7) {
+			tieredUp = true;
+		}
+
+		// Check rate stability once runner has tiered up and sample is measurable (>= 5ms)
+		if (tieredUp && prevRate > 0 && res.elapsed >= 0.005) {
 			const delta = Math.abs(rate - prevRate) / Math.max(rate, prevRate);
-			if (delta <= 0.15) {
+			if (delta <= 0.05) {
 				stable++;
 				if (stable >= 2 && total >= minElapsed) {
 					return Math.max(1, Math.round(rate * target));
@@ -38,25 +44,33 @@ function calibrate(runner, dur = 100) {
 			}
 		}
 
+		if (total >= maxElapsed) {
+			break;
+		}
+
 		prevRate = rate;
 
-		if (res.elapsed < 0.002) {
+		if (res.elapsed < 0.004) {
 			if (res.elapsed <= 0) {
 				iters *= 10;
 			} else {
-				const estimated = Math.round((0.004 / res.elapsed) * iters);
-				iters = Math.min(1e8, Math.max(iters * 5, estimated));
+				const estimated = Math.round((0.008 / res.elapsed) * iters);
+				iters = Math.min(1e8, Math.max(iters * 4, estimated));
 			}
+		} else if (!tieredUp) {
+			// Ramp towards tierUpFloor to ensure TurboFan compilation completes
+			const floorIters = rate > 0 ? Math.round(rate * tierUpFloor) : iters * 2;
+			iters = Math.min(1e8, Math.max(iters * 2, floorIters));
+		} else if (res.elapsed >= target * 1.5) {
+			// Step down to target duration once tiered up
+			iters = Math.min(1e8, Math.max(10, Math.round(rate * target)));
 		} else {
-			iters = Math.min(1e8, Math.round(iters * 2));
+			const targetIters = rate > 0 ? Math.round(rate * target) : iters * 2;
+			iters = Math.min(1e8, Math.min(targetIters, Math.round(iters * 2)));
 		}
 
 		res = sample(runner, iters);
 		total += res.elapsed;
-
-		if (total >= maxElapsed) {
-			break;
-		}
 	}
 
 	const finalRate = res.elapsed > 0 ? iters / res.elapsed : prevRate || 1e6;
