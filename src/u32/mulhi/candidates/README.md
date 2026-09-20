@@ -76,6 +76,38 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 - BigInt arithmetic requires young-generation heap allocations on every operation.
 - In tight loops, BigInt operations run at only ~3.5–8.5M ops/sec (11x–27x slower than 16-bit limb and float64 kernels), making them unsuitable for performance-critical integer pipelines.
 
+### V8 Execution Tier Inversion: TurboFan vs. Maglev vs. Sparkplug vs. Ignition
+
+Hardware cycle profiling (`cycles.bench.suite.rank` with `cycles: 5e5`, 2000 rounds pinned via `taskset -c 3`) reveals how candidate relative efficiency completely inverts across all four V8 compilation tiers:
+
+| Candidate | TurboFan (Top-Tier) | Maglev (`--no-opt`) | Sparkplug (`--no-maglev`) | Ignition (`--jitless`) |
+| :--- | :---: | :---: | :---: | :---: |
+| `limb16_pipeline_imul_cached` | **11.90 cyc** | 94.0 cyc | 448.6 cyc | 691.3 cyc |
+| `limb16_pipeline_imul_all_smi` | **11.90 cyc** | 95.0 cyc | 516.8 cyc | 774.9 cyc |
+| `limb16_pipeline_bitwise_smi` | **11.91 cyc** | 84.5 cyc | 463.5 cyc | 619.6 cyc |
+| `limb16_parallel_bitwise_smi` | **11.90 cyc** | 89.3 cyc | 519.5 cyc | 655.5 cyc |
+| `limb16_parallel_imul_all_smi` | **11.91 cyc** | 103.1 cyc | 640.4 cyc | 873.3 cyc |
+| `limb16_pipeline_imul_import` | **12.05 cyc** | 121.7 cyc | 795.7 cyc | 1,180.0 cyc |
+| `float64_corrected_cached` | 31.78 cyc | 53.0 cyc | **264.7 cyc** | **360.7 cyc** |
+| `float64_corrected_smi` | 31.78 cyc | 52.6 cyc | 270.2 cyc | 375.8 cyc |
+| `limb16_float48_trunc_smi` | 45.72 cyc | **45.6 cyc** | 274.6 cyc | 384.4 cyc |
+
+#### 1. Bytecode Density vs. Machine ALU Throughput
+- In top-tier machine code (TurboFan), `limb16` integer pipelines win because modern superscalar CPU execution ports execute `imul`, shifts, and additions in 1–3 clock cycles directly in hardware registers.
+- In unoptimized bytecode execution (Sparkplug baseline and Ignition interpreter), **Bytecode Density is King**:
+  - `float64` / `float48` kernels contain only 3–4 JavaScript AST expressions, compiling into a tiny Ignition bytecode sequence (`Ldar`, `Mul`, `Star`).
+  - `limb16` algorithms contain 20+ JavaScript expressions (extracting `ah, al, bh, bl`, 4 multiplications, 3 carry additions, and multiple masks).
+  - In Ignition, every bytecode dispatch incurs ~25 machine instructions of interpreter loop overhead (`GetDispatchTable()`, opcode fetch, handler branch).
+  - 20+ bytecodes $\times$ ~25 dispatch instructions forces integer algorithms to execute **2,000–3,400 instructions per operation**, allowing `float64` to outperform integer limb splitting by **3.3x** in `--jitless` mode.
+
+#### 2. Cross-Module Import Dispatch Tax
+- `limb16_pipeline_imul_import` finishes dead last in interpreter execution (1,180 cyc / 3,416 ins).
+- Without TurboFan function inlining, every invocation across the module boundary must execute runtime property lookups and dynamic call dispatches on every loop iteration.
+
+#### 3. Ghost IPC in Interpreter Loops
+- In `--jitless` mode, instruction retirement rates remain high (~3.0 to 3.26 IPC) across all algorithms.
+- The CPU out-of-order execution engine is saturated at peak superscalar capacity, but >90% of the instructions executed are V8 interpreter handler dispatch machinery rather than kernel math.
+
 ---
 
 ## 4. Running the Showdown

@@ -49,30 +49,30 @@ const candidates = {
 	limb16_parallel_imul_cached_smi,
 
 	// Family 2: Pipelined
-	limb16_pipeline_bitwise_lo,
-	limb16_pipeline_imul_lo,
-	limb16_pipeline_imul_lo_smi,
-	limb16_pipeline_imul_all,
-	limb16_pipeline_imul_all_smi,
-	limb16_pipeline_imul_cached,
-	limb16_pipeline_imul_cached_smi,
-	limb16_pipeline_imul_import,
+	// limb16_pipeline_bitwise_lo,
+	// limb16_pipeline_imul_lo,
+	// limb16_pipeline_imul_lo_smi,
+	// limb16_pipeline_imul_all,
+	// limb16_pipeline_imul_all_smi,
+	// limb16_pipeline_imul_cached,
+	// limb16_pipeline_imul_cached_smi,
+	// limb16_pipeline_imul_import,
 
 	// Family 3: Float48
-	limb16_float48_bitwise_lo,
-	limb16_float48_imul_lo,
+	// limb16_float48_bitwise_lo,
+	// limb16_float48_imul_lo,
 
 	// Family 4: Float64
-	float64_corrected,
+	// float64_corrected,
 
 	// Family 5: BigInt variations
-	bigint_literal_mask,
-	bigint_as_uint32,
-	bigint_as_uintn_literal,
-	bigint_as_uintn_module_const,
-	bigint_as_uintn_local_const,
-	bigint_as_uint64_imul_lo,
-	bigint_hi,
+	// bigint_literal_mask,
+	// bigint_as_uint32,
+	// bigint_as_uintn_literal,
+	// bigint_as_uintn_module_const,
+	// bigint_as_uintn_local_const,
+	// bigint_as_uint64_imul_lo,
+	// bigint_hi,
 };
 
 // Helper to build a monomorphic JIT runner for u32.mulwide kernels: mulwide(a, b, out)
@@ -82,8 +82,8 @@ function createMulwideRunner(candidate, name) {
 	return createRunner({
 		name,
 		context: { mulwide: candidate, r, a: 0xdeadbeef },
-		setup: "r[0] = 0; r[1] = 1;",
-		loop: "mulwide(r[0] ^ r[1], a, r);",
+		setup: "r[0] = 1; r[1] = 1;",
+		loop: "mulwide(i, a, r);",
 		teardown: "return r[1];",
 	});
 }
@@ -94,8 +94,8 @@ for (const name in candidates) {
 }
 
 cycles.bench.suite.rank("u32.mulwide: Grand Candidate Showdown", runners, {
-	rounds: 500,
-	cycles: 1e6,
+	rounds: 5000,
+	cycles: 5e5,
 	details: true,
 	width: 160,
 });
