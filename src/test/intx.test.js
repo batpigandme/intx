@@ -70,3 +70,44 @@ test("intx: root exports and i32.mul / u32.mulwide", () => {
 	assert.equal(out[0], 0xfffffffe);
 	assert.equal(out[1], 0x00000001);
 });
+
+test("intx.u64: namespace exports and operations", () => {
+	assert.ok(intx.u64, "intx.u64 should exist");
+
+	const ops = [
+		"add",
+		"sub",
+		"mul",
+		"div",
+		"mod",
+		"divmod",
+		"shl",
+		"shr",
+		"rotl",
+		"rotr",
+	];
+	for (const op of ops) {
+		assert.equal(
+			typeof intx.u64[op],
+			"function",
+			`intx.u64.${op} should be a function`,
+		);
+	}
+
+	const out = new Uint32Array(2);
+	intx.u64.add(0, 1, 0, 2, out);
+	assert.equal(out[0], 0);
+	assert.equal(out[1], 3);
+
+	intx.u64.mul(0, 3, 0, 4, out);
+	assert.equal(out[0], 0);
+	assert.equal(out[1], 12);
+
+	intx.u64.shl(0, 1, 1, out);
+	assert.equal(out[0], 0);
+	assert.equal(out[1], 2);
+
+	intx.u64.rotr(0, 1, 1, out);
+	assert.equal(out[0], 0x80000000);
+	assert.equal(out[1], 0);
+});

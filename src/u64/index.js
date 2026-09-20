@@ -1,5 +1,14 @@
 "use strict";
 
 module.exports = {
-	// To be populated with u64 operations: add, sub, mul, mulhi, mulwide, div, mod, divmod, shl, shr, rotl, rotr, clz
+	add: require("./add"),
+	div: require("./div"),
+	divmod: require("./divmod"),
+	mod: require("./mod"),
+	mul: require("./mul"),
+	rotl: require("./rotl"),
+	rotr: require("./rotr"),
+	shl: require("./shl"),
+	shr: require("./shr"),
+	sub: require("./sub"),
 };
