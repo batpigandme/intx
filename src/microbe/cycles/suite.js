@@ -51,10 +51,11 @@ function suite(title, runners, options = {}) {
 	const mode = options.mode ?? "sequential";
 	const prime = options.prime ?? mode === "shuffled";
 	const silent = !!options.silent;
+	const banner = options.banner ?? true;
 	const render = options.render ?? true;
 	const width = options.width ?? 90;
 
-	if (!silent && render) {
+	if (!silent && banner) {
 		renderBanner(title, {
 			rounds,
 			iters,

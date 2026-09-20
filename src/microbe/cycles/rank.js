@@ -35,6 +35,7 @@ function rank(title, runners, options = {}) {
 
 	const results = suite(title, runners, {
 		...options,
+		order,
 		render: false,
 	});
 

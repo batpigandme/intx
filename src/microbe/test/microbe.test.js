@@ -485,3 +485,60 @@ test("microbe/cycles: dynamic cycle-based calibration", () => {
 	const iters = calibrate(runner, { cycles: 1e6 });
 	assert.ok(typeof iters === "number" && iters > 0);
 });
+
+test("microbe/cycles: suite and suite.rank render header banner by default and respect banner: false", () => {
+	const { bench: cyclesBench } = require("#microbe/cycles");
+	const ops = {
+		fast: (_iters, tic, toc) => {
+			tic();
+			toc();
+		},
+		slow: (_iters, tic, toc) => {
+			tic();
+			toc();
+		},
+	};
+
+	let output = "";
+	const originalLog = console.log;
+	console.log = (...args) => {
+		output += `${args.join(" ")}\n`;
+	};
+
+	try {
+		cyclesBench.suite.rank("test_banner_pmu", ops, {
+			rounds: 1,
+			iters: 10,
+		});
+	} finally {
+		console.log = originalLog;
+	}
+
+	assert.ok(
+		output.includes("### test_banner_pmu"),
+		"Should contain banner title",
+	);
+	assert.ok(output.includes("Platform:"), "Should contain platform line");
+	assert.ok(output.includes("Metric:"), "Should contain metric line");
+
+	// Test banner suppression with banner: false
+	output = "";
+	console.log = (...args) => {
+		output += `${args.join(" ")}\n`;
+	};
+
+	try {
+		cyclesBench.suite.rank("test_banner_suppressed", ops, {
+			rounds: 1,
+			iters: 10,
+			banner: false,
+		});
+	} finally {
+		console.log = originalLog;
+	}
+
+	assert.ok(
+		!output.includes("### test_banner_suppressed"),
+		"Should suppress banner when banner: false",
+	);
+});

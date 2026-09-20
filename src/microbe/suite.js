@@ -78,10 +78,11 @@ function suite(title, runners, options = presets.medium) {
 	const prime =
 		options.prime ?? (mode === "shuffled" ? true : presets.medium.prime);
 	const silent = !!options.silent;
+	const banner = options.banner ?? true;
 	const render = options.render ?? true;
 	const width = options.width ?? 80;
 
-	if (!silent && render) {
+	if (!silent && banner) {
 		renderBanner(title, {
 			rounds,
 			iters,
