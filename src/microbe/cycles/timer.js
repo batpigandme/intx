@@ -112,10 +112,6 @@ function sample(runner, iters) {
 	};
 }
 
-function pinCore(coreId) {
-	return loadPmu().pinCore(coreId);
-}
-
 function getCore() {
 	return loadPmu().getCore();
 }
@@ -125,6 +121,5 @@ module.exports = {
 	sample,
 	getBoundaryTax,
 	calibrateBoundaryTax,
-	pinCore,
 	getCore,
 };

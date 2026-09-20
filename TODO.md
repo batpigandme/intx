@@ -83,8 +83,8 @@
   - [ ] **Hardware Branch Predictor Profiling**:
     - Add `PERF_COUNT_HW_BRANCH_INSTRUCTIONS` and `PERF_COUNT_HW_BRANCH_MISSES` to PMU event group read.
     - Expose `branchMisses` and `branchMissPercent` in detailed table view.
-  - [x] **CPU Thread Affinity / Core Pinning**:
-    - Add `sched_setaffinity` and `sched_getcpu` in `pmu.cc` to auto-pin benchmark threads to an isolated physical core (Core 2), preventing OS thread migration cache flushes.
+  - [x] **CPU Thread Core Diagnostics & Terminal Affinity**:
+    - Rely on terminal-level pinning (`taskset -c <core>`) to avoid repeatedly resetting core affinity inside process; expose `sched_getcpu` via `getCore` in `pmu.cc` for active core queries.
   - [ ] **L1 Data Cache Miss Profiling**:
     - Track `PERF_COUNT_HW_CACHE_REFERENCES` and `PERF_COUNT_HW_CACHE_MISSES` to isolate memory-bound vs compute-bound kernels.
   - [ ] **Automated V8 Flag Injection CLI Wrapper**:
