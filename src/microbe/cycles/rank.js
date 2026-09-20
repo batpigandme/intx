@@ -45,8 +45,11 @@ function rank(title, runners, options = {}) {
 			ranked: true,
 			width: options.width,
 			details: options.details,
-			metric: options.metric,
+			metric: options.metric ?? "best",
 			order,
+			digits: options.digits,
+			precision: options.precision,
+			snap: options.snap,
 		});
 	}
 

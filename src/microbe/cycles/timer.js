@@ -48,16 +48,26 @@ let memoizedBoundaryTax = null;
  */
 function calibrateBoundaryTax() {
 	const pmu = loadPmu();
-	let minTax = Infinity;
+	let minTaxCycles = Infinity;
+	let minTaxIns = Infinity;
 	for (let i = 0; i < 100; i++) {
 		pmu.tic();
 		pmu.toc();
 		const res = pmu.elapsed();
-		if (res.cycles >= 0 && res.cycles < minTax) {
-			minTax = res.cycles;
+		if (res.cycles >= 0 && res.cycles < minTaxCycles) {
+			minTaxCycles = res.cycles;
+			minTaxIns = res.instructions;
 		}
 	}
-	return minTax === Infinity ? 0 : minTax;
+	const cycles = minTaxCycles === Infinity ? 0 : minTaxCycles;
+	const instructions = minTaxIns === Infinity ? 0 : minTaxIns;
+	return {
+		cycles,
+		instructions,
+		valueOf() {
+			return this.cycles;
+		},
+	};
 }
 
 function getBoundaryTax() {
@@ -87,13 +97,17 @@ function sample(runner, iters) {
 		);
 	}
 
-	const netCycles = Math.max(0, res.cycles - boundaryTax);
-	const ipc = netCycles > 0 ? res.instructions / netCycles : 0.0;
+	const netCycles = Math.max(0, res.cycles - boundaryTax.cycles);
+	const netInstructions = Math.max(
+		0,
+		res.instructions - (boundaryTax.instructions || 0),
+	);
+	const ipc = netCycles > 0 ? netInstructions / netCycles : 0.0;
 
 	return {
 		value,
 		cycles: netCycles,
-		instructions: res.instructions,
+		instructions: netInstructions,
 		ipc,
 	};
 }

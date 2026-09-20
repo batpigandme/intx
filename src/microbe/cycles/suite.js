@@ -177,8 +177,11 @@ function suite(title, runners, options = {}) {
 		renderTable(results, {
 			width: options.width,
 			details: options.details,
-			metric: options.metric,
-			order: options.order,
+			metric: options.metric ?? "best",
+			order: options.order ?? "best",
+			digits: options.digits,
+			precision: options.precision,
+			snap: options.snap,
 		});
 	}
 

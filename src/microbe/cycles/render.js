@@ -3,10 +3,24 @@
 const os = require("node:os");
 const readline = require("node:readline");
 
-function formatCycles(cycles) {
+function formatCycles(cycles, digits = 2) {
 	if (cycles >= 1e6) return `${(cycles / 1e6).toFixed(2)} M`;
 	if (cycles >= 1e3) return `${(cycles / 1e3).toFixed(2)} K`;
-	return cycles.toFixed(2);
+	return cycles.toFixed(digits);
+}
+
+function snapToGrid(cycles, ins, tolerance = 0.005) {
+	if (typeof cycles !== "number" || cycles <= 0) return cycles;
+	let unroll = 4;
+	for (const u of [4, 8, 2, 16]) {
+		if (Math.abs(ins * u - Math.round(ins * u)) < 1e-4) {
+			unroll = u;
+			break;
+		}
+	}
+	const grid = unroll * 4;
+	const snapped = Math.round(cycles * grid) / grid;
+	return Math.abs(cycles - snapped) <= tolerance ? snapped : cycles;
 }
 
 function renderBench(result) {
@@ -14,12 +28,13 @@ function renderBench(result) {
 	const iters = result.iters;
 	const rounds = result.rounds || (result.samples ? result.samples.length : 0);
 	const itersStr = iters ? iters.toExponential() : "N/A";
+	const digits = result.digits ?? 2;
 
 	console.log(`● ${title} (${rounds} rounds × ${itersStr} iters)`);
 
 	if (result.warmup) {
 		const cycPerOp = result.warmup.cycles / iters;
-		const wCycles = `${formatCycles(cycPerOp)} cyc/op`.padStart(13);
+		const wCycles = `${formatCycles(cycPerOp, digits)} cyc/op`.padStart(13);
 		const wIpc = `(IPC: ${result.warmup.ipc.toFixed(2)})`;
 		console.log(`  • Warmup:   ${wCycles} ${wIpc}`);
 	}
@@ -28,16 +43,16 @@ function renderBench(result) {
 		result.samples.forEach((s, idx) => {
 			const roundNum = s.round ?? idx + 1;
 			const cycPerOp = s.cycles / iters;
-			const cycStr = `${formatCycles(cycPerOp)} cyc/op`.padStart(13);
+			const cycStr = `${formatCycles(cycPerOp, digits)} cyc/op`.padStart(13);
 			const ipcStr = `(IPC: ${s.ipc.toFixed(2)})`;
 			console.log(`  • Round ${roundNum}: ${cycStr} ${ipcStr}`);
 		});
 	}
 
-	const medianStr = `${formatCycles(result.medianCycles)} cyc/op`;
-	const bestStr = `${formatCycles(result.minCycles)} cyc/op`;
-	const meanStr = `${formatCycles(result.meanCycles)} cyc/op`;
-	const insStr = `${(result.bestInsPerOp ?? result.insPerOp).toFixed(2)} ins/op`;
+	const medianStr = `${formatCycles(result.medianCycles, digits)} cyc/op`;
+	const bestStr = `${formatCycles(result.minCycles, digits)} cyc/op`;
+	const meanStr = `${formatCycles(result.meanCycles, digits)} cyc/op`;
+	const insStr = `${(result.bestInsPerOp ?? result.insPerOp).toFixed(digits)} ins/op`;
 	const ipcStr = `${(result.bestIpc ?? result.ipc).toFixed(2)} IPC`;
 	const moeStr = `±${result.moePercent.toFixed(1)}%`;
 
@@ -55,10 +70,19 @@ function renderTable(results, options = {}) {
 	const titleWidth = Math.max(10, width - overhead);
 	const metric =
 		options.metric ??
-		(options.order === "best" || options.order === "min" ? "best" : "median");
+		(options.order === "best" || options.order === "min" ? "best" : "best");
 	const useBest = metric === "best" || metric === "min";
 	const baselineVal =
 		(useBest ? results[0]?.minCycles : results[0]?.medianCycles) || 1;
+
+	const digits =
+		options.digits ??
+		options.precision ??
+		(options.details
+			? 4
+			: results.some((r) => (r.minCycles ?? 0) < 10)
+				? 4
+				: 2);
 
 	const indexHeader = ranked ? "Rank" : " #  ";
 	const titleHeader = "Title".padEnd(titleWidth);
@@ -96,6 +120,8 @@ function renderTable(results, options = {}) {
 	console.log(headerLine);
 	console.log(separatorLine);
 
+	const snap = options.snap === true;
+
 	results.forEach((res, idx) => {
 		const rawTitle = res.title || "";
 		const displayTitle =
@@ -105,18 +131,21 @@ function renderTable(results, options = {}) {
 
 		const indexStr = `${idx + 1}`.padStart(4);
 		const rowTitle = displayTitle.padEnd(titleWidth);
-		const medianVal = formatCycles(res.medianCycles).padStart(12);
-		const peakVal = formatCycles(res.minCycles).padStart(10);
-		const targetIns = useBest
-			? (res.bestInsPerOp ?? res.insPerOp)
-			: (res.medianInsPerOp ?? res.insPerOp);
-		const insVal = (targetIns ?? 0).toFixed(2).padStart(9);
-		const targetIpc = useBest
-			? (res.bestIpc ?? res.ipc)
-			: (res.medianIpc ?? res.ipc);
+		const medianVal = formatCycles(res.medianCycles, digits).padStart(12);
+		const rawPeak = res.minCycles;
+		const targetIns = res.bestInsPerOp ?? res.insPerOp;
+		const targetPeak = snap ? snapToGrid(rawPeak, targetIns) : rawPeak;
+		const peakVal = formatCycles(targetPeak, digits).padStart(10);
+		const insVal = (targetIns ?? 0).toFixed(digits).padStart(9);
+		const targetIpc =
+			res.bestIpc && !snap
+				? res.bestIpc
+				: targetPeak > 0
+					? targetIns / targetPeak
+					: res.ipc;
 		const ipcVal = (targetIpc ?? 0).toFixed(2).padStart(5);
 		const moe = `±${res.moePercent.toFixed(1)}%`.padStart(8);
-		const targetVal = useBest ? res.minCycles : res.medianCycles;
+		const targetVal = useBest ? targetPeak : res.medianCycles;
 		const relative =
 			idx === 0
 				? "baseline".padStart(8)

@@ -60,10 +60,9 @@ function calibrate(runner, options) {
 			if (delta <= 0.05) {
 				stable++;
 				if (stable >= 2) {
-					return Math.max(
-						1,
-						Math.min(1e8, Math.round(targetCycles / cycPerOp)),
-					);
+					const raw = Math.round(targetCycles / cycPerOp);
+					const aligned = Math.round(raw / 16) * 16;
+					return Math.max(16, Math.min(1e8, aligned));
 				}
 			} else {
 				stable = 0;
@@ -105,7 +104,9 @@ function calibrate(runner, options) {
 
 	const finalCycPerOp =
 		res.cycles > 0 && iters > 0 ? res.cycles / iters : prevCycPerOp || 1;
-	return Math.max(1, Math.min(1e8, Math.round(targetCycles / finalCycPerOp)));
+	const raw = Math.round(targetCycles / finalCycPerOp);
+	const aligned = Math.round(raw / 16) * 16;
+	return Math.max(16, Math.min(1e8, aligned));
 }
 
 module.exports = {

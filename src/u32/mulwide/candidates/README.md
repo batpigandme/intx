@@ -59,14 +59,23 @@ Benchmarked with [`microbe`](../../../microbe) (5 rounds × 1e7 iterations, shuf
 - **The transition**: When kernels write unsigned 32-bit values with the high bit set (`>= 0x80000000`) into `out` using `>>> 0`, the value exceeds the signed 32-bit Smi range. V8 is forced to transition the array from `PACKED_SMI_ELEMENTS` to `PACKED_DOUBLE_ELEMENTS` or allocate boxed `HeapNumber` objects, cutting throughput by half (~97–100 M/s vs ~183–225 M/s) on Node 20–24.
 - **The fix**: Applying signed 32-bit coercion (`| 0`) before writing to `out` (in the `*_smi` variants) keeps all written elements inside the Smi range, preserving `PACKED_SMI_ELEMENTS` and running at full speed.
 
-### Import Inlining Has Zero Overhead
-- A common question when structuring low-level arithmetic modules is whether importing a helper like `const mul = require('#u32/mul')` adds call-frame overhead compared to calling `Math.imul` directly.
-- Benchmark data confirms that TurboFan's `Inliner` flattens small monomorphic helper functions completely during graph construction. `limb16-pipeline-imul-import` matches inline `Math.imul` kernels instruction-for-instruction, achieving the same top throughput (278.4 M/s).
+### The 12-Candidate SSA Isomorphism Paradox (Parallel vs Pipeline Equivalence)
+- **The Observation**: When measured with hardware PMU counters (`#microbe/cycles`), all 12 variants across the "Parallel" and "Pipeline" families (`imul_lo`, `imul_all`, `imul_cached`, `smi`) yield identical results: **exactly 31.00 instructions per operation, ~14.45 peak cycles, and 2.15 IPC**.
+- **TurboFan Sea-of-Nodes Graph Collapse**: In JS source code, "parallel" algorithms group multiplications upfront while "pipeline" algorithms chain them sequentially. However, TurboFan lowers JavaScript AST into a Sea-of-Nodes Static Single Assignment (SSA) representation where statement ordering is discarded. Because both algorithms compute the same partial products and carries, their dependency graphs are mathematically isomorphic.
+- **Identical Machine Code**: TurboFan's GVN (Global Value Numbering) and instruction selector emit the exact same 31 x86-64 machine instructions in the exact same sequence for both families.
+- **Out-of-Order (OoO) Execution Saturation**: On modern superscalar cores (e.g. Intel Skylake with a 224-entry ROB), register renaming dispatches independent micro-ops across 4 integer ALU ports (Ports 0, 1, 5, 6). Execution is strictly bound by the ~14.45-cycle critical dependency chain of carry additions.
 
-### Hardware `Math.imul` vs Bitwise Synthesis
+### The `imul_import` Sub-Op Delta (+1 Instruction)
+- Earlier time-domain benchmarks (M/s) concluded that importing `const mul = require('#u32/mul')` had "zero overhead" (278.3 M/s vs 277.8 M/s).
+- Hardware PMU disassembly (`--print-opt-code`) reveals a subtle microarchitectural artifact:
+  - `mul(a, b)` wraps `Math.imul(a, b) >>> 0`. While inlined, the `>>> 0` return boundary creates an extra representation node in TurboFan's graph.
+  - This forces the register allocator to insert **one extra register copy** (`movl rdi, rcx`) before the carry shift/mask, increasing the loop body from **31 to 32 instructions**.
+  - Peak latency increases from **14.45 cycles to 14.83 cycles** (+0.38 cyc), reflecting the retirement of that extra move instruction.
+
+### Hardware `Math.imul` vs Bitwise Synthesis (`bitwise_lo`)
 - Older JS arithmetic libraries synthesized 32-bit multiplication using manual 16-bit limb shift-and-add logic (`limb16_*_bitwise_lo`) to avoid floating-point rounding before `Math.imul` was standardized.
-- `Math.imul` lowers directly to a single 1-cycle hardware instruction (`imull` on x86-64).
-- Bitwise synthesis adds multiple shift, mask, and add instructions with long dependency chains, leading to a ~45% throughput drop (~150 M/s vs ~278 M/s).
+- **Why `bitwise_lo` is only 33 instructions (only +2 instructions)**: Naive intuition expects manual 32-bit synthesis to require dozens of instructions. However, the 16-bit wide multiplication pipeline **already calculated** `al * bl` (in `rbx`) and `al * bh + hll` (in `rax`) to compute high-word carries. Assembling the low word only requires `shll rsi, 16`, `movzxwl rbx, rbx`, and `orl rsi, rbx` (3 instructions replacing 1 `imull`), resulting in a net delta of exactly +2 instructions (33 vs 31).
+- **The Critical-Path Penalty**: Despite only adding 2 instructions, `bitwise_lo` takes **15.92–16.02 cycles** (+1.5 cycles, ~10% slower). `imull` runs independently on Execution Port 1, whereas `bitwise_lo` serializes onto the already-loaded carry dependency chain.
 
 ### Exact Analytical Correction in `float64-corrected`
 - Standard IEEE-754 doubles have 53 bits of precision. Multiplying two 32-bit integers in double precision ($a \times b < 2^{64}$) loses up to 11 bits of precision, with a maximum rounding error bounded by 1024.

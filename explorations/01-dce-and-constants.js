@@ -1,6 +1,7 @@
 "use strict";
 
 const { bench, createRunner } = require("#microbe");
+const cycles = require("#microbe/cycles");
 const i32 = require("#i32");
 
 /**
@@ -65,8 +66,13 @@ const ops = {
 	),
 };
 
-bench.suite("Exp 1: Dead Code Elimination (DCE) & Closure Constants", ops, {
-	rounds: 5,
-	iters: 1e8,
-	width: 100,
-});
+cycles.bench.suite(
+	"Exp 1: Dead Code Elimination (DCE) & Closure Constants",
+	ops,
+	{
+		// shuffled: true,
+		rounds: 500,
+		cycles: 2e6,
+		details: true,
+	},
+);

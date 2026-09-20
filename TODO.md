@@ -49,9 +49,32 @@
   - [ ] **No-Op Coercion & Bytecode Budget Inflation**:
     - Profile the inlining budget impact of redundant input coercions (e.g., `a |= 0; b |= 0;` or `a >>>= 0; b >>>= 0;`) when operands are immediately split via masking (`& 0xffff`) or logical shift (`>>> 16`).
     - Measure bytecode bloat and engine penalties from ubiquitous `>>> 0` conversions in unsigned kernels where intermediate signed arithmetic (`| 0`) preserves 32-bit ALU registers, eliminates Double conversions in JavaScriptCore (JSC), and saves bytecode budget across nested caller hierarchies.
+  - [ ] **V8 Ignition & Maglev Bytecode Profiler for Kernel Authoring (`#microbe/bytecode`)**:
+    - Implement a rapid, interactive analysis module (`analyzeBytecode(fn)` / `compareBytecode({ candidateA, candidateB })`) to optimize bytecode size and register allocations while actively authoring kernels.
+    - **Key Metrics Reported**:
+      - Total bytecode length (bytes) and register count / stack frame size.
+      - Opcode distribution breakdown (e.g. count of compact 1-byte opcodes like `Mul`/`Add` vs bloated call dispatch sequences like `GetNamedProperty` + `CallUndefinedReceiver2`).
+      - Scope access tax: flag closure/module-scope context lookups (`LdaCurrentContextSlot`) vs local registers.
+      - Inlining Feasibility Score: evaluate against TurboFan's individual inlining budget (`--max-inlined-bytecode-size=500`) and cumulative nested budget (`--max-inlined-bytecode-size-cumulative=920`).
+      - Maglev friendliness estimate: identify opcodes requiring fallback stubs or preventing linear SSA lowering in Maglev.
+    - **Kernel Authoring Workflow**: Provide a side-by-side comparison table to instantly show how slight syntax changes (e.g., `*` vs `Math.imul`, cached vs global imports, signed `| 0` vs unsigned `>>> 0` coercions) impact bytecode bloat before running hardware cycle benchmarks.
+    - Construct a demonstrator showing how appending redundant no-ops (e.g., chains of redundant `| 0` or `>>> 0`) bloats Ignition bytecode past inlining thresholds, turning zero-cost inlined code into dynamic machine `CALL`s.
   - [ ] **The Maglev Tiering Usurpation Trap (Demonstrator & Analysis)**:
     - Construct `explorations/11-maglev-osr-usurpation.js` demonstrating how Maglev entry compilation usurps TurboFan OSR loops at ~500 invocations, demoting inlined closure calls into machine `CALL`s.
     - Measure the AST node complexity thresholds where Maglev abandons inlining vs where TurboFan succeeds.
+  - [ ] **Branchless Formulations for Branchful Kernels & Branch Misprediction Profiling**:
+    - Audit all branchful kernel operations across namespaces and construct branchless algebraic/bitwise counterparts:
+      - `i32.mulhi` / `i32.mulwide`: Hacker's Delight sign correction `hi -= (a < 0 ? b : 0) + (b < 0 ? a : 0)` vs branchless arithmetic shift masks `hi = (hi - ((a >> 31) & b) - ((b >> 31) & a)) | 0`.
+      - `i32.abs`: `x < 0 ? -x : x` vs branchless `(x ^ (x >> 31)) - (x >> 31)`.
+      - `i32.min` / `i32.max`: ternary `a < b ? a : b` vs branchless bitwise selection `b ^ ((a ^ b) & -(a < b))`.
+      - Multi-word carry propagation (`u64.add`, `u128.add`): branchless boolean coercion `+((sum >>> 0) < (a >>> 0))` vs bitwise carry logic `((a & b) | ((a | b) & ~sum)) >>> 31`.
+      - Division overflow / zero edge guards: branchless masking vs branchful guard checks.
+    - **Microarchitectural Profiling under Predictable vs Random Inputs**:
+      - Compare branchful vs branchless implementations under 100% predictable inputs (branch predictor 99.9% accurate) vs randomized/alternating inputs (provoking 15–20 cycle CPU pipeline flush penalties).
+      - Measure with `#microbe/cycles` tracking `PERF_COUNT_HW_BRANCH_INSTRUCTIONS` and `PERF_COUNT_HW_BRANCH_MISSES` to demonstrate where branchless bitwise logic achieves deterministic constant-time cycle stability and superior Worst-Case Execution Time (WCET).
+- [ ] **Rapid Hardware Peak Probe Module (`#microbe/cycles/probe` or `#microbe/probe`)**:
+  - Create a lightweight, single-purpose inspection module designed solely for reporting pure minimum cycles (`minCycles`), retired instructions (`insPerOp`), and peak IPC with zero statistical overhead (no multi-round distribution, no MoE, no Tukey outlier filtering).
+  - Tailored for rapid iteration on integer arithmetic kernels to instantly observe how slight algorithmic changes or syntax variations (coercions, unrolling, register aliasing) alter generated machine code and execution port throughput at the optimized level.
 - [ ] **Build `testx` Tool**:
   - Implement a modular candidate validation and fuzz testing harness matching the design of `microbe`.
 - [ ] **Rebuild Browser Benchmarking UI**:
@@ -62,13 +85,17 @@
     - Expose `branchMisses` and `branchMissPercent` in detailed table view.
   - [x] **CPU Thread Affinity / Core Pinning**:
     - Add `sched_setaffinity` and `sched_getcpu` in `pmu.cc` to auto-pin benchmark threads to an isolated physical core (Core 2), preventing OS thread migration cache flushes.
-    - Expose `pinCore(coreId)` and `getCore()` via `#microbe/cycles`.
   - [ ] **L1 Data Cache Miss Profiling**:
     - Track `PERF_COUNT_HW_CACHE_REFERENCES` and `PERF_COUNT_HW_CACHE_MISSES` to isolate memory-bound vs compute-bound kernels.
   - [ ] **Automated V8 Flag Injection CLI Wrapper**:
     - Implement a runner script (`npx microbe` / `npm run bench:cycles`) that automatically launches Node with `--predictable --expose-gc --no-incremental-marking --no-maglev --min-semi-space-size=128 --max-semi-space-size=256`.
   - [ ] **Minimum Cycle / Duration Guardrail in `calibrate.js`**:
     - Clamp target cycles to `min: 1e6` (or warn on `< 1e6`) in calibration so sub-microsecond budgets do not trigger N-API boundary tax and cold loop amortization distortion.
+    - Show an explicit warning message when the sample cycle budget is not large enough compared to the boundary tax (e.g., target cycles < 1,000x boundary tax, or < 2.5e5 cycles).
+  - [ ] **Print Boundary Tax Cycles at Benchmark Run**:
+    - Display the measured PMU boundary tax in the benchmark header banner (e.g., `Tax: ~250 cyc | Pin: Core 2`) for complete measurement transparency.
+  - [ ] **Recalculate Boundary Tax Before Every Sample (Debug Mode)**:
+    - Add a debug option (`recalcTax: true`) in `sampleRound` to recalibrate boundary tax dynamically before each sample for timing jitter diagnostics and noise floor profiling.
   - [ ] **Declarative `core` Option in `bench` and `suite`**:
     - Support `bench(name, fn, { core: 3 })` and `suite(name, ops, { core: 3 })` to declaratively specify target CPU core affinity directly in benchmark configs.
   - [ ] **Instruction Count Delta Alert in `render.js`**:

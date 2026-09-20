@@ -103,7 +103,7 @@ const ops = {
 
 const res = cycles.bench.suite("Exp 6: Buffer Mutation Patterns", ops, {
 	// mode: "sequential",
-	mode: "shuffled",
+	// mode: "shuffled",
 	rounds: 1e3,
 	cycles: 1e7,
 	details: true,
