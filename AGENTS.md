@@ -2,8 +2,13 @@
 - NEVER use LaTeX formatting (e.g., $$, $, \(, \), \approx, \times, \ge, \le, \text{...}) in your chat responses, agent rule files (`AGENTS.md`, `GEMINI.md`), or agent skills (`SKILL.md`) under any circumstances because the IDE and agent markdown renderers do not support it. This includes math notation, approximations (use `~` or `approx`), inline variables, complexity symbols (use plain `O(N^2)`), comparisons (use `<=`, `>=`), and margins of error (use `+/-`). Always use plain Unicode text or standard Markdown.
 - LaTeX formatting ($...$, $$...$$) is strictly and exclusively reserved for GitHub-rendered markdown documentation (e.g., `README.md` and repository docs).
 - When inserting benchmark tables, banners, or formatted markdown blocks inside existing `.md` documentation files, NEVER enclose them in triple-backtick markdown blocks (```` ```markdown ... ````); let them render natively as standard Markdown elements.
-- **GFM Table Pipe Escaping Invariant**: In GitHub Flavored Markdown (GFM) tables, NEVER use raw pipe characters `|` inside table cells, even within backticks (e.g. `| 0`) or math expressions, as GFM parsers treat every unescaped `|` as a column delimiter. Always escape them as `\|` (e.g. `\| 0`).
+- **GFM Table Pipe Escaping & Prose Pipe Invariant**:
+  - **Inside Table Cells**: In GitHub Flavored Markdown (GFM) tables, NEVER use raw pipe characters `|` inside table cells, even within backticks (e.g. `| 0`), as GFM parsers treat every unescaped `|` as a column delimiter. Always escape them as `\|` (e.g. `\| 0`), or rephrase to avoid pipes in table cells.
+  - **Outside Table Cells (Prose, Code Spans, Lists, Headings)**: NEVER escape pipes as `\|`. Use raw `|` (e.g., `| 0`, `a |= 0`). Escaping pipes outside tables causes Markdown engines and Gists to render literal redundant backslashes (`\| 0`).
 - **Fragile Math in Table Cells**: Avoid LaTeX/KaTeX math syntax inside Markdown table cells, as unescaped `&`, `<`, and `|` break GFM table parsing and cause "Unable to render expression" errors. Use clean standard Markdown, backticks, or escaped operators.
+- **Mermaid Safety & Gist Rendering Invariant**:
+  - GitHub Gists (`gist.github.com`) do NOT support Mermaid; use clean ASCII box-and-arrow diagrams for Gist content or portable terminal output.
+  - When authoring Mermaid diagrams for GitHub repository markdown, NEVER use raw `<` or `<=` inside node labels (Mermaid parses `<` as the opening of an unclosed HTML tag and crashes with a syntax error); use `&le;`, words (`up to`), or standard ASCII. Always use valid XHTML `<br/>` tags for linebreaks.
 
 # Git & Workspace Safety Rules
 - When implementing multi-part features or tasks requested in a list/series (e.g. "feature A, then B, then C"), always create separate, granular commits for each logical step so the user can easily review, test, or revert specific components.

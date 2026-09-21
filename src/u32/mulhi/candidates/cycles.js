@@ -92,8 +92,8 @@ for (const name in candidates) {
 }
 
 cycles.bench.suite.rank("u32.mulhi: Grand Candidate Showdown", runners, {
-	rounds: 2000,
-	cycles: 5e5,
+	rounds: 10,
+	cycles: 1e8,
 	details: true,
 	width: 140,
 });
