@@ -28,6 +28,12 @@ function pmuAvailable() {
 
 function strip(options = {}) {
 	const out = { ...options };
+	// Carry the per-sample cycle budget over as a duration, assuming ~1 cycle/ns
+	// (floor 1 ms). Without this, every sample defaults to 50 ms and a
+	// 5000-round cycles suite takes over an hour.
+	if (options.cycles !== undefined && options.dur === undefined) {
+		out.dur = Math.max(1, options.cycles / 1e6);
+	}
 	for (const key of PMU_ONLY) {
 		delete out[key];
 	}
