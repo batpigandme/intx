@@ -1,0 +1,6 @@
+# boxA boot 4 record, captured 2026-09-25T02:45:53Z
+boot (uptime -s, container-local UTC-6): 2026-09-24 20:38:52 = 2026-09-25T02:38Z
+model name	: Intel(R) Xeon(R) Processor @ 2.10GHz
+Model:                                   207
+Stepping:                                2
+nproc 4; event sources: breakpoint msr power software tracepoint uprobe 

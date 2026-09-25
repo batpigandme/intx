@@ -1,0 +1,21 @@
+# boxA · node24-gap · block 4 · scratch-n24/c-i32add-inline-first.js (stock intx a8de2d6 tree at /tmp/intx-stock; scratch files are not Abdul's code)
+# binary: /opt/node22/bin/node (v22.22.2, v8 12.4.254.21-node.39)
+# start: 2026-09-25T01:15:33Z · loadavg: 1.00 0.95 0.64 1/104 1861
+
+
+### i32.add [scratch c: Inline Operator moved first]
+> **Config:** 5 rounds × 1e+8 iters/round | Order: Sequential | Pause: 30ms  
+> **Platform:** Node v22.22.2 (x64) | Intel Xeon Processor @ 2.10GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Inline Operator (((a|0) + c)|0 Baseline)  |    174.38 M |  175.45 M |    ±3.9% | baseline |
+|    2 | Serialized (1x Latency Bound)             |      1.37 B |    1.40 B |    ±2.4% |    7.83x |
+|    3 | Parallel 2x (2 Independent Accumulators)  |      1.42 B |    1.47 B |    ±7.4% |    8.16x |
+|    4 | Parallel 4x (4 Independent Accumulators)  |      1.31 B |    1.39 B |    ±3.8% |    7.51x |
+|    5 | Parallel 8x (8 Independent Accumulators)  |    931.58 M |  952.10 M |    ±1.5% |    5.34x |
+|    6 | Outer Fixture (Int32Array In-Place Mutat… |    388.45 M |  392.74 M |    ±1.0% |    2.23x |
+|    7 | Array Reduction (Int32Array Buffer Walk)  |      1.04 B |    1.08 B |    ±3.0% |    5.97x |
+
+
+# exit: 0 · wall: 8s · end: 2026-09-25T01:15:41Z

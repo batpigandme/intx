@@ -1,0 +1,122 @@
+{"meta":"boxA boot 3","binary":"/opt/node22/bin/node","start":"2026-09-25T02:05:51Z","loadavg":"0.20 0.06 0.02 1/106 552"}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":0,"name":"Serialized (1x Latency Bound)","pattern":"cold","N":20000000,"ns":[1.0713,1.063,1.0667,1.0617,1.0704],"median":1.0667}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":0,"name":"Serialized (1x Latency Bound)","pattern":"warm","N":20000000,"ns":[1.0655,1.0633,1.0611,1.0634,1.06],"median":1.0633}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":1,"name":"Parallel 2x (2 Independent Accumulators)","pattern":"cold","N":20000000,"ns":[1.0601,1.0585,1.1728,1.1365,1.0592],"median":1.0601}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":1,"name":"Parallel 2x (2 Independent Accumulators)","pattern":"warm","N":20000000,"ns":[1.0386,1.0326,1.0628,1.0313,1.0217],"median":1.0326}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":2,"name":"Parallel 4x (4 Independent Accumulators)","pattern":"cold","N":20000000,"ns":[1.422,1.4235,1.4251,1.5305,1.4585],"median":1.4251}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":2,"name":"Parallel 4x (4 Independent Accumulators)","pattern":"warm","N":20000000,"ns":[1.4199,1.4107,1.416,1.4148,1.4097],"median":1.4148}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":3,"name":"Parallel 8x (8 Independent Accumulators)","pattern":"cold","N":20000000,"ns":[2.8607,2.8446,2.8379,2.8468,2.8428],"median":2.8446}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":3,"name":"Parallel 8x (8 Independent Accumulators)","pattern":"warm","N":20000000,"ns":[2.8505,2.8309,3.1326,2.8344,2.8656],"median":2.8505}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":4,"name":"Outer Fixture (Int32Array In-Place Mutation)","pattern":"cold","N":20000000,"ns":[2.8067,2.8308,2.7951,2.7712,2.7628],"median":2.7951}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":4,"name":"Outer Fixture (Int32Array In-Place Mutation)","pattern":"warm","N":20000000,"ns":[2.7426,2.7617,2.7308,2.8579,2.7718],"median":2.7617}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"cold","N":20000000,"ns":[1.0306,1.0554,1.0727,1.0679,1.061],"median":1.061}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"warm","N":20000000,"ns":[1.1499,1.0873,1.0729,1.0599,1.0808],"median":1.0808}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":6,"name":"Inline Math.imul (Direct Builtin Baseline)","pattern":"cold","N":20000000,"ns":[1.0434,1.0885,1.0422,1.0507,1.0504],"median":1.0504}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-mul","idx":6,"name":"Inline Math.imul (Direct Builtin Baseline)","pattern":"warm","N":20000000,"ns":[1.0905,1.0575,1.0586,1.067,1.0558],"median":1.0586}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":0,"name":"Serialized (1x Latency Bound)","pattern":"cold","N":100000000,"ns":[0.705,0.7126,0.7075,0.7062,0.7037],"median":0.7062}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":0,"name":"Serialized (1x Latency Bound)","pattern":"warm","N":100000000,"ns":[0.7057,0.703,0.7012,0.7075,0.7371],"median":0.7057}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":1,"name":"Parallel 2x (2 Independent Accumulators)","pattern":"cold","N":100000000,"ns":[0.7376,0.7148,0.7107,0.7418,0.7382],"median":0.7376}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":1,"name":"Parallel 2x (2 Independent Accumulators)","pattern":"warm","N":100000000,"ns":[0.7041,0.7226,0.7104,0.7098,0.72],"median":0.7104}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":2,"name":"Parallel 4x (4 Independent Accumulators)","pattern":"cold","N":100000000,"ns":[0.7939,0.8236,0.7926,0.7837,0.7671],"median":0.7926}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":2,"name":"Parallel 4x (4 Independent Accumulators)","pattern":"warm","N":100000000,"ns":[0.8529,0.7885,0.9282,0.844,0.8715],"median":0.8529}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":3,"name":"Parallel 8x (8 Independent Accumulators)","pattern":"cold","N":100000000,"ns":[1.0659,1.0828,1.7657,1.0715,1.063],"median":1.0715}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":3,"name":"Parallel 8x (8 Independent Accumulators)","pattern":"warm","N":100000000,"ns":[1.0869,1.0785,1.0727,1.0479,1.0398],"median":1.0727}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":4,"name":"Outer Fixture (Int32Array In-Place Mutation)","pattern":"cold","N":100000000,"ns":[2.6006,2.5667,2.5924,2.6135,2.6088],"median":2.6006}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":4,"name":"Outer Fixture (Int32Array In-Place Mutation)","pattern":"warm","N":100000000,"ns":[2.6459,2.6115,2.6385,2.6007,2.6084],"median":2.6115}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"cold","N":100000000,"ns":[0.9434,0.9414,0.939,0.9481,0.9236],"median":0.9414}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"warm","N":100000000,"ns":[0.8652,0.8944,0.8814,0.9187,0.9339],"median":0.8944}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":6,"name":"Inline Operator (((a|0) + c)|0 Baseline)","pattern":"cold","N":100000000,"ns":[6.284,6.1781,5.7997,6.0714,5.9173],"median":6.0714}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32-add","idx":6,"name":"Inline Operator (((a|0) + c)|0 Baseline)","pattern":"warm","N":100000000,"ns":[0.713,0.7749,0.7586,0.7142,0.7158],"median":0.7158}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":0,"name":"add","pattern":"cold","N":10000000,"ns":[1.0964,0.7119,0.7112,0.723,0.7228],"median":0.7228}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":0,"name":"add","pattern":"warm","N":10000000,"ns":[0.713,0.7105,0.6975,0.6983,0.7138],"median":0.7105}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":1,"name":"sub","pattern":"cold","N":10000000,"ns":[0.71,0.7059,0.7165,0.7082,0.7175],"median":0.71}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":1,"name":"sub","pattern":"warm","N":10000000,"ns":[0.6879,0.6996,0.6867,0.6985,0.6877],"median":0.6879}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":2,"name":"mul","pattern":"cold","N":10000000,"ns":[1.0573,1.0497,1.0351,1.0243,1.0203],"median":1.0351}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":2,"name":"mul","pattern":"warm","N":10000000,"ns":[1.0575,1.0604,1.0349,1.0765,1.0569],"median":1.0575}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":3,"name":"div","pattern":"cold","N":10000000,"ns":[2.2834,2.1431,2.1175,2.1589,2.1126],"median":2.1431}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":3,"name":"div","pattern":"warm","N":10000000,"ns":[1.4291,1.4298,1.4109,1.4083,1.4377],"median":1.4291}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":4,"name":"mod","pattern":"cold","N":10000000,"ns":[2.1433,2.1545,2.1908,2.1951,2.1309],"median":2.1545}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":4,"name":"mod","pattern":"warm","N":10000000,"ns":[1.4227,1.4171,1.4283,1.4218,1.438],"median":1.4227}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":5,"name":"divmod","pattern":"cold","N":10000000,"ns":[2.1349,2.1352,2.1573,2.152,2.1233],"median":2.1352}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":5,"name":"divmod","pattern":"warm","N":10000000,"ns":[1.7337,1.8885,1.7155,1.7513,1.7161],"median":1.7337}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":6,"name":"rotl","pattern":"cold","N":10000000,"ns":[1.4309,1.4196,1.4136,1.4345,1.4109],"median":1.4196}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":6,"name":"rotl","pattern":"warm","N":10000000,"ns":[0.8852,0.8778,0.8704,0.8898,0.8789],"median":0.8789}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":7,"name":"rotr","pattern":"cold","N":10000000,"ns":[4.8315,1.4434,1.8112,1.45,1.4223],"median":1.45}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":7,"name":"rotr","pattern":"warm","N":10000000,"ns":[0.8882,0.8697,0.886,0.8782,0.8795],"median":0.8795}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":8,"name":"clz","pattern":"cold","N":10000000,"ns":[1.4804,1.4714,1.4676,1.46,1.516],"median":1.4714}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"i32","idx":8,"name":"clz","pattern":"warm","N":10000000,"ns":[1.4192,1.423,1.4072,1.4117,1.4383],"median":1.4192}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":0,"name":"limb16_parallel_bitwise","pattern":"cold","N":10000000,"ns":[5.47,5.4489,5.4395,5.537,5.4551],"median":5.4551}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":0,"name":"limb16_parallel_bitwise","pattern":"warm","N":10000000,"ns":[5.5573,5.6167,5.3913,5.5603,5.4371],"median":5.5573}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":1,"name":"limb16_parallel_bitwise_smi","pattern":"cold","N":10000000,"ns":[5.4595,5.4351,5.4474,5.4276,5.4439],"median":5.4439}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":1,"name":"limb16_parallel_bitwise_smi","pattern":"warm","N":10000000,"ns":[5.4738,5.4602,5.3087,5.3103,5.3382],"median":5.3382}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":2,"name":"limb16_parallel_imul_all","pattern":"cold","N":10000000,"ns":[5.9817,5.6224,6.0077,5.8575,5.7844],"median":5.8575}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":2,"name":"limb16_parallel_imul_all","pattern":"warm","N":10000000,"ns":[5.3739,5.5775,5.5642,5.6078,5.5432],"median":5.5642}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":3,"name":"limb16_parallel_imul_all_smi","pattern":"cold","N":10000000,"ns":[5.6565,5.4948,5.9204,5.42,5.7278],"median":5.6565}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":3,"name":"limb16_parallel_imul_all_smi","pattern":"warm","N":10000000,"ns":[5.4692,5.4378,5.4753,5.4889,5.4893],"median":5.4753}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":4,"name":"limb16_parallel_imul_cached","pattern":"cold","N":10000000,"ns":[5.6434,5.6358,5.6365,5.5458,5.6741],"median":5.6365}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":4,"name":"limb16_parallel_imul_cached","pattern":"warm","N":10000000,"ns":[6.086,5.5515,5.5473,5.5066,5.5549],"median":5.5515}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":5,"name":"limb16_parallel_imul_cached_smi","pattern":"cold","N":10000000,"ns":[5.369,5.4841,5.3473,5.428,5.3808],"median":5.3808}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":5,"name":"limb16_parallel_imul_cached_smi","pattern":"warm","N":10000000,"ns":[5.5767,5.6116,5.5033,5.9285,6.1339],"median":5.6116}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":6,"name":"limb16_pipeline_bitwise","pattern":"cold","N":10000000,"ns":[5.3504,5.4215,5.4551,5.461,5.4568],"median":5.4551}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":6,"name":"limb16_pipeline_bitwise","pattern":"warm","N":10000000,"ns":[5.5444,5.6216,5.671,5.5204,5.4932],"median":5.5444}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":7,"name":"limb16_pipeline_bitwise_smi","pattern":"cold","N":10000000,"ns":[5.4974,5.5976,5.4452,6.4074,5.7921],"median":5.5976}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":7,"name":"limb16_pipeline_bitwise_smi","pattern":"warm","N":10000000,"ns":[5.474,5.4468,5.5094,5.4591,5.4277],"median":5.4591}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":8,"name":"limb16_pipeline_imul_all","pattern":"cold","N":10000000,"ns":[5.5679,5.6387,5.6256,5.5516,5.6334],"median":5.6256}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":8,"name":"limb16_pipeline_imul_all","pattern":"warm","N":10000000,"ns":[5.6504,5.6615,5.6216,5.643,5.7889],"median":5.6504}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":9,"name":"limb16_pipeline_imul_all_smi","pattern":"cold","N":10000000,"ns":[5.4275,5.4287,5.4065,5.3961,5.376],"median":5.4065}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":9,"name":"limb16_pipeline_imul_all_smi","pattern":"warm","N":10000000,"ns":[5.4745,5.5199,5.5562,5.4779,5.4809],"median":5.4809}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":10,"name":"limb16_pipeline_imul_cached","pattern":"cold","N":10000000,"ns":[5.6488,5.6488,6.6753,6.2629,5.7737],"median":5.7737}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":10,"name":"limb16_pipeline_imul_cached","pattern":"warm","N":10000000,"ns":[5.4856,5.5996,5.618,5.6139,5.6091],"median":5.6091}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":11,"name":"limb16_pipeline_imul_cached_smi","pattern":"cold","N":10000000,"ns":[5.4739,5.4366,5.3962,5.4321,5.2826],"median":5.4321}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":11,"name":"limb16_pipeline_imul_cached_smi","pattern":"warm","N":10000000,"ns":[5.4946,5.6399,5.4786,5.4856,5.8798],"median":5.4946}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":12,"name":"limb16_pipeline_imul_import","pattern":"cold","N":10000000,"ns":[5.8221,5.83,5.854,5.9752,5.8707],"median":5.854}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":12,"name":"limb16_pipeline_imul_import","pattern":"warm","N":10000000,"ns":[5.646,5.4796,5.7149,5.5852,5.5653],"median":5.5852}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":13,"name":"limb16_float48_floor","pattern":"cold","N":10000000,"ns":[17.8757,17.5911,17.4427,17.2226,17.2307],"median":17.4427}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":13,"name":"limb16_float48_floor","pattern":"warm","N":10000000,"ns":[18.1822,17.7298,17.6735,18.6581,18.6542],"median":18.1822}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":14,"name":"limb16_float48_trunc","pattern":"cold","N":10000000,"ns":[17.1661,16.8976,17.349,16.7111,17.0695],"median":17.0695}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":14,"name":"limb16_float48_trunc","pattern":"warm","N":10000000,"ns":[17.1786,18.0674,16.5594,16.7107,16.5449],"median":16.7107}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":15,"name":"limb16_float48_trunc_smi","pattern":"cold","N":10000000,"ns":[17.7101,16.682,17.1776,17.2729,16.5014],"median":17.1776}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":15,"name":"limb16_float48_trunc_smi","pattern":"warm","N":10000000,"ns":[15.9691,16.4284,16.4261,16.9367,16.4633],"median":16.4284}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":16,"name":"float64_corrected","pattern":"cold","N":10000000,"ns":[11.3028,11.4521,11.5809,11.7695,11.8573],"median":11.5809}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":16,"name":"float64_corrected","pattern":"warm","N":10000000,"ns":[11.5983,12.1258,11.8501,12.1255,12.066],"median":12.066}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":17,"name":"float64_corrected_smi","pattern":"cold","N":10000000,"ns":[11.6677,11.6739,11.6478,11.7129,11.5715],"median":11.6677}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":17,"name":"float64_corrected_smi","pattern":"warm","N":10000000,"ns":[11.7084,11.8979,11.8033,11.5339,11.4963],"median":11.7084}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":18,"name":"float64_corrected_cached","pattern":"cold","N":10000000,"ns":[12.0361,11.6595,11.9354,11.8272,11.7739],"median":11.8272}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulhi","idx":18,"name":"float64_corrected_cached","pattern":"warm","N":10000000,"ns":[11.9836,11.8734,11.8612,11.4811,11.5789],"median":11.8612}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":0,"name":"limb16_parallel_bitwise_lo","pattern":"cold","N":10000000,"ns":[6.1532,6.1667,6.0371,6.091,6.1641],"median":6.1532}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":0,"name":"limb16_parallel_bitwise_lo","pattern":"warm","N":10000000,"ns":[6.175,6.1485,6.1805,6.0587,6.1394],"median":6.1485}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":1,"name":"limb16_parallel_imul_lo","pattern":"cold","N":10000000,"ns":[5.8308,5.7557,5.8179,5.7977,5.7961],"median":5.7977}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":1,"name":"limb16_parallel_imul_lo","pattern":"warm","N":10000000,"ns":[5.8026,5.8535,5.8371,5.8654,5.8214],"median":5.8371}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":2,"name":"limb16_parallel_imul_lo_smi","pattern":"cold","N":10000000,"ns":[5.8258,5.7714,5.7503,5.7624,5.822],"median":5.7714}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":2,"name":"limb16_parallel_imul_lo_smi","pattern":"warm","N":10000000,"ns":[5.831,5.855,5.8182,5.8449,5.8924],"median":5.8449}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":3,"name":"limb16_parallel_imul_all","pattern":"cold","N":10000000,"ns":[5.8316,5.8244,5.8171,5.8079,5.7866],"median":5.8171}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":3,"name":"limb16_parallel_imul_all","pattern":"warm","N":10000000,"ns":[6.1459,5.8809,5.9577,6.0222,5.6097],"median":5.9577}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":4,"name":"limb16_parallel_imul_all_smi","pattern":"cold","N":10000000,"ns":[5.666,5.6469,5.7981,5.7115,5.7015],"median":5.7015}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":4,"name":"limb16_parallel_imul_all_smi","pattern":"warm","N":10000000,"ns":[5.8212,6.0754,5.8924,5.8666,5.8406],"median":5.8666}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":5,"name":"limb16_parallel_imul_cached","pattern":"cold","N":10000000,"ns":[5.813,5.7492,5.7595,5.7704,5.7134],"median":5.7595}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":5,"name":"limb16_parallel_imul_cached","pattern":"warm","N":10000000,"ns":[5.8136,5.8251,6.0101,5.8042,5.772],"median":5.8136}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":6,"name":"limb16_parallel_imul_cached_smi","pattern":"cold","N":10000000,"ns":[5.7051,5.6909,5.6646,5.5158,5.64],"median":5.6646}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":6,"name":"limb16_parallel_imul_cached_smi","pattern":"warm","N":10000000,"ns":[5.6369,5.7558,5.8609,5.8195,5.9781],"median":5.8195}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":7,"name":"limb16_pipeline_bitwise_lo","pattern":"cold","N":10000000,"ns":[6.3725,6.4273,6.3896,6.3859,6.4884],"median":6.3896}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":7,"name":"limb16_pipeline_bitwise_lo","pattern":"warm","N":10000000,"ns":[6.294,6.3114,6.3013,6.4241,6.3765],"median":6.3114}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":8,"name":"limb16_pipeline_imul_lo","pattern":"cold","N":10000000,"ns":[5.7954,5.6922,5.694,5.6662,5.6842],"median":5.6922}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":8,"name":"limb16_pipeline_imul_lo","pattern":"warm","N":10000000,"ns":[5.7296,5.6832,5.7003,5.6141,5.676],"median":5.6832}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":9,"name":"limb16_pipeline_imul_lo_smi","pattern":"cold","N":10000000,"ns":[5.8535,5.9894,5.9095,5.7887,5.9875],"median":5.9095}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":9,"name":"limb16_pipeline_imul_lo_smi","pattern":"warm","N":10000000,"ns":[5.9436,5.8346,5.8767,5.8281,5.7629],"median":5.8346}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":10,"name":"limb16_pipeline_imul_all","pattern":"cold","N":10000000,"ns":[5.7407,5.8488,5.774,5.7113,5.7213],"median":5.7407}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":10,"name":"limb16_pipeline_imul_all","pattern":"warm","N":10000000,"ns":[5.6832,5.4807,5.6946,5.6225,5.6278],"median":5.6278}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":11,"name":"limb16_pipeline_imul_all_smi","pattern":"cold","N":10000000,"ns":[6.1785,6.1862,6.0579,5.9353,5.8874],"median":6.0579}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":11,"name":"limb16_pipeline_imul_all_smi","pattern":"warm","N":10000000,"ns":[5.6962,5.7201,5.6351,5.4961,5.764],"median":5.6962}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":12,"name":"limb16_pipeline_imul_cached","pattern":"cold","N":10000000,"ns":[5.8167,5.9747,5.8876,5.958,5.8911],"median":5.8911}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":12,"name":"limb16_pipeline_imul_cached","pattern":"warm","N":10000000,"ns":[5.7592,5.6881,5.8054,5.723,5.8308],"median":5.7592}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":13,"name":"limb16_pipeline_imul_cached_smi","pattern":"cold","N":10000000,"ns":[5.8483,5.7607,6.1344,6.0581,6.2643],"median":6.0581}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":13,"name":"limb16_pipeline_imul_cached_smi","pattern":"warm","N":10000000,"ns":[6.0186,6.4568,6.4718,5.8557,5.7177],"median":6.0186}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":14,"name":"limb16_pipeline_imul_import","pattern":"cold","N":10000000,"ns":[5.8057,5.7711,5.7782,5.9308,6.1564],"median":5.8057}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":14,"name":"limb16_pipeline_imul_import","pattern":"warm","N":10000000,"ns":[5.8607,5.8755,5.8292,6.8145,5.9284],"median":5.8755}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":15,"name":"limb16_float48_bitwise_lo","pattern":"cold","N":10000000,"ns":[18.4115,18.4933,18.023,17.9266,18.1676],"median":18.1676}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":15,"name":"limb16_float48_bitwise_lo","pattern":"warm","N":10000000,"ns":[18.486,18.5747,18.2771,18.8806,18.3579],"median":18.486}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":16,"name":"limb16_float48_imul_lo","pattern":"cold","N":10000000,"ns":[18.4109,18.3377,18.7084,18.223,17.9571],"median":18.3377}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":16,"name":"limb16_float48_imul_lo","pattern":"warm","N":10000000,"ns":[18.3743,18.8262,18.2216,18.2493,18.2316],"median":18.2493}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":17,"name":"float64_corrected","pattern":"cold","N":10000000,"ns":[11.6747,11.6842,12.0792,11.6966,12.0007],"median":11.6966}
+{"node":"v22.22.2","v8":"12.4.254.21-node.39","tag":"u32-mulwide","idx":17,"name":"float64_corrected","pattern":"warm","N":10000000,"ns":[12.2418,12.4939,11.9346,12.1911,11.8194],"median":12.1911}
+{"meta":"end","end":"2026-09-25T02:06:56Z","loadavg":"0.73 0.24 0.09 1/104 1412"}

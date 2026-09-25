@@ -1,0 +1,20 @@
+# boxA · node24-gap · block 4 · scratch-n24/a-06-stock-timer.js (stock intx a8de2d6 tree at /tmp/intx-stock; scratch files are not Abdul's code)
+# binary: /usr/local/nvm/versions/node/v26.7.0/bin/node (v26.7.0, v8 14.6.202.34-node.28)
+# start: 2026-09-25T01:18:45Z · loadavg: 0.93 0.96 0.71 1/104 2214
+
+
+### Exp 6 [scratch a: stock wall-clock]
+> **Config:** 1000 rounds × ~10ms/sample (dynamic) | Order: Sequential  
+> **Platform:** Node v26.7.0 (x64) | Intel Xeon Processor @ 2.10GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Read-Only Baseline (Walk Only)            |      1.50 B |    1.63 B |    ±0.6% | baseline |
+|    2 | In-Place Mutation (Context Buffer)        |      1.37 B |    1.49 B |    ±0.5% |    0.91x |
+|    3 | In-Place Mutation (Local Setup Buffer)    |    944.89 M |    1.00 B |    ±0.7% |    0.63x |
+|    4 | Separate Write Buffer (inBuf -> outBuf, … |      1.36 B |    1.56 B |    ±0.6% |    0.91x |
+|    5 | Separate Write Buffer (Local Setup Buffe… |    958.22 M |    1.11 B |    ±0.3% |    0.64x |
+|    6 | Fixed Fixture Mutation (out[0] = ... lik… |    945.83 M |    1.11 B |    ±0.6% |    0.63x |
+
+
+# exit: 0 · wall: 60s · end: 2026-09-25T01:19:45Z

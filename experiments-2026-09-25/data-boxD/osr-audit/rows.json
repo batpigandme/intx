@@ -1,0 +1,274 @@
+[
+{
+"file": "src/i32/add/showdown.js",
+"idx": 5,
+"name": "Array Reduction (Int32Array Buffer Walk)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) & 1023;"
+},
+{
+"file": "src/i32/add/showdown.js",
+"idx": 6,
+"name": "Inline Operator (((a|0) + c)|0 Baseline)",
+"class": "A",
+"hits": "c(context) +",
+"loop": "acc = ((acc | 0) + c) | 0;"
+},
+{
+"file": "src/i32/mul/showdown.js",
+"idx": 5,
+"name": "Array Reduction (Int32Array Buffer Walk)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = mul(acc, buf[idx]); idx = (idx + 1) & 1023;"
+},
+{
+"file": "src/i32/showdown.js",
+"idx": 3,
+"name": "div",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = div(buf[idx], d); idx = (idx + 1) & 1023;"
+},
+{
+"file": "src/i32/showdown.js",
+"idx": 4,
+"name": "mod",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = mod(buf[idx], d); idx = (idx + 1) & 1023;"
+},
+{
+"file": "src/i32/showdown.js",
+"idx": 5,
+"name": "divmod",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "divmod(buf[idx], d, out); idx = (idx + 1) & 1023;"
+},
+{
+"file": "explorations/01-dce-and-constants.js",
+"idx": 6,
+"name": "Inline Op with Uncoerced Context Var (((acc|0) + c)|0) [TRAP]",
+"class": "A",
+"hits": "c(context) +",
+"loop": "acc = ((acc | 0) + c) | 0;"
+},
+{
+"file": "explorations/02-constant-loop-dle.js",
+"idx": 1,
+"name": "Identity Addition (acc = (acc + 0) | 0)",
+"class": "B",
+"hits": "acc(setup-local) +",
+"loop": "acc = (acc + 0) | 0;"
+},
+{
+"file": "explorations/02-constant-loop-dle.js",
+"idx": 5,
+"name": "Active Linear Induction (acc = (acc + 1) | 0)",
+"class": "B",
+"hits": "acc(setup-local) +",
+"loop": "acc = (acc + 1) | 0;"
+},
+{
+"file": "explorations/03-context-aliasing.js",
+"idx": 5,
+"name": "Buffer Ref: Direct Closure Access",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/03-context-aliasing.js",
+"idx": 6,
+"name": "Buffer Ref: Local 'const' Alias in setup",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, localBuf[idx]); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/05-readonly-buffer-walk.js",
+"idx": 0,
+"name": "BCE: 1 KB (256 elements, mask & 0xff)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/05-readonly-buffer-walk.js",
+"idx": 1,
+"name": "BCE: 4 KB (1024 elements, mask & 0x3ff)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) & 0x3ff;"
+},
+{
+"file": "explorations/05-readonly-buffer-walk.js",
+"idx": 2,
+"name": "BCE: 512 B (128 elements, mask & 0x7f)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) & 0x7f;"
+},
+{
+"file": "explorations/05-readonly-buffer-walk.js",
+"idx": 3,
+"name": "Non-BCE: Modulo Indexing ((idx + 1) % 256)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) % 256;"
+},
+{
+"file": "explorations/05-readonly-buffer-walk.js",
+"idx": 4,
+"name": "Non-BCE: Modulo Non-Power-of-Two ((idx + 1) % 250)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) % 250;"
+},
+{
+"file": "explorations/05-readonly-buffer-walk.js",
+"idx": 5,
+"name": "Non-BCE: Branching Reset (idx >= 256 ? 0 : idx)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) | 0; if (idx === 256) idx = 0;"
+},
+{
+"file": "explorations/06-buffer-mutation.js",
+"idx": 0,
+"name": "Read-Only Baseline (Walk Only)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, inBuf[idx]); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/06-buffer-mutation.js",
+"idx": 1,
+"name": "In-Place Mutation (Context Buffer)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mutBuf[idx] = add(mutBuf[idx], c); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/06-buffer-mutation.js",
+"idx": 2,
+"name": "In-Place Mutation (Local Setup Buffer)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "localBuf[idx] = add(localBuf[idx], c); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/06-buffer-mutation.js",
+"idx": 3,
+"name": "Separate Write Buffer (inBuf -> outBuf, Context)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "outBuf[idx] = add(inBuf[idx], c); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/06-buffer-mutation.js",
+"idx": 4,
+"name": "Separate Write Buffer (Local Setup Buffers)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "localOut[idx] = add(localIn[idx], c); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/06-buffer-mutation.js",
+"idx": 5,
+"name": "Fixed Fixture Mutation (out[0] = ... like divmod)",
+"class": "A",
+"hits": "c(context) -, idx(setup-local) +",
+"loop": "outFix[0] = add(inBuf[idx], c); outFix[1] = add(inBuf[idx], -c); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/07-loop-overhead-isolation.js",
+"idx": 2,
+"name": "Minimal Register In-Place Step (acc = (acc + 1) | 0)",
+"class": "B",
+"hits": "acc(setup-local) +",
+"loop": "acc = (acc + 1) | 0;"
+},
+{
+"file": "explorations/07-loop-overhead-isolation.js",
+"idx": 3,
+"name": "Read-Only Buffer Walk Baseline (acc ^= buf[idx])",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = (acc ^ buf[idx]) | 0; idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/07-loop-overhead-isolation.js",
+"idx": 5,
+"name": "Target Operation: i32.add on Buffer (acc = add(acc, buf[idx]))",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "acc = add(acc, buf[idx]); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/08-megamorphic-out-param.js",
+"idx": 0,
+"name": "Monomorphic: Pristine Int32Array out",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, out); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/08-megamorphic-out-param.js",
+"idx": 1,
+"name": "Monomorphic: Pristine Uint32Array out",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, out); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/08-megamorphic-out-param.js",
+"idx": 2,
+"name": "Monomorphic: Pristine Generic Array out ([0, 0])",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, out); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/08-megamorphic-out-param.js",
+"idx": 3,
+"name": "Polymorphic Call Site (2 types: Int32 + Uint32 alternating)",
+"class": "C",
+"hits": "bIdx(setup-local) +, idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, polyBuffers[bIdx]); bIdx = (bIdx + 1) & 1; idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/08-megamorphic-out-param.js",
+"idx": 4,
+"name": "Megamorphic Call Site (4 types: Int32 + Uint32 + Float64 + Generic)",
+"class": "C",
+"hits": "bIdx(setup-local) +, idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, megaBuffers[bIdx]); bIdx = (bIdx + 1) & 3; idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/08-megamorphic-out-param.js",
+"idx": 5,
+"name": "Contaminated Kernel: Int32Array on Pre-Polluted mulwide",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, out); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/09-mulwide-signed-vs-unsigned.js",
+"idx": 2,
+"name": "u32.mulwide: L1 Buffer Walk (Diverse Inputs)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mulwide(buf[idx] >>> 0, c, r); idx = (idx + 1) & 0xff;"
+},
+{
+"file": "explorations/09-mulwide-signed-vs-unsigned.js",
+"idx": 3,
+"name": "i32.mulwide: L1 Buffer Walk (Diverse Inputs)",
+"class": "C",
+"hits": "idx(setup-local) +",
+"loop": "mulwide(buf[idx], c, r); idx = (idx + 1) & 0xff;"
+}
+]

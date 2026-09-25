@@ -1,0 +1,12 @@
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"rotl","operand":"closure","pattern":"cold","ns":[1.1754,1.1631,1.1865,1.2231,1.1584],"median":1.1754}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"rotl","operand":"closure","pattern":"warm","ns":[0.6328,0.6466,0.6502,0.65,0.6448],"median":0.6466}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"rotl","operand":"literal","pattern":"cold","ns":[0.6507,0.6273,0.6218,0.6383,0.6182],"median":0.6273}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"rotl","operand":"literal","pattern":"warm","ns":[0.6154,0.6314,0.603,0.6108,0.6393],"median":0.6154}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"div","operand":"closure","pattern":"cold","ns":[2.1064,2.0849,2.0544,2.1201,2.1446],"median":2.1064}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"div","operand":"closure","pattern":"warm","ns":[1.1375,1.1494,1.1455,1.1755,1.1865],"median":1.1494}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"div","operand":"literal","pattern":"cold","ns":[1.2072,1.1611,1.1906,1.1685,1.1743],"median":1.1743}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"div","operand":"literal","pattern":"warm","ns":[1.159,1.1411,1.1249,1.1971,1.151],"median":1.151}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"mod","operand":"closure","pattern":"cold","ns":[2.1237,2.1167,2.1325,2.1,2.1212],"median":2.1212}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"mod","operand":"closure","pattern":"warm","ns":[1.3692,1.4833,1.6445,1.4113,1.3834],"median":1.4113}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"mod","operand":"literal","pattern":"cold","ns":[2.4309,1.5881,1.456,1.4392,1.4489],"median":1.456}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","kernel":"mod","operand":"literal","pattern":"warm","ns":[1.3696,1.4292,1.3884,1.4488,1.3802],"median":1.3884}

@@ -1,0 +1,82 @@
+{"meta":"boxD boot 2","binary":"/usr/local/nvm/versions/node/v26.7.0/bin/node","start":"2026-09-25T09:52:38Z","loadavg":"0.98 0.56 0.23 2/105 2658"}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/add/showdown.js","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"cold","N":100000000,"ns":[0.8973,0.8701,0.8768,0.8714,1.0193],"median":0.8768}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/add/showdown.js","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"warm","N":100000000,"ns":[0.8298,0.7614,0.7675,0.7616,0.7637],"median":0.7637}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/add/showdown.js","idx":6,"name":"Inline Operator (((a|0) + c)|0 Baseline)","pattern":"cold","N":100000000,"ns":[0.5306,0.5339,0.5292,0.5297,0.5293],"median":0.5297}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/add/showdown.js","idx":6,"name":"Inline Operator (((a|0) + c)|0 Baseline)","pattern":"warm","N":100000000,"ns":[0.4744,0.469,0.4686,0.482,0.5272],"median":0.4744}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/mul/showdown.js","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"cold","N":20000000,"ns":[0.9425,0.9563,1.0714,1.1102,0.9778],"median":0.9778}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/mul/showdown.js","idx":5,"name":"Array Reduction (Int32Array Buffer Walk)","pattern":"warm","N":20000000,"ns":[0.9646,1.0132,0.987,0.9548,0.9726],"median":0.9726}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/showdown.js","idx":3,"name":"div","pattern":"cold","N":10000000,"ns":[1.9309,2.2281,1.9173,1.8882,1.8245],"median":1.9173}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/showdown.js","idx":3,"name":"div","pattern":"warm","N":10000000,"ns":[1.3869,1.3629,1.4462,1.3607,1.3819],"median":1.3819}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/showdown.js","idx":4,"name":"mod","pattern":"cold","N":10000000,"ns":[1.8188,1.8135,1.8213,1.8187,1.819],"median":1.8188}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/showdown.js","idx":4,"name":"mod","pattern":"warm","N":10000000,"ns":[1.6206,1.6262,1.6212,1.6175,1.632],"median":1.6212}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/showdown.js","idx":5,"name":"divmod","pattern":"cold","N":10000000,"ns":[1.8576,1.9569,1.8817,2.2725,1.8397],"median":1.8817}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"src/i32/showdown.js","idx":5,"name":"divmod","pattern":"warm","N":10000000,"ns":[1.8795,1.8808,1.8831,1.8837,1.8947],"median":1.8831}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/01-dce-and-constants.js","idx":6,"name":"Inline Op with Uncoerced Context Var (((acc|0) + c)|0) [TRAP]","pattern":"cold","N":100000000,"ns":[0.5311,0.5312,0.5327,0.5313,0.5302],"median":0.5312}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/01-dce-and-constants.js","idx":6,"name":"Inline Op with Uncoerced Context Var (((acc|0) + c)|0) [TRAP]","pattern":"warm","N":100000000,"ns":[0.7663,0.4672,0.4609,0.4849,0.4912],"median":0.4849}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/02-constant-loop-dle.js","idx":1,"name":"Identity Addition (acc = (acc + 0) | 0)","pattern":"cold","N":200000000,"ns":[0.53,0.4641,0.5144,0.6929,0.5541],"median":0.53}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/02-constant-loop-dle.js","idx":1,"name":"Identity Addition (acc = (acc + 0) | 0)","pattern":"warm","N":200000000,"ns":[0.4152,0.6685,0.4864,0.4133,0.3953],"median":0.4152}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/02-constant-loop-dle.js","idx":5,"name":"Active Linear Induction (acc = (acc + 1) | 0)","pattern":"cold","N":200000000,"ns":[0.5556,0.7593,0.5936,0.6156,0.6066],"median":0.6066}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/02-constant-loop-dle.js","idx":5,"name":"Active Linear Induction (acc = (acc + 1) | 0)","pattern":"warm","N":200000000,"ns":[0.5368,0.5398,0.5674,0.6833,0.6107],"median":0.5674}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/03-context-aliasing.js","idx":5,"name":"Buffer Ref: Direct Closure Access","pattern":"cold","N":100000000,"ns":[0.7916,1.2551,0.884,0.7677,0.7759],"median":0.7916}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/03-context-aliasing.js","idx":5,"name":"Buffer Ref: Direct Closure Access","pattern":"warm","N":100000000,"ns":[0.6878,0.6847,0.6863,0.6869,1.1107],"median":0.6869}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/03-context-aliasing.js","idx":6,"name":"Buffer Ref: Local 'const' Alias in setup","pattern":"cold","N":100000000,"ns":[0.7639,0.7909,0.7762,0.8156,0.757],"median":0.7762}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/03-context-aliasing.js","idx":6,"name":"Buffer Ref: Local 'const' Alias in setup","pattern":"warm","N":100000000,"ns":[1.2738,0.7805,0.7022,0.756,0.7213],"median":0.756}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":0,"name":"BCE: 1 KB (256 elements, mask & 0xff)","pattern":"cold","N":100000000,"ns":[0.759,0.7643,0.7655,0.769,0.7611],"median":0.7643}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":0,"name":"BCE: 1 KB (256 elements, mask & 0xff)","pattern":"warm","N":100000000,"ns":[0.7556,0.84,1.2439,1.3083,0.7491],"median":0.84}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":1,"name":"BCE: 4 KB (1024 elements, mask & 0x3ff)","pattern":"cold","N":100000000,"ns":[0.8545,0.86,0.8398,0.8516,0.8466],"median":0.8516}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":1,"name":"BCE: 4 KB (1024 elements, mask & 0x3ff)","pattern":"warm","N":100000000,"ns":[0.8302,0.8288,0.8275,0.8258,0.8266],"median":0.8275}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":2,"name":"BCE: 512 B (128 elements, mask & 0x7f)","pattern":"cold","N":100000000,"ns":[0.8348,0.8408,0.8329,0.8416,0.8759],"median":0.8408}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":2,"name":"BCE: 512 B (128 elements, mask & 0x7f)","pattern":"warm","N":100000000,"ns":[0.8572,0.8522,0.845,1.5388,0.9718],"median":0.8572}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":3,"name":"Non-BCE: Modulo Indexing ((idx + 1) % 256)","pattern":"cold","N":100000000,"ns":[1.3022,1.3023,1.2991,1.3565,1.4435],"median":1.3023}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":3,"name":"Non-BCE: Modulo Indexing ((idx + 1) % 256)","pattern":"warm","N":100000000,"ns":[0.752,0.753,0.7531,0.7536,0.7527],"median":0.753}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":4,"name":"Non-BCE: Modulo Non-Power-of-Two ((idx + 1) % 250)","pattern":"cold","N":100000000,"ns":[3.8973,3.837,3.9508,3.8449,3.8313],"median":3.8449}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":4,"name":"Non-BCE: Modulo Non-Power-of-Two ((idx + 1) % 250)","pattern":"warm","N":100000000,"ns":[3.5097,3.5239,3.5387,3.5298,3.5484],"median":3.5298}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":5,"name":"Non-BCE: Branching Reset (idx >= 256 ? 0 : idx)","pattern":"cold","N":100000000,"ns":[1.0224,1.0238,1.1662,1.184,1.0577],"median":1.0577}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/05-readonly-buffer-walk.js","idx":5,"name":"Non-BCE: Branching Reset (idx >= 256 ? 0 : idx)","pattern":"warm","N":100000000,"ns":[1.21,1.0757,1.0142,1.0075,1.009],"median":1.0142}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":0,"name":"Read-Only Baseline (Walk Only)","pattern":"cold","N":100000000,"ns":[0.7732,0.7799,1.485,0.8091,0.7822],"median":0.7822}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":0,"name":"Read-Only Baseline (Walk Only)","pattern":"warm","N":100000000,"ns":[0.7668,0.7753,0.7638,0.7855,0.761],"median":0.7668}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":1,"name":"In-Place Mutation (Context Buffer)","pattern":"cold","N":100000000,"ns":[0.9987,0.9915,0.9967,0.9947,0.9879],"median":0.9947}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":1,"name":"In-Place Mutation (Context Buffer)","pattern":"warm","N":100000000,"ns":[0.7633,0.773,0.7657,0.7574,0.7601],"median":0.7633}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":2,"name":"In-Place Mutation (Local Setup Buffer)","pattern":"cold","N":100000000,"ns":[0.9944,1.0084,0.9903,0.986,0.9941],"median":0.9941}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":2,"name":"In-Place Mutation (Local Setup Buffer)","pattern":"warm","N":100000000,"ns":[1.2169,1.2189,1.2168,1.2771,1.2196],"median":1.2189}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":3,"name":"Separate Write Buffer (inBuf -> outBuf, Context)","pattern":"cold","N":100000000,"ns":[1.2234,1.2324,1.3664,1.3369,1.2755],"median":1.2755}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":3,"name":"Separate Write Buffer (inBuf -> outBuf, Context)","pattern":"warm","N":100000000,"ns":[0.79,0.767,0.8267,0.799,0.8045],"median":0.799}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":4,"name":"Separate Write Buffer (Local Setup Buffers)","pattern":"cold","N":100000000,"ns":[1.2984,1.2388,1.3567,1.8512,1.2208],"median":1.2984}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":4,"name":"Separate Write Buffer (Local Setup Buffers)","pattern":"warm","N":100000000,"ns":[1.1079,1.1155,1.1479,1.1792,1.1328],"median":1.1328}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":5,"name":"Fixed Fixture Mutation (out[0] = ... like divmod)","pattern":"cold","N":100000000,"ns":[1.3477,1.3442,1.3471,1.3433,1.3743],"median":1.3471}
+[]
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/06-buffer-mutation.js","idx":5,"name":"Fixed Fixture Mutation (out[0] = ... like divmod)","pattern":"warm","N":100000000,"ns":[1.283,1.277,1.273,1.2737,1.2737],"median":1.2737}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/07-loop-overhead-isolation.js","idx":2,"name":"Minimal Register In-Place Step (acc = (acc + 1) | 0)","pattern":"cold","N":100000000,"ns":[0.5329,0.5359,0.5337,0.5314,0.5309],"median":0.5329}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/07-loop-overhead-isolation.js","idx":2,"name":"Minimal Register In-Place Step (acc = (acc + 1) | 0)","pattern":"warm","N":100000000,"ns":[0.5358,0.5511,0.5379,0.5325,0.5419],"median":0.5379}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/07-loop-overhead-isolation.js","idx":3,"name":"Read-Only Buffer Walk Baseline (acc ^= buf[idx])","pattern":"cold","N":100000000,"ns":[0.7684,0.9858,0.8594,0.7364,0.7345],"median":0.7684}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/07-loop-overhead-isolation.js","idx":3,"name":"Read-Only Buffer Walk Baseline (acc ^= buf[idx])","pattern":"warm","N":100000000,"ns":[0.8556,0.8193,0.8227,1.0123,1.1085],"median":0.8556}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/07-loop-overhead-isolation.js","idx":5,"name":"Target Operation: i32.add on Buffer (acc = add(acc, buf[idx]))","pattern":"cold","N":100000000,"ns":[0.7612,0.7643,0.7708,0.7627,0.7873],"median":0.7643}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/07-loop-overhead-isolation.js","idx":5,"name":"Target Operation: i32.add on Buffer (acc = add(acc, buf[idx]))","pattern":"warm","N":100000000,"ns":[0.7536,0.7901,0.8239,0.8233,0.7567],"median":0.7901}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":0,"name":"Monomorphic: Pristine Int32Array out","pattern":"cold","N":100000000,"ns":[3.5694,3.5841,4.3332,4.582,3.5718],"median":3.5841}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":0,"name":"Monomorphic: Pristine Int32Array out","pattern":"warm","N":100000000,"ns":[3.3436,2.6969,3.0981,2.9426,2.6324],"median":2.9426}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":1,"name":"Monomorphic: Pristine Uint32Array out","pattern":"cold","N":100000000,"ns":[4.576,4.817,5.6169,4.6201,5.5107],"median":4.817}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":1,"name":"Monomorphic: Pristine Uint32Array out","pattern":"warm","N":100000000,"ns":[2.7659,2.8429,2.7123,2.7198,2.653],"median":2.7198}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":2,"name":"Monomorphic: Pristine Generic Array out ([0, 0])","pattern":"cold","N":100000000,"ns":[5.4948,5.6077,5.9095,6.1477,5.5736],"median":5.6077}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":2,"name":"Monomorphic: Pristine Generic Array out ([0, 0])","pattern":"warm","N":100000000,"ns":[4.0284,4.1715,4.005,4.109,4.2021],"median":4.109}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":3,"name":"Polymorphic Call Site (2 types: Int32 + Uint32 alternating)","pattern":"cold","N":100000000,"ns":[5.5421,4.7647,5.512,4.829,5.2411],"median":5.2411}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":3,"name":"Polymorphic Call Site (2 types: Int32 + Uint32 alternating)","pattern":"warm","N":100000000,"ns":[4.9392,4.896,5.4533,4.9878,5.2278],"median":4.9878}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":4,"name":"Megamorphic Call Site (4 types: Int32 + Uint32 + Float64 + Generic)","pattern":"cold","N":100000000,"ns":[5.5655,6.4334,5.2604,5.6935,5.3027],"median":5.5655}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":4,"name":"Megamorphic Call Site (4 types: Int32 + Uint32 + Float64 + Generic)","pattern":"warm","N":100000000,"ns":[5.6367,5.3619,5.2921,5.4633,5.8127],"median":5.4633}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":5,"name":"Contaminated Kernel: Int32Array on Pre-Polluted mulwide","pattern":"cold","N":100000000,"ns":[3.5759,3.5579,3.5682,3.5844,3.5528],"median":3.5682}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/08-megamorphic-out-param.js","idx":5,"name":"Contaminated Kernel: Int32Array on Pre-Polluted mulwide","pattern":"warm","N":100000000,"ns":[2.6723,2.659,2.6452,2.6792,2.6384],"median":2.659}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/09-mulwide-signed-vs-unsigned.js","idx":2,"name":"u32.mulwide: L1 Buffer Walk (Diverse Inputs)","pattern":"cold","N":100000000,"ns":[2.5918,2.4031,2.4309,2.4256,2.545],"median":2.4309}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/09-mulwide-signed-vs-unsigned.js","idx":2,"name":"u32.mulwide: L1 Buffer Walk (Diverse Inputs)","pattern":"warm","N":100000000,"ns":[2.2518,3.1452,2.2215,2.7574,2.3302],"median":2.3302}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/09-mulwide-signed-vs-unsigned.js","idx":3,"name":"i32.mulwide: L1 Buffer Walk (Diverse Inputs)","pattern":"cold","N":100000000,"ns":[2.8453,2.8253,2.9789,2.9498,2.8393],"median":2.8453}
+{"node":"v26.7.0","v8":"14.6.202.34-node.28","file":"explorations/09-mulwide-signed-vs-unsigned.js","idx":3,"name":"i32.mulwide: L1 Buffer Walk (Diverse Inputs)","pattern":"warm","N":100000000,"ns":[2.6789,2.7155,2.9711,2.8476,2.7557],"median":2.7557}
+{"meta":"end","end":"2026-09-25T09:53:49Z","loadavg":"1.16 0.70 0.31 1/106 3240"}

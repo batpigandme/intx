@@ -1,0 +1,19 @@
+# boxD block 1 /usr/local/nvm/versions/node/v24.19.0/bin/node (v24.19.0, v8 13.6.233.17-node.51) start 2026-09-25T09:35:02Z loadavg 0.90 0.29 0.11 1/109 896
+baseline | v24.19.0 v8=13.6.233.17-node.51 uncoerced big op=+: ns/iter per call = 5.579 5.759 5.714 5.723 5.586 | median 5.714
+baseline | v24.19.0 v8=13.6.233.17-node.51 uncoerced small op=+: ns/iter per call = 0.460 0.457 0.458 0.459 0.457 | median 0.458
+baseline | v24.19.0 v8=13.6.233.17-node.51 coerced big op=+: ns/iter per call = 0.548 0.541 0.543 0.540 0.544 | median 0.543
+baseline | v24.19.0 v8=13.6.233.17-node.51 coerced small op=+: ns/iter per call = 0.475 0.616 0.488 0.476 0.481 | median 0.481
+baseline | v24.19.0 v8=13.6.233.17-node.51 literal big op=+: ns/iter per call = 0.488 0.495 0.462 0.457 0.456 | median 0.462
+baseline | v24.19.0 v8=13.6.233.17-node.51 literal small op=+: ns/iter per call = 0.492 0.497 0.456 0.459 0.482 | median 0.482
+no-use-osr | v24.19.0 v8=13.6.233.17-node.51 uncoerced big op=+: ns/iter per call = 14.960 12.523 13.549 5.881 0.495 | median 12.523
+no-use-osr | v24.19.0 v8=13.6.233.17-node.51 coerced big op=+: ns/iter per call = 16.045 15.039 14.497 5.890 0.466 | median 14.497
+c-form | v24.19.0 v8=13.6.233.17-node.51 local big op=+: ns/iter per call = 5.696 5.697 5.567 5.554 5.584 | median 5.584
+c-form | v24.19.0 v8=13.6.233.17-node.51 localcopy big op=+: ns/iter per call = 5.614 5.611 5.536 5.547 5.784 | median 5.611
+c-form | v24.19.0 v8=13.6.233.17-node.51 param big op=+: ns/iter per call = 5.805 5.829 5.913 5.574 5.633 | median 5.805
+op | v24.19.0 v8=13.6.233.17-node.51 uncoerced big op=-: ns/iter per call = 5.632 5.747 5.669 5.610 5.625 | median 5.632
+op | v24.19.0 v8=13.6.233.17-node.51 coerced big op=-: ns/iter per call = 0.586 0.553 0.534 0.530 0.531 | median 0.534
+op | v24.19.0 v8=13.6.233.17-node.51 uncoerced big op=*: ns/iter per call = 5.511 5.829 5.518 5.510 5.512 | median 5.512
+op | v24.19.0 v8=13.6.233.17-node.51 coerced big op=*: ns/iter per call = 5.634 5.876 5.878 5.648 5.895 | median 5.876
+op | v24.19.0 v8=13.6.233.17-node.51 uncoerced big op=^: ns/iter per call = 0.570 0.553 0.538 0.547 0.541 | median 0.547
+op | v24.19.0 v8=13.6.233.17-node.51 coerced big op=^: ns/iter per call = 0.555 0.537 0.569 0.534 0.550 | median 0.550
+# end 2026-09-25T09:35:35Z loadavg 0.99 0.38 0.14 1/111 1081

@@ -1,0 +1,13 @@
+# boxA, boot 2: captured 2026-09-25T01:06:41Z
+boot time (uptime -s, container-local UTC-6): 2026-09-24 18:57:27  = 2026-09-25T00:57Z
+boxA blocks 1-2 (stock) and the patched runs were 00:06-00:37Z, on the PREVIOUS boot. Same CPU model; different boot. Not pooled.
+model name	: Intel(R) Xeon(R) Processor @ 2.10GHz
+Model:                                   207
+Stepping:                                2
+Hypervisor vendor:                       KVM
+nproc: 4
+event sources: breakpoint msr power software tracepoint uprobe 
+perf_event_paranoid: 2
+/opt/node22/bin/node v22.22.2 v8=12.4.254.21-node.39 pointer_compression=0
+/usr/local/nvm/versions/node/v24.19.0/bin/node v24.19.0 v8=13.6.233.17-node.51 pointer_compression=0
+/usr/local/nvm/versions/node/v26.7.0/bin/node v26.7.0 v8=14.6.202.34-node.28 pointer_compression=0

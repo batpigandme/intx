@@ -1,0 +1,7 @@
+# boxA · node24-gap · block 4 · $SCRATCH/n24/reduce.js uncoerced small (stock intx a8de2d6 tree at /tmp/intx-stock; scratch files are not Abdul's code)
+# binary: /usr/local/nvm/versions/node/v26.7.0/bin/node (v26.7.0, v8 14.6.202.34-node.28)
+# start: 2026-09-25T01:20:53Z · loadavg: 0.99 0.98 0.75 1/103 2357
+
+v26.7.0 v8=14.6.202.34-node.28 uncoerced small: ns/iter per call = 0.445 0.445 0.446 0.446 0.445 | median 0.445
+
+# exit: 0 · wall: 0s · end: 2026-09-25T01:20:53Z

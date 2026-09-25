@@ -1,0 +1,12 @@
+[marking 0x28b3005c9311 <JSFunction isPosixPathSeparator (sfi = 0x3821d401c3b1)> for optimization to MAGLEV, ConcurrencyMode::kConcurrent, reason: hot and stable]
+[compiling method 0x28b3005c9311 <JSFunction isPosixPathSeparator (sfi = 0x3821d401c3b1)> (target MAGLEV), mode: ConcurrencyMode::kConcurrent]
+[completed compiling 0x28b3005c9311 <JSFunction isPosixPathSeparator (sfi = 0x3821d401c3b1)> (target MAGLEV) - took 0.000, 0.218, 0.003 ms]
+[marking 0x28b3005c9439 <JSFunction normalizeString (sfi = 0x3821d401c5d9)> for optimization to MAGLEV, ConcurrencyMode::kConcurrent, reason: hot and stable]
+[marking 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)> for optimization to MAGLEV, ConcurrencyMode::kConcurrent, reason: hot and stable]
+[compiling method 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)> (target MAGLEV) OSR, mode: ConcurrencyMode::kConcurrent]
+[completed compiling 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)> (target MAGLEV) OSR - took 0.000, 0.303, 0.002 ms]
+[compiling method 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)> (target TURBOFAN_JS) OSR, mode: ConcurrencyMode::kConcurrent]
+[completed compiling 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)> (target TURBOFAN_JS) OSR - took 0.013, 1.477, 0.018 ms]
+[completed optimizing 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)> (target TURBOFAN_JS) OSR]
+[bailout (kind: deopt-eager, reason: prepare for on stack replacement (OSR)): begin. deoptimizing 0x108910c80ce9 <JSFunction kernel (sfi = 0x3b92df43ddc1)>, 0x26639d041eb1 <Code MAGLEV>, opt id 1, bytecode offset 7, deopt exit 7, FP to SP delta 96, caller SP 0x7ffcfdb88ce0, pc 0x7fc098004833]
+v26.7.0 v8=14.6.202.34-node.28 uncoerced big: ns/iter per call = 0.471 0.447 0.457 0.452 0.456 | median 0.456

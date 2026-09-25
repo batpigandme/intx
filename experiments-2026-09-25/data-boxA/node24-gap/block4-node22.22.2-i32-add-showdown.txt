@@ -1,0 +1,21 @@
+# boxA · node24-gap · block 4 · src/i32/add/showdown.js (stock intx a8de2d6 tree at /tmp/intx-stock; scratch files are not Abdul's code)
+# binary: /opt/node22/bin/node (v22.22.2, v8 12.4.254.21-node.39)
+# start: 2026-09-25T01:13:21Z · loadavg: 1.00 0.91 0.58 1/107 1741
+
+
+### i32.add: Execution Pattern Suite
+> **Config:** 5 rounds × 1e+8 iters/round | Order: Sequential | Pause: 30ms  
+> **Platform:** Node v22.22.2 (x64) | Intel Xeon Processor @ 2.10GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Serialized (1x Latency Bound)             |      1.41 B |    1.55 B |    ±5.1% | baseline |
+|    2 | Parallel 2x (2 Independent Accumulators)  |      1.41 B |    1.42 B |    ±0.5% |    1.00x |
+|    3 | Parallel 4x (4 Independent Accumulators)  |      1.32 B |    1.34 B |    ±1.8% |    0.94x |
+|    4 | Parallel 8x (8 Independent Accumulators)  |    961.57 M |  992.68 M |    ±2.6% |    0.68x |
+|    5 | Outer Fixture (Int32Array In-Place Mutat… |    388.63 M |  403.83 M |    ±2.2% |    0.28x |
+|    6 | Array Reduction (Int32Array Buffer Walk)  |      1.07 B |    1.09 B |    ±1.1% |    0.76x |
+|    7 | Inline Operator (((a|0) + c)|0 Baseline)  |    165.89 M |  174.29 M |    ±3.7% |    0.12x |
+
+
+# exit: 0 · wall: 8s · end: 2026-09-25T01:13:29Z

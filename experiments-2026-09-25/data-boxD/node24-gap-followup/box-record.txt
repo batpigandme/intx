@@ -1,0 +1,20 @@
+# boxD box record, captured 2026-09-25T09:33:35Z
+NEW BOX: CPU model differs from boxA (207). Same model as boxC, but a different container/session; labelled boxD. Never pooled with boxA/B/C.
+model name	: Intel(R) Xeon(R) Processor @ 2.80GHz
+Model:                                   85
+Stepping:                                7
+Hypervisor vendor:                       KVM
+L3 cache:                                33 MiB (1 instance)
+nproc: 4
+systemd-detect-virt: docker
+boot (uptime -s, container-local): 2026-09-25 03:33:00
+6.18.44-fc-v37
+PRETTY_NAME="Ubuntu 24.04.4 LTS"
+event sources: breakpoint msr power software tracepoint uprobe 
+perf_event_paranoid: 2
+               total        used        free      shared  buff/cache   available
+Mem:           16095         514       15535          12         266       15581
+/opt/node22/bin/node v22.22.2 v8=12.4.254.21-node.39
+/usr/local/nvm/versions/node/v24.19.0/bin/node v24.19.0 v8=13.6.233.17-node.51
+/usr/local/nvm/versions/node/v26.7.0/bin/node v26.7.0 v8=14.6.202.34-node.28
+loadavg: 0.42 0.12 0.04 1/105 493

@@ -1,0 +1,20 @@
+# boxA · node24-gap · block 3 · scratch-n24/b-06-row1-last.js (stock intx a8de2d6 tree at /tmp/intx-stock; scratch files are not Abdul's code)
+# binary: /usr/local/nvm/versions/node/v24.19.0/bin/node (v24.19.0, v8 13.6.233.17-node.51)
+# start: 2026-09-25T01:09:50Z · loadavg: 1.00 0.80 0.46 1/106 1339
+
+
+### Exp 6 [scratch b: stock wall-clock, row 1 moved last]
+> **Config:** 1000 rounds × ~10ms/sample (dynamic) | Order: Sequential  
+> **Platform:** Node v24.19.0 (x64) | Intel Xeon Processor @ 2.10GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | In-Place Mutation (Context Buffer)        |    564.13 M |    1.20 B |    ±2.6% | baseline |
+|    2 | In-Place Mutation (Local Setup Buffer)    |    940.54 M |  986.30 M |    ±0.6% |    1.67x |
+|    3 | Separate Write Buffer (inBuf -> outBuf, … |      1.12 B |    1.18 B |    ±0.9% |    1.98x |
+|    4 | Separate Write Buffer (Local Setup Buffe… |    936.92 M |  983.14 M |    ±0.9% |    1.66x |
+|    5 | Fixed Fixture Mutation (out[0] = ... lik… |    939.83 M |  977.04 M |    ±0.8% |    1.67x |
+|    6 | Read-Only Baseline (Walk Only) [moved la… |      1.12 B |    1.16 B |    ±0.8% |    1.98x |
+
+
+# exit: 0 · wall: 66s · end: 2026-09-25T01:10:56Z

@@ -1,0 +1,21 @@
+# NOTE: possibly perturbed: three short node -v/-p processes ran at 01:06:41Z during this run. See block3-node22.22.2-06-stock-timer-RERUN.txt.
+# boxA · node24-gap · block 3 · scratch-n24/a-06-stock-timer.js (stock intx a8de2d6 tree at /tmp/intx-stock; scratch files are not Abdul's code)
+# binary: /opt/node22/bin/node (v22.22.2, v8 12.4.254.21-node.39)
+# start: 2026-09-25T01:06:04Z · loadavg: 0.35 0.49 0.28 1/105 937
+
+
+### Exp 6 [scratch a: stock wall-clock]
+> **Config:** 1000 rounds × ~10ms/sample (dynamic) | Order: Sequential  
+> **Platform:** Node v22.22.2 (x64) | Intel Xeon Processor @ 2.10GHz
+
+|  #   | Title                                     | Median (/s) | Peak (/s) | MoE (±%) | Relative |
+|:----:|:------------------------------------------|------------:|----------:|---------:|---------:|
+|    1 | Read-Only Baseline (Walk Only)            |      1.12 B |    1.20 B |    ±0.6% | baseline |
+|    2 | In-Place Mutation (Context Buffer)        |      1.10 B |    1.21 B |    ±0.9% |    0.99x |
+|    3 | In-Place Mutation (Local Setup Buffer)    |    935.35 M |  994.85 M |    ±0.6% |    0.84x |
+|    4 | Separate Write Buffer (inBuf -> outBuf, … |      1.11 B |    1.18 B |    ±0.5% |    1.00x |
+|    5 | Separate Write Buffer (Local Setup Buffe… |    944.35 M |    1.00 B |    ±1.1% |    0.85x |
+|    6 | Fixed Fixture Mutation (out[0] = ... lik… |    939.67 M |  983.89 M |    ±0.6% |    0.84x |
+
+
+# exit: 0 · wall: 63s · end: 2026-09-25T01:07:07Z
