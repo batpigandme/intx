@@ -73,4 +73,39 @@ function fallback() {
 	return { bench, suite, rank };
 }
 
-module.exports = { fallback };
+const HINT =
+	" Or set MICROBE_CYCLES_FALLBACK=time to run on the wall-clock harness (reports time, not cycles).";
+
+// Appends the fallback hint to bench.cycles errors (addon missing, PMU
+// unavailable). Wraps only the suite-level entry points, never a runner.
+function withHint(fn) {
+	return function (...args) {
+		try {
+			return fn.apply(this, args);
+		} catch (err) {
+			if (
+				err instanceof Error &&
+				err.message.startsWith("bench.cycles") &&
+				!err.message.includes("MICROBE_CYCLES_FALLBACK")
+			) {
+				err.message += HINT;
+			}
+			throw err;
+		}
+	};
+}
+
+/**
+ * Wraps the PMU harness's bench, suite and rank so that their errors point at
+ * the fallback. Used when the fallback is not active.
+ */
+function hinted({ bench, suite, rank }) {
+	const b = withHint(bench);
+	const s = withHint(suite);
+	const r = withHint(rank);
+	s.rank = r;
+	b.suite = s;
+	return { bench: b, suite: s, rank: r };
+}
+
+module.exports = { fallback, hinted };
