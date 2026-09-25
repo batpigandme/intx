@@ -8,6 +8,7 @@ let pmuBinding = null;
 function loadPmu() {
 	if (pmuBinding) return pmuBinding;
 
+	let rebuild = "";
 	try {
 		pmuBinding = require("./build/Release/pmu.node");
 	} catch {
@@ -18,6 +19,10 @@ function loadPmu() {
 			});
 			if (res.status === 0) {
 				pmuBinding = require("./build/Release/pmu.node");
+			} else if (res.error?.code === "ENOENT") {
+				rebuild = " (automatic rebuild skipped: node-gyp is not on PATH)";
+			} else {
+				rebuild = ` (automatic 'node-gyp rebuild' exited with ${res.status})`;
 			}
 		} catch {
 			// build failed
@@ -26,7 +31,7 @@ function loadPmu() {
 
 	if (!pmuBinding) {
 		throw new Error(
-			"bench.cycles requires the native PMU addon to be built. Run 'npm run build:native'.",
+			`bench.cycles requires the native PMU addon to be built${rebuild}. Run 'npm run build:native'.`,
 		);
 	}
 
