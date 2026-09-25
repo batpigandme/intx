@@ -1,6 +1,7 @@
 "use strict";
 
 const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
 
 let pmuBinding = null;
 
@@ -30,9 +31,21 @@ function loadPmu() {
 	}
 
 	if (!pmuBinding.isSupported()) {
+		let paranoid = null;
+		try {
+			paranoid = Number(
+				fs.readFileSync("/proc/sys/kernel/perf_event_paranoid", "utf8"),
+			);
+		} catch {
+			// not Linux, or /proc unreadable
+		}
+		const cause =
+			paranoid !== null && paranoid <= 2
+				? `perf_event_paranoid is ${paranoid}, so that sysctl is not the cause. Most likely this machine exposes no hardware PMU (common in VMs and containers; check for /sys/bus/event_source/devices/cpu), or a container seccomp policy blocks perf_event_open.`
+				: "Either the kernel forbids it (/proc/sys/kernel/perf_event_paranoid must be <= 2) or this machine exposes no hardware PMU.";
 		throw new Error(
-			"bench.cycles requires Linux PMU hardware counter support (/proc/sys/kernel/perf_event_paranoid <= 2). " +
-				"For portable time-domain benchmarking across all platforms, use bench() or bench.suite().",
+			`bench.cycles could not open a hardware cycle counter. ${cause} ` +
+				"Set MICROBE_CYCLES_FALLBACK=time to run on the wall-clock harness, or use bench() / bench.suite().",
 		);
 	}
 
